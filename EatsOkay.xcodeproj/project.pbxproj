@@ -1,0 +1,492 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9B8FD0C62DF1D22800BA5941 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0C52DF1D22800BA5941 /* SnapKit */; };
+		9B8FD0C92DF1D24200BA5941 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0C82DF1D24200BA5941 /* Moya */; };
+		9B8FD0CB2DF1D24200BA5941 /* RxMoya in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0CA2DF1D24200BA5941 /* RxMoya */; };
+		9B8FD0CE2DF1D25A00BA5941 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0CD2DF1D25A00BA5941 /* RxCocoa */; };
+		9B8FD0D02DF1D25A00BA5941 /* RxRelay in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0CF2DF1D25A00BA5941 /* RxRelay */; };
+		9B8FD0D22DF1D25A00BA5941 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0D12DF1D25A00BA5941 /* RxSwift */; };
+		9B8FD0D52DF1D27300BA5941 /* ReactorKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0D42DF1D27300BA5941 /* ReactorKit */; };
+		9B8FD0D82DF1D2D900BA5941 /* GoogleMaps in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0D72DF1D2D900BA5941 /* GoogleMaps */; };
+		9B8FD0DB2DF1D31B00BA5941 /* RxDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0DA2DF1D31B00BA5941 /* RxDataSources */; };
+		9B8FD0DE2DF1D3C500BA5941 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 9B8FD0DD2DF1D3C500BA5941 /* Kingfisher */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		9B5522222DF194D8007345EA /* EatsOkay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EatsOkay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9B5522342DF194D9007345EA /* Exceptions for "EatsOkay" folder in "EatsOkay" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/Info.plist,
+			);
+			target = 9B5522212DF194D8007345EA /* EatsOkay */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		9B5522242DF194D8007345EA /* EatsOkay */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9B5522342DF194D9007345EA /* Exceptions for "EatsOkay" folder in "EatsOkay" target */,
+			);
+			path = EatsOkay;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9B55221F2DF194D8007345EA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B8FD0D82DF1D2D900BA5941 /* GoogleMaps in Frameworks */,
+				9B8FD0D22DF1D25A00BA5941 /* RxSwift in Frameworks */,
+				9B8FD0D02DF1D25A00BA5941 /* RxRelay in Frameworks */,
+				9B8FD0D52DF1D27300BA5941 /* ReactorKit in Frameworks */,
+				9B8FD0DE2DF1D3C500BA5941 /* Kingfisher in Frameworks */,
+				9B8FD0CB2DF1D24200BA5941 /* RxMoya in Frameworks */,
+				9B8FD0C92DF1D24200BA5941 /* Moya in Frameworks */,
+				9B8FD0DB2DF1D31B00BA5941 /* RxDataSources in Frameworks */,
+				9B8FD0CE2DF1D25A00BA5941 /* RxCocoa in Frameworks */,
+				9B8FD0C62DF1D22800BA5941 /* SnapKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9B5522192DF194D8007345EA = {
+			isa = PBXGroup;
+			children = (
+				9B5522242DF194D8007345EA /* EatsOkay */,
+				9B5522232DF194D8007345EA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9B5522232DF194D8007345EA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9B5522222DF194D8007345EA /* EatsOkay.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9B5522212DF194D8007345EA /* EatsOkay */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B5522352DF194D9007345EA /* Build configuration list for PBXNativeTarget "EatsOkay" */;
+			buildPhases = (
+				9B55221E2DF194D8007345EA /* Sources */,
+				9B55221F2DF194D8007345EA /* Frameworks */,
+				9B5522202DF194D8007345EA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9B5522242DF194D8007345EA /* EatsOkay */,
+			);
+			name = EatsOkay;
+			packageProductDependencies = (
+				9B8FD0C52DF1D22800BA5941 /* SnapKit */,
+				9B8FD0C82DF1D24200BA5941 /* Moya */,
+				9B8FD0CA2DF1D24200BA5941 /* RxMoya */,
+				9B8FD0CD2DF1D25A00BA5941 /* RxCocoa */,
+				9B8FD0CF2DF1D25A00BA5941 /* RxRelay */,
+				9B8FD0D12DF1D25A00BA5941 /* RxSwift */,
+				9B8FD0D42DF1D27300BA5941 /* ReactorKit */,
+				9B8FD0D72DF1D2D900BA5941 /* GoogleMaps */,
+				9B8FD0DA2DF1D31B00BA5941 /* RxDataSources */,
+				9B8FD0DD2DF1D3C500BA5941 /* Kingfisher */,
+			);
+			productName = EatsOkay;
+			productReference = 9B5522222DF194D8007345EA /* EatsOkay.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9B55221A2DF194D8007345EA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					9B5522212DF194D8007345EA = {
+						CreatedOnToolsVersion = 16.2;
+					};
+				};
+			};
+			buildConfigurationList = 9B55221D2DF194D8007345EA /* Build configuration list for PBXProject "EatsOkay" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 9B5522192DF194D8007345EA;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9B8FD0C42DF1D22800BA5941 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				9B8FD0C72DF1D24200BA5941 /* XCRemoteSwiftPackageReference "Moya" */,
+				9B8FD0CC2DF1D25A00BA5941 /* XCRemoteSwiftPackageReference "RxSwift" */,
+				9B8FD0D32DF1D27300BA5941 /* XCRemoteSwiftPackageReference "ReactorKit" */,
+				9B8FD0D62DF1D2D900BA5941 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */,
+				9B8FD0D92DF1D31B00BA5941 /* XCRemoteSwiftPackageReference "RxDataSources" */,
+				9B8FD0DC2DF1D3C500BA5941 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 9B5522232DF194D8007345EA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9B5522212DF194D8007345EA /* EatsOkay */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9B5522202DF194D8007345EA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9B55221E2DF194D8007345EA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		9B5522362DF194D9007345EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EatsOkay/App/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.curating.EatsOkay;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9B5522372DF194D9007345EA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EatsOkay/App/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.curating.EatsOkay;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9B5522382DF194D9007345EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		9B5522392DF194D9007345EA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9B55221D2DF194D8007345EA /* Build configuration list for PBXProject "EatsOkay" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B5522382DF194D9007345EA /* Debug */,
+				9B5522392DF194D9007345EA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9B5522352DF194D9007345EA /* Build configuration list for PBXNativeTarget "EatsOkay" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B5522362DF194D9007345EA /* Debug */,
+				9B5522372DF194D9007345EA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9B8FD0C42DF1D22800BA5941 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		9B8FD0C72DF1D24200BA5941 /* XCRemoteSwiftPackageReference "Moya" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Moya/Moya.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 15.0.3;
+			};
+		};
+		9B8FD0CC2DF1D25A00BA5941 /* XCRemoteSwiftPackageReference "RxSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.9.0;
+			};
+		};
+		9B8FD0D32DF1D27300BA5941 /* XCRemoteSwiftPackageReference "ReactorKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactorKit/ReactorKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.2.0;
+			};
+		};
+		9B8FD0D62DF1D2D900BA5941 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googlemaps/ios-maps-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.0.0;
+			};
+		};
+		9B8FD0D92DF1D31B00BA5941 /* XCRemoteSwiftPackageReference "RxDataSources" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RxSwiftCommunity/RxDataSources.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.2;
+			};
+		};
+		9B8FD0DC2DF1D3C500BA5941 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.3.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9B8FD0C52DF1D22800BA5941 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0C42DF1D22800BA5941 /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		9B8FD0C82DF1D24200BA5941 /* Moya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0C72DF1D24200BA5941 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = Moya;
+		};
+		9B8FD0CA2DF1D24200BA5941 /* RxMoya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0C72DF1D24200BA5941 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = RxMoya;
+		};
+		9B8FD0CD2DF1D25A00BA5941 /* RxCocoa */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0CC2DF1D25A00BA5941 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxCocoa;
+		};
+		9B8FD0CF2DF1D25A00BA5941 /* RxRelay */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0CC2DF1D25A00BA5941 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxRelay;
+		};
+		9B8FD0D12DF1D25A00BA5941 /* RxSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0CC2DF1D25A00BA5941 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxSwift;
+		};
+		9B8FD0D42DF1D27300BA5941 /* ReactorKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0D32DF1D27300BA5941 /* XCRemoteSwiftPackageReference "ReactorKit" */;
+			productName = ReactorKit;
+		};
+		9B8FD0D72DF1D2D900BA5941 /* GoogleMaps */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0D62DF1D2D900BA5941 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */;
+			productName = GoogleMaps;
+		};
+		9B8FD0DA2DF1D31B00BA5941 /* RxDataSources */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0D92DF1D31B00BA5941 /* XCRemoteSwiftPackageReference "RxDataSources" */;
+			productName = RxDataSources;
+		};
+		9B8FD0DD2DF1D3C500BA5941 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B8FD0DC2DF1D3C500BA5941 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 9B55221A2DF194D8007345EA /* Project object */;
+}
