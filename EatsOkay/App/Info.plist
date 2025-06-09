@@ -6,6 +6,12 @@
 	<string>$(GoogleAPIKey)</string>
 	<key>KakaoAPIKey</key>
 	<string>$(KakaoAPIKey)</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Pretendard-Bold.ttf</string>
+		<string>Pretendard-Medium.ttf</string>
+		<string>Pretendard-Regular.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
