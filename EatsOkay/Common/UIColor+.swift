@@ -9,19 +9,19 @@ import UIKit
 
 extension UIColor {
     enum CustomColor: String {
-        case bgColor = "#FFFFFF"
-        case neutral950 = "#1F1F1F"
-        case neutral800 = "#4D4D4D"
-        case neutral700 = "#5F5F5F"
-        case neutral400 = "#9F9F9F"
-        case neutral200 = "#CACACA"
-        case neutral100 = "#DFDFDF"
-        case neutral50 = "#F5F5F5"
-        case primary400 = "#F44366"
-        case primary50 = "#FEECEF"
-        case secondary100 = "#FFDEBE"
-        case secondary50 = "#FFF5EB"
-        case starColor = "#FFCC00"
+        case bgColor = "FFFFFF"
+        case neutral950 = "1F1F1F"
+        case neutral800 = "4D4D4D"
+        case neutral700 = "5F5F5F"
+        case neutral400 = "9F9F9F"
+        case neutral200 = "CACACA"
+        case neutral100 = "DFDFDF"
+        case neutral50 = "F5F5F5"
+        case primary400 = "F44366"
+        case primary50 = "FEECEF"
+        case secondary100 = "FFDEBE"
+        case secondary50 = "FFF5EB"
+        case starColor = "FFCC00"
         case infoColor = "007AFF"
     }
 }
@@ -29,12 +29,7 @@ extension UIColor {
 extension UIColor {
     convenience init(hexCode: String, alpha: CGFloat = 1.0) {
         // 전달받은 hexCode 문자열에서 공백/줄바꿈 제거하고, 대문자로 변환
-        var hexFormatted = hexCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-
-        // 앞의 '#'을 제거
-        if hexFormatted.hasPrefix("#") {
-            hexFormatted = String(hexFormatted.dropFirst())
-        }
+        let hexFormatted = hexCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
 
         // 문자 수가 6자리인지 확인
         assert(hexFormatted.count == 6, "Invalid hex code used.")
