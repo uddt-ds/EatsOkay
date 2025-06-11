@@ -1,13 +1,13 @@
 ---
 name: EatsOkay Refactor Template
 about: EatsOkay 리팩토링 템플릿
-title: "[REFACTOR]"
+title: "[Refactor]"
 labels: 'enhancement'
 assignees: ''
 ---
 
 ## 🛠️ Refactor Issue
-<!-- 구현할 기능에 대한 내용을 설명해주세요. -->
+<!-- 개선할 내용을 설명해주세요. -->
 - 
 
 ## 📝 To-do
