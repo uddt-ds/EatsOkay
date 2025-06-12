@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 struct SituationDataModel {
     let category: Category
@@ -35,5 +36,5 @@ struct SectionData: Hashable {
     let hashTags: [String]
     let keywords: [String]
     let category: Category
-//    let imageName: String     asset에 이미지 추가하고, Manager에도 해당 이름 추가해야함
+    let assetImage: UIImage
 }
