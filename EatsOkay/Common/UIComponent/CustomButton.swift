@@ -9,15 +9,9 @@ import UIKit
 
 class CustomButton: UIButton {
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-    }
-    
-    init(title: String?) {
+    init(title: String) {
         super.init(frame: .zero)
-        if let title {
-            self.setTitle(title, for: .normal)
-        }
+        self.setTitle(title, for: .normal)
         configure()
     }
     
@@ -26,9 +20,7 @@ class CustomButton: UIButton {
     }
     
     private func configure() {
-        
         self.setTitleColor(.customColor(hexCode: .bgColor), for: .normal)
-        
         self.backgroundColor = .customColor(hexCode: .primary400)
         self.titleLabel?.font = .customFontForHeader(weight: .w900)
         self.layer.cornerRadius = 8
