@@ -1,7 +1,7 @@
 ---
 name: EatsOkay Feature Template
 about: EatsOkay 기능 템플릿
-title: "[FEAT]"
+title: "[Feat]"
 labels: 'new feature'
 assignees: ''
 ---
