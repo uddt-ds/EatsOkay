@@ -13,8 +13,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate {
         button.setTitle("현 위치에서 검색", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont(name: "Pretendard-Regular", size: 13)
-        // 컬러 변경 필요
-        button.backgroundColor = .systemPink
+        button.backgroundColor = UIColor.customColor(hexCode: .primary400)
         button.setImage(UIImage(named: "reloadButton"), for: .normal)
         button.imageView?.contentMode = .scaleAspectFill
         button.layer.cornerRadius = 16
