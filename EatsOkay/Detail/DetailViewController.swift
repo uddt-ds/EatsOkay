@@ -7,14 +7,51 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
+import RxDataSources
 
 class DetailViewController: UIViewController {
     
-    var testArray = Array(0...4)
+    var disposeBag = DisposeBag()
+    
+    // 리엑터로 빠질 예정 (목데이터)
+    var storeInfos: BehaviorRelay<[StoreSection]> = BehaviorRelay(value: [
+        StoreSection(items: [StoreInfo(
+            displayName: "어슬렁1",
+            formattedAddress: "서울시 강남구 테헤란로 123",
+            latitude: 37.498,
+            longitude: 127.027,
+            rating: 4.5,
+            googleMapsURI: "maps://store1",
+            userRatingCount: 120,
+            photosNames: ["store1"]
+        ),StoreInfo(
+            displayName: "어슬렁2",
+            formattedAddress: "서울시 강남구 테헤란로 123",
+            latitude: 37.498,
+            longitude: 127.027,
+            rating: 4.5,
+            googleMapsURI: "maps://store1",
+            userRatingCount: 120,
+            photosNames: ["store1"]
+        ),StoreInfo(
+            displayName: "어슬렁3",
+            formattedAddress: "서울시 강남구 테헤란로 123",
+            latitude: 37.498,
+            longitude: 127.027,
+            rating: 4.5,
+            googleMapsURI: "maps://store1",
+            userRatingCount: 120,
+            photosNames: ["store1"]
+        ),
+        ])
+    ])
     
     private let storeCountLabel: UILabel = {
         let label = UILabel()
         label.text = "5개의 매장"
+        label.textColor = .customColor(hexCode: .neutral700)
         label.font = .customFontForSubtitle(weight: .w600)
         return label
     }()
@@ -33,22 +70,22 @@ class DetailViewController: UIViewController {
         config.contentInsets = .zero
         
         let button = UIButton(configuration: config, primaryAction: nil)
-            button.tintColor = .black
+        button.tintColor = .customColor(hexCode: .neutral950)
         
         let updateTitle: (String) -> Void = { newTitle in
-                var updatedConfig = button.configuration
-                let attributedTitle = AttributedString(newTitle, attributes: AttributeContainer([.font: font]))
-                updatedConfig?.attributedTitle = attributedTitle
-                button.configuration = updatedConfig
-            }
+            var updatedConfig = button.configuration
+            let attributedTitle = AttributedString(newTitle, attributes: AttributeContainer([.font: font]))
+            updatedConfig?.attributedTitle = attributedTitle
+            button.configuration = updatedConfig
+        }
         
         let menuItems = [
-                UIAction(title: "별점순", handler: { _ in updateTitle("별점순") }),
-                UIAction(title: "거리순", handler: { _ in updateTitle("거리순") }),
-                UIAction(title: "리뷰순", handler: { _ in updateTitle("리뷰순") }),
-                UIAction(title: "가격순", handler: { _ in updateTitle("가격순") })
-            ]
-
+            UIAction(title: "별점순", handler: { _ in updateTitle("별점순") }),
+            UIAction(title: "거리순", handler: { _ in updateTitle("거리순") }),
+            UIAction(title: "리뷰순", handler: { _ in updateTitle("리뷰순") }),
+            UIAction(title: "가격순", handler: { _ in updateTitle("가격순") })
+        ]
+        
         button.menu = UIMenu(title: "", options: .displayInline , children: menuItems)
         button.showsMenuAsPrimaryAction = true
         button.contentHorizontalAlignment = .leading
@@ -57,7 +94,7 @@ class DetailViewController: UIViewController {
     
     private let separatorView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(red: 245/255, green: 245/255, blue: 245/255, alpha: 1.0)
+        view.backgroundColor = .customColor(hexCode: .neutral50)
         return view
     }()
     
@@ -66,22 +103,43 @@ class DetailViewController: UIViewController {
         let tableView = UITableView()
         tableView.register(DetailTableViewCell.self, forCellReuseIdentifier: DetailTableViewCell.identifier)
         tableView.separatorStyle = .none
+        tableView.rowHeight = 145 // delegate 사용 안하고 셀 높이 설정
         tableView.separatorInset = .init(top: 0, left: 0, bottom: 0, right: 0)
-        
+        tableView.backgroundColor = .customColor(hexCode: .bgColor)
         return tableView
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
+        bindTableView()
     }
     
+    private func bindTableView() {
+        let dataSource = RxTableViewSectionedAnimatedDataSource<StoreSection>(
+            configureCell: { dataSource, tableView, indexPath, item in
+                let cell = tableView.dequeueReusableCell(withIdentifier: DetailTableViewCell.identifier, for: indexPath) as! DetailTableViewCell
+                cell.configureView(with: item)
+                return cell
+            }
+        )
+        
+        storeInfos
+            .bind(to: tableView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
+        
+        tableView.rx.itemSelected // 웹뷰 모달이 될 예정 Action
+            .withUnretained(self)
+            .bind { vc, indexPath in
+                var test = vc.storeInfos.value
+                let random = Int.random(in: 1...1000)
+                test[0].items.insert(.init(displayName: "애니메이션 테스트 \(random)", formattedAddress: "서울시 강남구 압구정동 \(random)", latitude: 33.44, longitude: 44.55, rating: 4.7, googleMapsURI: "https://afasfs", userRatingCount: random, photosNames: ["https://afasfs"]), at: indexPath.row)
+                vc.storeInfos.accept(test)
+            }.disposed(by: disposeBag)
+    }
 
     private func configureUI() {
-        view.backgroundColor = .white
-        
-        tableView.delegate = self
-        tableView.dataSource = self
+        view.backgroundColor = .customColor(hexCode: .bgColor)
         
         [storeCountLabel, sortButton, separatorView, tableView].forEach {
             view.addSubview($0)
@@ -109,7 +167,7 @@ class DetailViewController: UIViewController {
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(2)
         }
-    
+        
         // 테이블 뷰
         tableView.snp.makeConstraints { make in
             make.top.equalTo(separatorView.snp.bottom)
@@ -118,32 +176,5 @@ class DetailViewController: UIViewController {
         }
         
     }
-
-}
-
-extension DetailViewController: UITableViewDataSource, UITableViewDelegate {
-    // 테이블 뷰 섹션 수 지정
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
-    }
-    
-    // 테이블 뷰 셀들의 갯수
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return testArray.count
-    }
-    
-    // 테이블 뷰 셀 지정
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: DetailTableViewCell.identifier, for: indexPath) as? DetailTableViewCell else { return UITableViewCell() }
-    
-//        cell.configureView()
-        return cell
-    }
-    
-    // 테이블 뷰의 셀의 높이 지정
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 145
-    }
-    
     
 }

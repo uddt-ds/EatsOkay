@@ -15,7 +15,7 @@ class DetailTableViewCell: UITableViewCell {
     private let storeNameLabel: UILabel = {
         let label = UILabel()
         label.text = "식당명"
-        label.textColor = .black
+        label.textColor = .customColor(hexCode: .neutral950)
         label.font = .customFontForHeader(weight: .w800)
         return label
     }()
@@ -29,7 +29,7 @@ class DetailTableViewCell: UITableViewCell {
     private let rateLabel: UILabel = {
         let label = UILabel()
         label.text = "평점"
-        label.textColor = .black
+        label.textColor = .customColor(hexCode: .neutral800)
         label.font = .customFontForBody(weight: .w600)
         return label
     }()
@@ -37,7 +37,7 @@ class DetailTableViewCell: UITableViewCell {
     private let userRateCountLabel: UILabel = {
         let label = UILabel()
         label.text = "(리뷰수)"
-        label.textColor = .black
+        label.textColor = .customColor(hexCode: .neutral800)
         label.font = .customFontForBody(weight: .w600)
         return label
     }()
@@ -45,7 +45,7 @@ class DetailTableViewCell: UITableViewCell {
     private let storeTypeLabel: UILabel = {
         let label = UILabel()
         label.text = "식당 종류"
-        label.textColor = .black
+        label.textColor = .customColor(hexCode: .neutral700)
         label.font = .customFontForBody(weight: .w500)
         return label
     }()
@@ -53,7 +53,7 @@ class DetailTableViewCell: UITableViewCell {
     private let addressLabel: UILabel = {
         let label = UILabel()
         label.text = "주소"
-        label.textColor = .black
+        label.textColor = .customColor(hexCode: .neutral700)
         label.font = .customFontForBody(weight: .w500)
         return label
     }()
@@ -67,7 +67,7 @@ class DetailTableViewCell: UITableViewCell {
     private let openNowLabel: UILabel = {
         let label = UILabel()
         label.text = "영업전/후 • 시간"
-        label.textColor = .black
+        label.textColor = .customColor(hexCode: .neutral700)
         label.numberOfLines = 0
         label.font = .customFontForBody(weight: .w500)
         return label
@@ -81,7 +81,7 @@ class DetailTableViewCell: UITableViewCell {
     
     private let separatorView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(red: 245/255, green: 245/255, blue: 245/255, alpha: 1.0)
+        view.backgroundColor = .customColor(hexCode: .neutral50)
         return view
     }()
     
@@ -169,8 +169,11 @@ class DetailTableViewCell: UITableViewCell {
     }
     
     // 추후에 UI를 변경할 때 사용
-    func configureView() {
-        
-        
+    func configureView(with storeInfo: StoreInfo) {
+        storeNameLabel.text = storeInfo.displayName
+        rateLabel.text = "\(storeInfo.rating)"
+        userRateCountLabel.text = "(\(storeInfo.userRatingCount))"
+        addressLabel.text = storeInfo.formattedAddress
+//        openNowLabel.text =
     }
 }
