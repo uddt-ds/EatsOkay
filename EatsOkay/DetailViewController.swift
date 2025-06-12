@@ -13,6 +13,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate {
         button.setTitle("현 위치에서 검색", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont(name: "Pretendard-Regular", size: 13)
+        // 컬러 변경 필요
         button.backgroundColor = .systemPink
         button.setImage(UIImage(named: "reloadButton"), for: .normal)
         button.imageView?.contentMode = .scaleAspectFill
@@ -33,7 +34,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate {
         setupMapView()
         constraintsMapView()
         
-        // title 우선 하드 코딩
+        // title 추후 변경
         self.title = "퇴근 후, 혼술 타임"
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "chevron.backward"), style: .plain, target: self, action: #selector(backButtonTapped))
@@ -50,6 +51,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate {
         mapView.delegate = self
     }
     
+    // 제약조건 설정
     private func constraintsMapView() {
         [
             mapView
@@ -79,6 +81,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate {
         }
     }
     
+    // 뒤로가기 버튼 액션
     @objc
     private func backButtonTapped() {
         self.navigationController?.popViewController(animated: true)
