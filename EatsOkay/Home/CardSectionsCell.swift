@@ -51,7 +51,7 @@ final class CardSectionsCell: UITableViewCell {
         titleLabel.font = .customFontForHeader(weight: .w800)
         hashTagLabel.font = .customFontForBody(weight: .w600)
         tagLabel.font = .customFontForBody(weight: .w400)
-        tagLabel.backgroundColor = .black.withAlphaComponent(0.4)
+        tagLabel.backgroundColor = .customColor(hexCode: .neutral700)
         tagLabel.textColor = .white
 
         tagLabel.textAlignment = .center

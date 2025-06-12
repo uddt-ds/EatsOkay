@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import RxSwift
 
 final class LocationHeaderView: UIView {
 
@@ -49,7 +50,7 @@ final class LocationHeaderView: UIView {
 
 
     private func configureTopLabelStackView() {
-        iconImage.image = UIImage(named: "HeaderLocation")
+        iconImage.image = .headerLocation
         iconImage.tintColor = .white
         label.text = "현재 위치"
         label.font = .customFontForSubtitle(weight: .w700)
@@ -67,7 +68,7 @@ final class LocationHeaderView: UIView {
         currentLocationLabel.textColor = .white
         currentLocationLabel.sizeToFit()
 
-        editIconButton.setImage(UIImage(named: "HeaderEdit"), for: .normal)
+        editIconButton.setImage(.headerEdit, for: .normal)
         editIconButton.tintColor = .white
 
         locationStackView.axis = .horizontal

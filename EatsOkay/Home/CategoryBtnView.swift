@@ -13,18 +13,21 @@ class CategoryBtnView: UIView {
 
     private var disposeBag = DisposeBag()
 
+    let selectedIndex = BehaviorRelay<Int>(value: 0)
+
     private let scrollView = UIScrollView()
     private let btnStackView = UIStackView()
     private var buttons: [UIButton] = []
-    private let buttonTitles = ["전체", "일상", "운동", "직장", "계절"]
+    private let buttonTitles = ["전체", "일상", "운동", "직장", "연애", "계절"]
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         setButtons()
         configureUI()
         setConstraints()
+        selectButton(index: 0)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -34,14 +37,14 @@ class CategoryBtnView: UIView {
         for (index, title) in buttonTitles.enumerated() {
             let button = UIButton()
             button.setTitle(title, for: .normal)
-            button.setTitleColor(.white, for: .selected)
             button.setTitleColor(.customColor(hexCode: .neutral700), for: .normal)
             button.backgroundColor = .customColor(hexCode: .neutral50)
             button.layer.cornerRadius = 12
-            button.tag = index
             button.layer.borderWidth = 1
             button.layer.borderColor = UIColor.customColor(hexCode: .neutral50).withAlphaComponent(0.1).cgColor
             button.titleLabel?.font = .customFontForSubtitle(weight: .w600)
+
+            button.tag = index
 
             button.snp.makeConstraints {
                 $0.width.equalTo(80)
@@ -53,6 +56,7 @@ class CategoryBtnView: UIView {
                 .asDriver(onErrorDriveWith: .empty())
                 .drive { btnView, _ in
                     btnView.selectButton(index: index)
+                    btnView.selectedIndex.accept(index)
                 }
                 .disposed(by: disposeBag)
 
@@ -82,7 +86,7 @@ class CategoryBtnView: UIView {
             make.trailing.equalToSuperview()
             make.top.bottom.equalToSuperview()
         }
-        
+
         btnStackView.snp.makeConstraints { make in
             make.top.equalTo(scrollView.snp.top).offset(16)
             make.bottom.equalTo(scrollView.snp.bottom).offset(-16)
@@ -91,6 +95,9 @@ class CategoryBtnView: UIView {
         }
     }
 
+    /**
+     선택된 버튼의 색상과 폰트컬러를 바꿔주는 메서드입니다
+     */
     private func selectButton(index: Int) {
         for (i, button) in buttons.enumerated() {
             let isSelected = (i == index)

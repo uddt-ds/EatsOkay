@@ -67,17 +67,46 @@ final class HomeViewController: UIViewController {
     }
 
     private func bind() {
-        let sectionDatas = situationDataManager.loadTotalShuffledData()
-
-        let cellModel = sectionDatas.map { sectionData in
-            HomeSectionOfCellModel.CellModel.cardSection(sectionData)
-        }
-
-        let sections = [HomeSectionOfCellModel(section: .cardSection, items: cellModel)]
-
-        Observable.just(sections)
-            .asDriver(onErrorDriveWith: .empty())
-            .drive(tableView.rx.items(dataSource: dataSource))
+        categoryButtonView.selectedIndex
+            .distinctUntilChanged()
+            .withUnretained(self)
+            .map { vc, selectedIndex -> [HomeSectionOfCellModel] in
+                if selectedIndex == 0 {
+                    let totalData = vc.situationDataManager.loadTotalShuffledData()
+                    return [HomeSectionOfCellModel(
+                        section: .cardSection,
+                        items: totalData.map { .cardSection($0) }
+                    )]
+                } else if selectedIndex == 1 {
+                    let dailyData =
+                    vc.situationDataManager.loadCategoryData(category: .daily).sections
+                    return [HomeSectionOfCellModel(
+                        section: .cardSection,
+                        items: dailyData.map { .cardSection($0) }
+                    )]
+                } else if selectedIndex == 2 {
+                    let workoutData = vc.situationDataManager.loadCategoryData(category: .workout).sections
+                    return [HomeSectionOfCellModel(
+                        section: .cardSection, items: workoutData.map { .cardSection($0) }
+                    )]
+                } else if selectedIndex == 3 {
+                    let companyData = vc.situationDataManager.loadCategoryData(category: .company).sections
+                    return [HomeSectionOfCellModel(
+                        section: .cardSection, items: companyData.map { .cardSection($0)
+                        }
+                    )]
+                } else if selectedIndex == 4 {
+                    let loveData = vc.situationDataManager.loadCategoryData(category: .love).sections
+                    return [HomeSectionOfCellModel(section: .cardSection, items: loveData.map { .cardSection($0) }
+                    )]
+                } else {
+                    let seasonData =
+                    vc.situationDataManager.loadCategoryData(category: .season).sections
+                    return [HomeSectionOfCellModel(section: .cardSection, items: seasonData.map{ .cardSection($0) }
+                    )]
+                }
+            }
+            .bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
     }
 }
