@@ -9,7 +9,7 @@ import Foundation
 
 struct SearchTextBody: Encodable {
     let textQuery: String
-    let pageSize: Int = 1
+    let pageSize: Int = 10
     let languageCode: String = "ko"
     let locationBias: LocationBias
 }
