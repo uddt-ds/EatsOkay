@@ -7,6 +7,11 @@
 
 import Foundation
 
+struct GoogleUri: Decodable {
+    let name: String
+    let photoUri: String
+}
+
 struct GoogleMap: Decodable {
     let places: [Place]
 }
@@ -22,7 +27,6 @@ extension GoogleMap {
         let googleMapsURI: String? // 웹뷰 주소
         let userRatingCount: Int? // 리뷰 수
         let photos: [Photo]? // 사진요청 쿼리
-        let priceRange: PriceRange? // 가격 범위
         let postalAddress: PostalAddress? // 구분된 주소
         let currentOpeningHours: OpeningHours? // 오픈 시간
         
@@ -47,10 +51,6 @@ extension GoogleMap.Place {
     struct Photo: Decodable {
         let name: String
     }
-    // 가격 범위
-    struct PriceRange: Decodable {
-        let startPrice, endPrice: Price
-    }
     // 구분된 주소
     struct PostalAddress: Decodable {
         let administrativeArea: String // ex) 서울특별시
@@ -62,12 +62,6 @@ extension GoogleMap.Place {
         let periods: [Periods]
     }
     
-}
-
-extension GoogleMap.Place.PriceRange {
-    struct Price: Decodable {
-        let units: String
-    }
 }
 
 extension GoogleMap.Place.OpeningHours {
