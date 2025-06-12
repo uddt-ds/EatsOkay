@@ -41,7 +41,6 @@ final class NetworkManager {
         )
         .filterSuccessfulStatusCodes()
         .map(GoogleUri.self) // name, photoUri 둘 다 오는 상황
-        
     }
     // 튜플 형식(서울, 종로구)으로 좌표를 주소로 변경하는 메서드
     func fetchGeoCoding(lat: Double, lon: Double) -> Single<(String, String)?> {
