@@ -1,0 +1,106 @@
+//
+//  CategoryBtnStackView.swift
+//  EatsOkay
+//
+//  Created by Lee on 6/12/25.
+//
+
+import UIKit
+import RxCocoa
+import RxSwift
+
+class CategoryBtnView: UIView {
+
+    private var disposeBag = DisposeBag()
+
+    private let scrollView = UIScrollView()
+    private let btnStackView = UIStackView()
+    private var buttons: [UIButton] = []
+    private let buttonTitles = ["전체", "일상", "운동", "직장", "계절"]
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setButtons()
+        configureUI()
+        setConstraints()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setButtons() {
+        // enumerated로 튜플(index, value)로 만들어서 태그를 추가함
+        for (index, title) in buttonTitles.enumerated() {
+            let button = UIButton()
+            button.setTitle(title, for: .normal)
+            button.setTitleColor(.white, for: .selected)
+            button.setTitleColor(.customColor(hexCode: .neutral700), for: .normal)
+            button.backgroundColor = .customColor(hexCode: .neutral50)
+            button.layer.cornerRadius = 12
+            button.tag = index
+            button.layer.borderWidth = 1
+            button.layer.borderColor = UIColor.customColor(hexCode: .neutral50).withAlphaComponent(0.1).cgColor
+            button.titleLabel?.font = .customFontForSubtitle(weight: .w600)
+
+            button.snp.makeConstraints {
+                $0.width.equalTo(80)
+                $0.height.equalTo(40)
+            }
+
+            button.rx.tap
+                .withUnretained(self)
+                .asDriver(onErrorDriveWith: .empty())
+                .drive { btnView, _ in
+                    btnView.selectButton(index: index)
+                }
+                .disposed(by: disposeBag)
+
+            buttons.append(button)
+            btnStackView.addArrangedSubview(button)
+        }
+    }
+
+    private func configureUI() {
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.alwaysBounceHorizontal = true
+        scrollView.backgroundColor = .white
+
+        btnStackView.axis = .horizontal
+        btnStackView.spacing = 8
+        btnStackView.alignment = .fill
+        btnStackView.distribution = .fill
+
+        [scrollView].forEach { self.addSubview($0) }
+        scrollView.addSubview(btnStackView)
+        scrollView.isPagingEnabled = true
+    }
+
+    private func setConstraints() {
+        scrollView.snp.makeConstraints { make in
+            make.leading.equalToSuperview()
+            make.trailing.equalToSuperview()
+            make.top.bottom.equalToSuperview()
+        }
+        
+        btnStackView.snp.makeConstraints { make in
+            make.top.equalTo(scrollView.snp.top).offset(16)
+            make.bottom.equalTo(scrollView.snp.bottom).offset(-16)
+            make.leading.equalTo(scrollView.snp.leading).offset(20)
+            make.trailing.equalToSuperview().offset(-20)
+        }
+    }
+
+    private func selectButton(index: Int) {
+        for (i, button) in buttons.enumerated() {
+            let isSelected = (i == index)
+            button.isSelected = isSelected
+            button.backgroundColor = isSelected ?
+                .customColor(hexCode: .primary400) : .customColor(hexCode: .neutral50)
+            button.setTitleColor(
+                isSelected ? .white : .customColor(hexCode: .neutral700),
+                for: .normal
+            )
+        }
+    }
+}
