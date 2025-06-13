@@ -19,15 +19,6 @@ final class SplashViewController: UIViewController {
         setupConstraints()
     }
     
-    private func setupConstraints() {
-        backgroundImageView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
-        logoImageView.snp.makeConstraints {
-            $0.center.equalToSuperview()
-        }
-    }
-    
     private func setupUI() {
         [backgroundImageView, logoImageView]
             .forEach { view.addSubview($0) }
@@ -37,6 +28,19 @@ final class SplashViewController: UIViewController {
         backgroundImageView.clipsToBounds = true
         
         logoImageView.image = .splashLogo
+        logoImageView.contentMode = .scaleAspectFit
+    }
+    
+    private func setupConstraints() {
+        backgroundImageView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+        logoImageView.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview().inset(137.5)
+            $0.height.equalTo(logoImageView.snp.width)
+            
+        }
     }
 }
 
