@@ -99,7 +99,7 @@ class DetailViewController: UIViewController, View {
         
         // 테이블 뷰 cell 클릭시 Action
         tableView.rx.itemSelected
-            .map { _ in Reactor.Action.tableViewItemTapped }
+            .map { indexPath in Reactor.Action.tableViewItemTapped(IndexPath: indexPath) }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
@@ -134,17 +134,27 @@ class DetailViewController: UIViewController, View {
             .map { $0.shouldPresentWebView }
             .distinctUntilChanged()
             .filter { $0 }
-            .subscribe(onNext: { [weak self] _ in
-                guard let self = self else { return }
-                let url = URL(string: "https://github.com/heopill")!
+            .withLatestFrom(reactor.state.map { $0.webViewUrl })
+            .compactMap { $0 }
+            .subscribe(onNext: { [weak self] urlString in
+//                guard let self = self else { return }
+                guard let url = URL(string: urlString) else { return }
                 let safariVC = SFSafariViewController(url: url)
                 safariVC.modalPresentationStyle = .popover
                 safariVC.delegate = self
                 safariVC.presentationController?.delegate = self
-                self.present(safariVC, animated: true, completion: nil)
+                self?.present(safariVC, animated: true, completion: nil)
             })
             .disposed(by: disposeBag)
         
+        // 매장 개수 Label에 StoreInfo 매장 개수 바인딩
+        reactor.state
+            .map { $0.storeInfo.flatMap { $0.items }.count }
+            .distinctUntilChanged() // 같은 값은 출력하지 않음 - 매장 수가 변경될 때만 표시
+            .map { "\($0)개의 매장"}
+            .asDriver(onErrorJustReturn: "0개의 매장") // 에러시 출력
+            .drive(storeCountLabel.rx.text)
+            .disposed(by: disposeBag)
 
     }
 

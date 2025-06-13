@@ -7,15 +7,21 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import Kingfisher
 
 class DetailTableViewCell: UITableViewCell {
-
+    
     static let identifier = "CustomTableViewCell"
+    
+    var disposeBag = DisposeBag()
     
     private let storeNameLabel: UILabel = {
         let label = UILabel()
         label.text = "식당명"
         label.textColor = .customColor(hexCode: .neutral950)
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         label.font = .customFontForHeader(weight: .w800)
         return label
     }()
@@ -54,6 +60,8 @@ class DetailTableViewCell: UITableViewCell {
         let label = UILabel()
         label.text = "주소"
         label.textColor = .customColor(hexCode: .neutral700)
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         label.font = .customFontForBody(weight: .w500)
         return label
     }()
@@ -76,6 +84,8 @@ class DetailTableViewCell: UITableViewCell {
     private let storeImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "Rectangle")
+        imageView.layer.cornerRadius = 8
+        imageView.clipsToBounds = true
         return imageView
     }()
     
@@ -110,6 +120,7 @@ class DetailTableViewCell: UITableViewCell {
         // 식당명
         storeNameLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(20)
+            make.width.equalTo(230)
             make.top.equalToSuperview().offset(26)
         }
         
@@ -141,6 +152,7 @@ class DetailTableViewCell: UITableViewCell {
         addressLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(20)
             make.top.equalTo(rateLabel.snp.bottom).offset(4)
+            make.width.equalTo(230)
         }
         
         // 시계 이미지
@@ -165,6 +177,8 @@ class DetailTableViewCell: UITableViewCell {
         // 식당 이미지
         storeImageView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(20)
+            make.width.equalToSuperview().multipliedBy(0.248)
+            make.height.equalTo(storeImageView.snp.width)
             make.top.equalToSuperview().offset(26)
         }
     }
@@ -173,10 +187,55 @@ class DetailTableViewCell: UITableViewCell {
     // MARK: - UI 변경 함수 부분 -
     // 추후에 UI를 변경할 때 사용
     func configureView(with storeInfo: StoreInfo) {
+        var address = storeInfo.formattedAddress
+        if address.hasPrefix("대한민국 ") {
+            address = String(address.dropFirst("대한민국 ".count))
+        }
+        address = address.replacingOccurrences(of: "서울특별시", with: "서울시")
+        
+        let openInfo = storeInfo.currentOpeningHours
+        let openInfoText = getTodayClosingOrTomorrowOpening(openingHours: openInfo)
+        
         storeNameLabel.text = storeInfo.displayName
         rateLabel.text = "\(storeInfo.rating)"
         userRateCountLabel.text = "(\(storeInfo.userRatingCount))"
-        addressLabel.text = storeInfo.formattedAddress
-//        openNowLabel.text =
+        addressLabel.text = address
+        storeTypeLabel.text = storeInfo.primaryTypeDisplayName
+        openNowLabel.text = storeInfo.currentOpeningHours.openNow ? "영업중" + " • \(openInfoText)" : "영업 종료" + " • \(openInfoText)"
+        storeImageView.image = UIImage(named: "DefaultImage")
     }
+}
+
+extension DetailTableViewCell {
+    // 오늘의 영업 종료 시간과 내일의 영업 시작 시간을 구하는 함수
+    func getTodayClosingOrTomorrowOpening(openingHours: OpeningHours) -> String {
+        let calendar = Calendar.current
+        let now = Date()
+        // 현재 1=일요일, 7=토요일를  0=일요일, 6=토요일 형태로 변환
+        let todayWeekday = (calendar.component(.weekday, from: now) + 6) % 7
+
+        // 오늘 날짜와 요일에 해당하는 periods 추출
+        let todayPeriods = openingHours.periods.filter { $0.open.day == todayWeekday }
+
+        if openingHours.openNow {
+            // 오늘의 마지막 close 시간 찾기
+            guard let lastPeriod = todayPeriods.max(by: { lhs, rhs in
+                let lhsValue = lhs.close.hour * 60 + lhs.close.minute
+                let rhsValue = rhs.close.hour * 60 + rhs.close.minute
+                return lhsValue < rhsValue
+            }) else { return "" }
+            return String(format: "%02d:%02d 영업 종료", lastPeriod.close.hour, lastPeriod.close.minute)
+        } else {
+            // 내일 요일 계산
+            let tomorrowWeekday = (todayWeekday + 1) % 7
+            let tomorrowPeriods = openingHours.periods.filter { $0.open.day == tomorrowWeekday }
+            guard let firstPeriod = tomorrowPeriods.min(by: { lhs, rhs in
+                let lhsValue = lhs.open.hour * 60 + lhs.open.minute
+                let rhsValue = rhs.open.hour * 60 + rhs.open.minute
+                return lhsValue < rhsValue
+            }) else { return "" }
+            return String(format: "%02d:%02d 영업 시작", firstPeriod.open.hour, firstPeriod.open.minute)
+        }
+    }
+    
 }
