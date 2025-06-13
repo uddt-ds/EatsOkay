@@ -7,8 +7,9 @@
 
 import UIKit
 import RxSwift
+import RxCocoa
 
-final class LocationHeaderView: UIView {
+class LocationHeaderView: UIView {
 
     private let gradientView = GradientBackgroundView()
 
@@ -17,7 +18,7 @@ final class LocationHeaderView: UIView {
     private let label = UILabel()
 
     private let currentLocationLabel = UILabel()
-    private let editIconButton = UIButton()
+    fileprivate let editIconButton = UIButton()
     private let locationStackView = UIStackView()
 
     override init(frame: CGRect) {
@@ -100,5 +101,11 @@ final class LocationHeaderView: UIView {
         editIconButton.snp.makeConstraints { make in
             make.size.equalTo(24)
         }
+    }
+}
+
+extension Reactive where Base: LocationHeaderView {
+    var editIconButtonTap: ControlEvent<Void> {
+        return base.editIconButton.rx.tap
     }
 }

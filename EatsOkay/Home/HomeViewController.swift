@@ -71,42 +71,64 @@ final class HomeViewController: UIViewController {
             .distinctUntilChanged()
             .withUnretained(self)
             .map { vc, selectedIndex -> [HomeSectionOfCellModel] in
-                if selectedIndex == 0 {
+                switch selectedIndex {
+                case 0:
                     let totalData = vc.situationDataManager.loadTotalShuffledData()
                     return [HomeSectionOfCellModel(
                         section: .cardSection,
                         items: totalData.map { .cardSection($0) }
                     )]
-                } else if selectedIndex == 1 {
+                case 1:
                     let dailyData =
                     vc.situationDataManager.loadCategoryData(category: .daily).sections
                     return [HomeSectionOfCellModel(
                         section: .cardSection,
                         items: dailyData.map { .cardSection($0) }
                     )]
-                } else if selectedIndex == 2 {
+                case 2:
                     let workoutData = vc.situationDataManager.loadCategoryData(category: .workout).sections
                     return [HomeSectionOfCellModel(
                         section: .cardSection, items: workoutData.map { .cardSection($0) }
                     )]
-                } else if selectedIndex == 3 {
+                case 3:
                     let companyData = vc.situationDataManager.loadCategoryData(category: .company).sections
                     return [HomeSectionOfCellModel(
                         section: .cardSection, items: companyData.map { .cardSection($0)
                         }
                     )]
-                } else if selectedIndex == 4 {
+                case 4:
                     let loveData = vc.situationDataManager.loadCategoryData(category: .love).sections
                     return [HomeSectionOfCellModel(section: .cardSection, items: loveData.map { .cardSection($0) }
                     )]
-                } else {
+
+                case 5:
                     let seasonData =
                     vc.situationDataManager.loadCategoryData(category: .season).sections
                     return [HomeSectionOfCellModel(section: .cardSection, items: seasonData.map{ .cardSection($0) }
                     )]
+                default:
+                    return [HomeSectionOfCellModel(section: .cardSection, items: .init())]
                 }
             }
             .bind(to: tableView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
+
+        tableView.rx.modelSelected(HomeSectionOfCellModel.CellModel.self)
+            .withUnretained(self)
+            .asDriver(onErrorDriveWith: .empty())
+            .drive { vc, selectedModel in
+                switch selectedModel {
+                case .cardSection(let sectionData):
+                    print("선택된 키워드 : \(sectionData.keywords)")
+                }
+            }.disposed(by: disposeBag)
+
+        locationHeaderView.rx.editIconButtonTap
+            .withUnretained(self)
+            .asDriver(onErrorDriveWith: .empty())
+            .drive { vc, _ in
+                print("버튼이 눌렸습니다")
+            }
             .disposed(by: disposeBag)
     }
 }
