@@ -27,7 +27,9 @@ final class SplashViewReactor: Reactor {
         switch action {
         case .initialCheck:
             let isCompleted = UserDeafaultsManager.shared.readStatus()
+            print("온보딩 상태: \(isCompleted)")
             return .just(.checkCompletion(isCompleted))
+                .delay(.seconds(3), scheduler: MainScheduler.instance)
         }
     }
     
