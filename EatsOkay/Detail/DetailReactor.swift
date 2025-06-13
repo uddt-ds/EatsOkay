@@ -23,14 +23,21 @@ class DetailReactor: Reactor {
     enum Action {
         case viewDidLoad // 뷰가 DidLoad 되었을 때
         case tableViewItemTapped(IndexPath: IndexPath) // 테이블 뷰 셀을 클릭했을 때
-        case sortButtonTapped // 정렬 버튼을 클릭했을 때
+        case sortButtonTapped(sortType: SortType) // 정렬 버튼을 클릭했을 때
         case webViewDidDismiss // 웹뷰가 닫혔을 때
+    }
+    
+    enum SortType: String {
+        case rating // 별점순
+        case distance // 거리순
+        case reviewCount // 리뷰순
+        case price
     }
     
     enum Mutation {
         case setStore([StoreSection])
         case setWebViewUrl(String)
-        case sortingData // 데이터 정렬
+        case sortStore([StoreSection]) // 데이터 정렬
         case dismissWebView // 웹뷰가 닫혔을 때
     }
     
@@ -38,18 +45,19 @@ class DetailReactor: Reactor {
         var storeInfo = [StoreSection]()
         var shouldPresentWebView: Bool = false // 초기 웹뷰 여부 false
         var webViewUrl: String? = nil
+        var sortType: SortType = .rating // 기본값은 별점순
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
+        // TODO: viewDidLoad 될 때 네트워크 통신하기
         case .viewDidLoad:
-            // TODO: viewDidLoad 될 때 네트워크 통신하기
             // 네트워크 통신 하고 zip으로 병합
-            let firstRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "삼겹살", centerLat: 37.5665, centerLon: 126.9780)
+            let firstRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스시", centerLat: 37.5665, centerLon: 126.9780)
                 .map { self.convertToStoreInfo(places: $0) }
                 .asObservable()
             
-            let secondRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "닭발", centerLat: 37.5665, centerLon: 126.9780)
+            let secondRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스테이크", centerLat: 37.5665, centerLon: 126.9780)
                 .map { self.convertToStoreInfo(places: $0) }
                 .asObservable()
             
@@ -65,8 +73,8 @@ class DetailReactor: Reactor {
                     return [StoreSection(items: sortedMergeStoreInfo)]
                 }
                 .map { .setStore($0) }
+        // TODO: tableView cell 선택 시 웹 뷰 띄우기
         case .tableViewItemTapped(let indexPath):
-            // TODO: tableView cell 선택 시 웹 뷰 띄우기
             let storeInfo = currentState.storeInfo
             guard indexPath.section < storeInfo.count,
                   indexPath.row < storeInfo[indexPath.section].items.count else {
@@ -74,9 +82,26 @@ class DetailReactor: Reactor {
             }
             let uri = storeInfo[indexPath.section].items[indexPath.row].googleMapsUri
             return Observable.just(.setWebViewUrl(uri)) // 웹뷰 띄우기
-        case .sortButtonTapped:
-            // TODO: 정렬 버튼 눌렀을 때 데이터 정렬하기 current State 사용
-            return Observable.just(.sortingData) // storeInfo 정렬
+        // TODO: 정렬 버튼 눌렀을 때 데이터 정렬하기 current State 사용
+        case .sortButtonTapped(let sortType):
+            let currentStoreInfo = currentState.storeInfo
+            let sortedItems = currentStoreInfo.flatMap { $0.items }
+                .sorted { item1, item2 in
+                    switch sortType {
+                    case .rating:
+                        return item1.rating > item2.rating
+                    case .distance:
+                        // TODO: 거리 계산 로직 구현 필요 (예: 현재 위치와의 거리)
+                        return true
+                    case .reviewCount:
+                        return item1.userRatingCount > item2.userRatingCount
+                    case .price:
+                        // TODO: 가격순은 StoreInfo에 price 정보가 필요
+                        return true
+                    }
+                }
+            let sortedStoreInfo = [StoreSection(items: sortedItems)]
+            return Observable.just(.sortStore(sortedStoreInfo)) // storeInfo 정렬
         case .webViewDidDismiss:
             return Observable.just(.dismissWebView) // viewDidmiss
         }
@@ -90,8 +115,8 @@ class DetailReactor: Reactor {
         case .setWebViewUrl(let uri):
             newState.webViewUrl = uri
             newState.shouldPresentWebView = true
-        case .sortingData:
-            break
+        case .sortStore(let storeInfo):
+            newState.storeInfo = storeInfo
         case .dismissWebView:
             newState.shouldPresentWebView = false
         }
@@ -108,7 +133,7 @@ extension DetailReactor {
                   let googleMapsUri = place.googleMapsUri,
                   let rating = place.rating,
                   let userRatingCount = place.userRatingCount,
-                  let currentOpeningHours = place.currentOpeningHours
+                  let currentOpeningHours = place.currentOpeningHours                  
             else { return nil }
             
             // photosNames: photos 배열의 첫번째 name 값, 없으면 빈 문자열
@@ -157,6 +182,6 @@ extension DetailReactor {
             )
             return OpeningHours.Periods(open: open, close: close)
         }
-        return OpeningHours(openNow: openingHours.openNow, periods: periods)
+        return OpeningHours(openNow: openingHours.openNow, periods: periods, weekdayDescriptions: openingHours.weekdayDescriptions)
     }
 }

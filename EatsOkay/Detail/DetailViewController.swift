@@ -27,7 +27,7 @@ class DetailViewController: UIViewController, View {
         return label
     }()
     
-    private let sortButton: UIButton = {
+    lazy var sortButton: UIButton = {
         var config = UIButton.Configuration.plain()
         
         let font = UIFont.customFontForSubtitle(weight: .w600)
@@ -51,10 +51,18 @@ class DetailViewController: UIViewController, View {
         }
         
         let menuItems = [
-            UIAction(title: "별점순", handler: { _ in updateTitle("별점순") }),
-            UIAction(title: "거리순", handler: { _ in updateTitle("거리순") }),
-            UIAction(title: "리뷰순", handler: { _ in updateTitle("리뷰순") }),
-            UIAction(title: "가격순", handler: { _ in updateTitle("가격순") })
+            UIAction(title: "별점순", handler: { _ in
+                self.reactor.action.onNext(.sortButtonTapped(sortType: .rating))
+                updateTitle("별점순") }),
+            UIAction(title: "거리순", handler: { _ in
+                self.reactor.action.onNext(.sortButtonTapped(sortType: .distance))
+                updateTitle("거리순") }),
+            UIAction(title: "리뷰순", handler: { _ in
+                self.reactor.action.onNext(.sortButtonTapped(sortType: .reviewCount))
+                updateTitle("리뷰순") }),
+            UIAction(title: "가격순", handler: { _ in
+                self.reactor.action.onNext(.sortButtonTapped(sortType: .price))
+                updateTitle("가격순") })
         ]
         
         button.menu = UIMenu(title: "", options: .displayInline , children: menuItems)
@@ -100,12 +108,6 @@ class DetailViewController: UIViewController, View {
         // 테이블 뷰 cell 클릭시 Action
         tableView.rx.itemSelected
             .map { indexPath in Reactor.Action.tableViewItemTapped(IndexPath: indexPath) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
-        
-        // 정렬 버튼 클릭시 Action
-        sortButton.rx.tap
-            .map { Reactor.Action.sortButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         

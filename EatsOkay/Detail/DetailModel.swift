@@ -24,6 +24,7 @@ struct StoreInfo: Equatable {
 struct OpeningHours: Decodable, Equatable {
     let openNow: Bool
     let periods: [Periods]
+    let weekdayDescriptions: [String]?
 }
 
 extension OpeningHours {
