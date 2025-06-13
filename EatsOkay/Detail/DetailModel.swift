@@ -10,6 +10,7 @@ import RxDataSources
 
 struct StoreInfo: Equatable {
     let displayName: String
+    let primaryTypeDisplayName: String
     let formattedAddress: String
     let latitude: Double
     let longitude: Double

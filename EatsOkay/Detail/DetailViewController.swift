@@ -10,43 +10,14 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import RxDataSources
+import ReactorKit
+import SafariServices
 
-class DetailViewController: UIViewController {
+class DetailViewController: UIViewController, View {
+    typealias Reactor = DetailReactor
     
     var disposeBag = DisposeBag()
-    
-    // 리엑터로 빠질 예정 (목데이터)
-    var storeInfos: BehaviorRelay<[StoreSection]> = BehaviorRelay(value: [
-        StoreSection(items: [StoreInfo(
-            displayName: "어슬렁1",
-            formattedAddress: "서울시 강남구 테헤란로 123",
-            latitude: 37.498,
-            longitude: 127.027,
-            rating: 4.5,
-            googleMapsURI: "maps://store1",
-            userRatingCount: 120,
-            photosNames: ["store1"]
-        ),StoreInfo(
-            displayName: "어슬렁2",
-            formattedAddress: "서울시 강남구 테헤란로 123",
-            latitude: 37.498,
-            longitude: 127.027,
-            rating: 4.5,
-            googleMapsURI: "maps://store1",
-            userRatingCount: 120,
-            photosNames: ["store1"]
-        ),StoreInfo(
-            displayName: "어슬렁3",
-            formattedAddress: "서울시 강남구 테헤란로 123",
-            latitude: 37.498,
-            longitude: 127.027,
-            rating: 4.5,
-            googleMapsURI: "maps://store1",
-            userRatingCount: 120,
-            photosNames: ["store1"]
-        ),
-        ])
-    ])
+    let reactor = DetailReactor(seletedKeywords: ["치킨", "족발"])
     
     private let storeCountLabel: UILabel = {
         let label = UILabel()
@@ -109,13 +80,40 @@ class DetailViewController: UIViewController {
         return tableView
     }()
     
+    // MARK: - viewDidLoad -
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
-        bindTableView()
+        bind(reactor: reactor)
     }
     
-    private func bindTableView() {
+    // MARK: - Reactor bind -
+    func bind(reactor: DetailReactor) {
+        bindAction(reactor: reactor)
+        bindState(reactor: reactor)
+    }
+    
+    func bindAction(reactor: DetailReactor) {
+        // viewDidLoad 될 때 Action
+        reactor.action.onNext(.viewDidLoad) // 주로 just 사용
+        
+        // 테이블 뷰 cell 클릭시 Action
+        tableView.rx.itemSelected
+            .map { _ in Reactor.Action.tableViewItemTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        // 정렬 버튼 클릭시 Action
+        sortButton.rx.tap
+            .map { Reactor.Action.sortButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+    }
+    
+    func bindState(reactor: DetailReactor) {
+        
+        // TableView rxDataSource
         let dataSource = RxTableViewSectionedAnimatedDataSource<StoreSection>(
             configureCell: { dataSource, tableView, indexPath, item in
                 let cell = tableView.dequeueReusableCell(withIdentifier: DetailTableViewCell.identifier, for: indexPath) as! DetailTableViewCell
@@ -124,20 +122,33 @@ class DetailViewController: UIViewController {
             }
         )
         
-        storeInfos
-            .bind(to: tableView.rx.items(dataSource: dataSource))
+        // 테이블 뷰 State 바인딩
+        reactor.state
+            .map { $0.storeInfo }
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
-        tableView.rx.itemSelected // 웹뷰 모달이 될 예정 Action
-            .withUnretained(self)
-            .bind { vc, indexPath in
-                var test = vc.storeInfos.value
-                let random = Int.random(in: 1...1000)
-                test[0].items.insert(.init(displayName: "애니메이션 테스트 \(random)", formattedAddress: "서울시 강남구 압구정동 \(random)", latitude: 33.44, longitude: 44.55, rating: 4.7, googleMapsURI: "https://afasfs", userRatingCount: random, photosNames: ["https://afasfs"]), at: indexPath.row)
-                vc.storeInfos.accept(test)
-            }.disposed(by: disposeBag)
+        // tableView cell 클릭 시 WebView 띄우기
+        reactor.state
+            .map { $0.shouldPresentWebView }
+            .distinctUntilChanged()
+            .filter { $0 }
+            .subscribe(onNext: { [weak self] _ in
+                guard let self = self else { return }
+                let url = URL(string: "https://github.com/heopill")!
+                let safariVC = SFSafariViewController(url: url)
+                safariVC.modalPresentationStyle = .popover
+                safariVC.delegate = self
+                safariVC.presentationController?.delegate = self
+                self.present(safariVC, animated: true, completion: nil)
+            })
+            .disposed(by: disposeBag)
+        
+
     }
 
+    // MARK: - UI 구현 부분 -
     private func configureUI() {
         view.backgroundColor = .customColor(hexCode: .bgColor)
         
@@ -177,4 +188,18 @@ class DetailViewController: UIViewController {
         
     }
     
+}
+
+// 모달을 완료 버튼으로 dismiss 했을 때 체크
+extension DetailViewController: SFSafariViewControllerDelegate {
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        reactor.action.onNext(.webViewDidDismiss)
+    }
+}
+
+// 모달을 드래그로 dismiss 했을 때 체크
+extension DetailViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        reactor.action.onNext(.webViewDidDismiss)
+    }
 }

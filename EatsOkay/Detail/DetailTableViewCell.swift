@@ -100,6 +100,7 @@ class DetailTableViewCell: UITableViewCell {
         super.prepareForReuse()
     }
     
+    // MARK: - UI setUP 부분 -
     func setupViews() {
         
         [storeNameLabel, rateImageView, rateLabel, userRateCountLabel, storeTypeLabel, addressLabel, timeImageView, openNowLabel, separatorView, storeImageView].forEach {
@@ -168,6 +169,8 @@ class DetailTableViewCell: UITableViewCell {
         }
     }
     
+    
+    // MARK: - UI 변경 함수 부분 -
     // 추후에 UI를 변경할 때 사용
     func configureView(with storeInfo: StoreInfo) {
         storeNameLabel.text = storeInfo.displayName
