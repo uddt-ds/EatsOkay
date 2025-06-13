@@ -7,8 +7,11 @@
 
 import UIKit
 import SnapKit
+import ReactorKit
 
-final class SplashViewController: UIViewController {
+
+final class SplashViewController: UIViewController, View {
+    
     
     private let backgroundImageView = UIImageView()
     private let logoImageView = UIImageView()
