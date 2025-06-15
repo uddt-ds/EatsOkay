@@ -61,7 +61,7 @@ final class CustomLocationAlert: UIViewController {
         
         let textStyle = NSMutableParagraphStyle()
         textStyle.alignment = .center
-        textStyle.lineHeightMultiple = 1.13
+        textStyle.lineHeightMultiple = 1.17
         textStyle.lineBreakMode = .byWordWrapping
         textStyle.lineBreakStrategy = .hangulWordPriority
         
@@ -178,13 +178,13 @@ final class CustomLocationAlert: UIViewController {
         }
         
         goSettingButton.snp.makeConstraints {
-            $0.horizontalEdges.equalToSuperview()
             $0.top.equalTo(labelStackView.snp.bottom).offset(16)
+            $0.horizontalEdges.equalToSuperview()
         }
         
         cancelButton.snp.makeConstraints {
-            $0.horizontalEdges.equalToSuperview()
             $0.top.equalTo(goSettingButton.snp.bottom)
+            $0.horizontalEdges.equalToSuperview()
             $0.bottom.equalToSuperview()
         }
     }
