@@ -47,7 +47,10 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.reactor = DetailReactor()
-        
+        if let reactor = self.reactor {
+            bind(reactor: reactor)
+            reactor.action.onNext(.viewDidLoad)
+        }
         view.backgroundColor = .customColor(hexCode: .bgColor)
         setupMapView()
         constraintsMapView()
@@ -60,7 +63,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
     }
     
     private func setupMapView() {
-        let camera = GMSCameraPosition.camera(withLatitude: -33.86, longitude: 151.20, zoom: 15)
+        let camera = GMSCameraPosition.camera(withLatitude: 37.5171, longitude: 127.0412, zoom: 12)
         
         // GMSMapViewOptions는 지도를 생성할 때 적용할 다양한 설정 값들을 담는 클래스
         let options = GMSMapViewOptions()
@@ -121,6 +124,23 @@ extension DetailViewController {
     }
     
     func bindState(reactor: DetailReactor) {
+        reactor.state
+            .map { $0.storeInfo.first?.items ?? [] }
+            .distinctUntilChanged()
+            .withUnretained(self)
+            .subscribe(onNext: { owner, stores in
+                guard let mapView = owner.mapView else { return }
+                // 캐시나 재사용된 경우 마커가 겹칠 수 있기 때문에 초기화
+                mapView.clear()
+                for store in stores {
+                    let marker = GMSMarker()
+                    marker.position = CLLocationCoordinate2D(latitude: store.latitude, longitude: store.longitude)
+                    marker.title = store.displayName
+                    marker.map = mapView
+                }
+            })
+            .disposed(by: disposeBag)
+        
         reactor.state
             .map { $0.shouldPop }
             .distinctUntilChanged()
