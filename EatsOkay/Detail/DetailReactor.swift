@@ -67,6 +67,7 @@ class DetailReactor: Reactor {
                             return .setCurrentLocation(lat: coordinate.latitude, lon: coordinate.longitude)
                         }
                 }
+            
         }
     }
     
@@ -87,11 +88,9 @@ class DetailReactor: Reactor {
     
     // CLManager에서 위도, 경도 값 받기
     private func getCurrentLocation() -> Observable<CLLocationCoordinate2D> {
-        let manager = CLLocationManager()
-        manager.requestWhenInUseAuthorization()
-        
-        return manager.rx.getCurrentLocationOnce
-            .map { CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lon) }
+        // mock 데이터
+        let mockCoordinate = CLLocationCoordinate2D(latitude: 37.4979, longitude: 127.0276)
+        return Observable.just(mockCoordinate)
     }
 }
 

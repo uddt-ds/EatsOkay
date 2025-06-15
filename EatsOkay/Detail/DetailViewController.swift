@@ -152,7 +152,7 @@ extension DetailViewController {
             .disposed(by: disposeBag)
         
         reactor.state
-            // currentLatitude, currentLongitute 값이 둘 다 존재할 경우 tuble로 return
+            // currentLatitude, currentLongitute 값이 둘 다 존재할 경우 tuple로 return
             .compactMap { state -> (Double, Double)? in
                 guard let lat = state.currentLatitude,
                       let lon = state.currentLongitute else { return nil }
