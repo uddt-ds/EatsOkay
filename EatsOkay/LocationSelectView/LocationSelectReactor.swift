@@ -117,7 +117,7 @@ final class LocationSelectReactor: Reactor {
                 var lat: Double = 0
                 var lon: Double = 0
                 
-                locationManager.rx.getCurrentLocationOnce
+                return locationManager.rx.getCurrentLocationOnce
                     .asObservable()
                     .withUnretained(self)
                     .flatMap{ reactor, location -> Observable<(String, String)?> in
@@ -136,18 +136,16 @@ final class LocationSelectReactor: Reactor {
                             return .empty()
                         }
                         
-                        return .just(UserDeafaultsManager.UserLocation(
+                        return Observable.just(UserDeafaultsManager.UserLocation(
                             address: "\(address.0) \(address.1)",
                             lat: lat,
                             lon: lon
                         ))
                     }
-                    .subscribe(onNext: { location in
+                    .map { location in
                         UserDeafaultsManager.shared.saveLocation(location: location)
-                    })
-                    .disposed(by: disposeBag)
-                
-                return Observable.just(.setNextView(Void()))
+                        return .setNextView(Void())
+                    }
                 
             case .denied:
                 
