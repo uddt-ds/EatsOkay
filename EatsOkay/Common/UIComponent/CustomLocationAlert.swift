@@ -10,7 +10,7 @@ import SnapKit
 
 final class CustomLocationAlert: UIViewController {
     
-    private let alertView:  UIView = {
+    private let alertView: UIView = {
         
         let view = UIView()
         view.backgroundColor = .customColor(hexCode: .neutral50)
