@@ -8,16 +8,15 @@
 import ReactorKit
 import RxSwift
 
-/*
- 의견 : UserLocation Struct 밖으로 빼야할거 같은데..
- */
-
 class HomeReactor: Reactor {
     var initialState: State
 
     init(initialLocation: UserDeafaultsManager.UserLocation) {
         self.initialState = State(currentLocation: initialLocation)
     }
+
+    private let dataManager = SituationDataManager()
+    private lazy var totalData = dataManager.loadTotalShuffledData()
 
     enum Action {
         case viewWillAppear
@@ -36,9 +35,8 @@ class HomeReactor: Reactor {
 
     struct State {
         var currentLocation: UserDeafaultsManager.UserLocation// 로케이션 초기값 필요
-        var currentCategory = Category.all
         var cardSectionData: [SectionData] = []
-        @Pulse var pushLocationView = false
+        @Pulse var pushLocationView: Bool? = nil
         @Pulse var pushWithKeyword: [String]? = nil
     }
 
@@ -48,12 +46,12 @@ class HomeReactor: Reactor {
             let location = currentState.currentLocation
             return .just(.loadCurrentLocation(location))
         case .viewDidLoad:
-            let totalData = SituationDataManager().loadTotalShuffledData()
             return .just(.setCardSection(totalData))
         case .locationBtnTapped:
             return .just(.requestLocationView)
         case .categoryBtnTapped(let category):
-            let categoryData = SituationDataManager().loadTotalShuffledData().filter { $0.category == category }
+            let categoryData =
+            category == .all ? totalData : totalData.filter { $0.category == category }
             return .just(.setCardSection(categoryData))
         case .tableViewItemTapped(let dataModel):
             return .just(.pushDetailView(keyword: dataModel.keywords))
