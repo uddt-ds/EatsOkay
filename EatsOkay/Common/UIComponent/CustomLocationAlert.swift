@@ -51,7 +51,7 @@ final class CustomLocationAlert: UIViewController {
     private let messageLabel: UILabel = {
         
         let text = NSMutableAttributedString(
-            string: "앱 설정으로 가서 액세스 권한을 수정 할 수 있어요. 이동하시겠어요?"
+            string: "앱 설정으로 가서 액세스 권한을 수정할 수 있어요. 이동하시겠어요?"
         )
         
         let range = NSRange(location: 0, length: text.length)
@@ -88,7 +88,6 @@ final class CustomLocationAlert: UIViewController {
         let titleColor = UIColor.customColor(hexCode: .infoColor)
         
         let titleStyle = NSMutableParagraphStyle()
-        titleStyle.alignment = .left
         titleStyle.lineHeightMultiple = 1.17
         
         titleText.addAttribute(.font, value: titleFont, range: range)
@@ -118,7 +117,6 @@ final class CustomLocationAlert: UIViewController {
         let titleColor = UIColor.customColor(hexCode: .neutral700)
         
         let titleStyle = NSMutableParagraphStyle()
-        titleStyle.alignment = .left
         titleStyle.lineHeightMultiple = 1.17
         
         titleText.addAttribute(.font, value: titleFont, range: range)
