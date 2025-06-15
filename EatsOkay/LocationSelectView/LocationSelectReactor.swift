@@ -91,6 +91,11 @@ final class LocationSelectReactor: Reactor {
                     Observable.just(.setPickerViewInitialRows(
                         firstRow: localityIndex,
                         secondRow: sublocalityIndex
+                    )),
+                    
+                    Observable.just(.setPickerViewSelectedItem(
+                        firstRow: localityIndex,
+                        secondRow: sublocalityIndex
                     ))
                 )
                 
