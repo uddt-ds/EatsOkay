@@ -17,7 +17,7 @@ class DetailViewController: UIViewController, View {
     typealias Reactor = DetailReactor
     
     var disposeBag = DisposeBag()
-    let reactor = DetailReactor(seletedKeywords: ["치킨", "족발"])
+    let reactor = DetailReactor(selectedKeywords: ["치킨", "족발"])
     
     private let storeCountLabel: UILabel = {
         let label = UILabel()

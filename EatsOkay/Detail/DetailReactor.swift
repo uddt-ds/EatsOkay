@@ -89,7 +89,7 @@ class DetailReactor: Reactor {
         case .sortButtonTapped(let sortType):
             let currentStoreInfo = currentState.storeInfo
             
-            // userDefualt 사용해서 위치 가져오기
+            // userDefault 사용해서 위치 가져오기
             let (centerLat, centerLon) = getCenterLocation()
             
             let sortedItems = currentStoreInfo.flatMap { $0.items }
