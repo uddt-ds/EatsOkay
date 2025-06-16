@@ -11,7 +11,10 @@ import RxSwift
 import RxCocoa
 import ReactorKit
 
-final class LocationSelectView: UIViewController {
+final class LocationSelectView: UIViewController, View {
+    
+    var disposeBag: DisposeBag = DisposeBag()
+    let reactor: LocationSelectReactor
     
     let guideLabel: UILabel = {
         
@@ -88,10 +91,20 @@ final class LocationSelectView: UIViewController {
     
     let startButton = CustomButton(title: "설정하기")
     
+    init(reactor: LocationSelectReactor) {
+        self.reactor = reactor
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
         setConstraints()
+        bind(reactor: reactor)
     }
     
     private func configureUI() {
@@ -127,5 +140,75 @@ final class LocationSelectView: UIViewController {
             $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
             $0.centerX.equalTo(view.snp.centerX)
         }
+    }
+    
+    func bind(reactor: LocationSelectReactor) {
+        bindAction(reactor: reactor)
+        bindState(reactor: reactor)
+    }
+    
+    private func bindAction(reactor: LocationSelectReactor) {
+        Observable.just(Void())
+            .map { Reactor.Action.initialFetch }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        locationButton.rx.tap
+            .map { Reactor.Action.locationButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        pickerView.rx.itemSelected
+            .map { Reactor.Action.pickerViewChanged(component: $0.component, row: $0.row) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        startButton.rx.tap
+            .map { Reactor.Action.nextButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindState(reactor: LocationSelectReactor) {
+        reactor.pulse(\.$pickerViewData)
+            .map { $0 as PickerViewViewAdapter.Element }
+            .bind(to: pickerView.rx.items(adapter: PickerViewViewAdapter()))
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$pickerViewinitialRows)
+            .withUnretained(self)
+            .bind { vc, rows in
+                guard let rows else { return }
+                vc.pickerView.selectRow(rows.firstRow, inComponent: 0, animated: true)
+                vc.pickerView.selectRow(rows.secondRow, inComponent: 1, animated: true)
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$alretState)
+            .withUnretained(self)
+            .bind { vc, void in
+                guard void != nil else { return }
+                let locationAlert = CustomLocationAlert()
+                vc.present(locationAlert, animated: true)
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$nextViewState)
+            .withUnretained(self)
+            .bind { vc, test in
+                guard test != nil else { return }
+                let testView = MainViewController()
+                vc.present(testView, animated: true)
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$error)
+            .withUnretained(self)
+            .bind { vc, error in
+                guard error != nil else { return }
+                guard let errorString = error?.localizedDescription else { return }
+                print(errorString)
+            }
+            .disposed(by: disposeBag)
     }
 }
