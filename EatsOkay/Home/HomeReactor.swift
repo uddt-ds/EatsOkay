@@ -67,8 +67,8 @@ class HomeReactor: Reactor {
         case .setCardSection(let sectionData):
             newState.cardSectionData = sectionData
         case .requestLocationView:
-            newState.pushLocationView = ()
-        case .pushDetailView(data: let data):
+            newState.pushLocationView = Void()
+        case .pushDetailView(let data):
             newState.pushDetailViewWithData = data
         }
         return newState
