@@ -10,13 +10,36 @@ import RxDataSources
 
 struct StoreInfo: Equatable {
     let displayName: String
+    let primaryTypeDisplayName: String
     let formattedAddress: String
     let latitude: Double
     let longitude: Double
     let rating: Double
-    let googleMapsURI: String
+    let googleMapsUri: String
     let userRatingCount: Int
-    let photosNames: [String]
+    let photosNames: String
+    let currentOpeningHours: OpeningHours
+}
+
+struct OpeningHours: Decodable, Equatable {
+    let openNow: Bool
+    let periods: [Periods]
+    let weekdayDescriptions: [String]?
+}
+
+extension OpeningHours {
+    struct Periods: Decodable, Equatable {
+        let open, close: Close
+    }
+
+    struct Close: Decodable, Equatable {
+        let day, hour, minute: Int
+        let date: DateClass
+    }
+
+    struct DateClass: Decodable, Equatable {
+        let year, month, day: Int
+    }
 }
 
 extension StoreInfo: IdentifiableType {
