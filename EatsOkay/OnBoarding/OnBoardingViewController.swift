@@ -14,202 +14,157 @@ import SnapKit
 final class OnboardingViewController: UIViewController, View {
     typealias Reactor = OnboardingReactor
     
-    private let titleView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.customColor(hexCode: .primary50)
-        view.layer.cornerRadius = 8
-        
-        return view
-    }()
-    
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.layer.cornerRadius = 8
-        
-        label.clipsToBounds = true
-        label.lineBreakMode = .byTruncatingTail
-        label.numberOfLines = 1
-        label.textAlignment = .center
-        
-        return label
-    }()
-    
-    private let descriptionLabel: UILabel = {
-        let label = UILabel()
-        label.textAlignment = .center
-        label.numberOfLines = 0
-
-        return label
-    }()
-    
-    private let imageView: UIImageView = {
+    private let backgroundImageView: UIImageView = {
         let imageView = UIImageView()
+        imageView.image = .background
         imageView.contentMode = .scaleAspectFit
-        
         return imageView
     }()
-    
-    private let nextButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .medium)
-        
-        return button
+
+    private lazy var scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.isPagingEnabled = true
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.bounces = false
+        return scrollView
     }()
-    
+
     private let pageControl: UIPageControl = {
-        let pageControl = UIPageControl()
-        pageControl.currentPageIndicatorTintColor = UIColor.customColor(hexCode: .primary400)
-        pageControl.pageIndicatorTintColor = .lightGray
-        pageControl.isUserInteractionEnabled = false
-        
-        return pageControl
+        let pc = UIPageControl()
+        pc.currentPageIndicatorTintColor = UIColor.customColor(hexCode: .primary400)
+        pc.pageIndicatorTintColor = .lightGray
+        pc.isUserInteractionEnabled = false
+        return pc
     }()
-    
+
+    private let titleView = UIView()
+    private let titleLabel = UILabel()
+    private let descriptionLabel = UILabel()
+    private let imageView = UIImageView()
     private let gradationView = GradationView()
-    
+
+    private lazy var contentViews: [UIView] = [
+        UIView(), UIView(), UIView()
+    ]
+
     private let reactor = OnboardingReactor()
-    
     var disposeBag = DisposeBag()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
         setConstraints()
+        addContentToScrollView()
         bind(reactor: reactor)
-        
     }
-    
-    
+
     private func configureUI() {
         view.backgroundColor = .white
-        
-        [titleView, descriptionLabel, pageControl, imageView, nextButton, gradationView].forEach {
+        titleView.backgroundColor = UIColor.customColor(hexCode: .primary50)
+        titleView.layer.cornerRadius = 8
+
+        titleLabel.numberOfLines = 1
+        titleLabel.textAlignment = .center
+
+        descriptionLabel.numberOfLines = 0
+        descriptionLabel.textAlignment = .center
+
+        imageView.contentMode = .scaleAspectFit
+
+        [scrollView, titleView, titleLabel, descriptionLabel, pageControl, imageView, gradationView].forEach {
             view.addSubview($0)
         }
+
         titleView.addSubview(titleLabel)
+        scrollView.addSubview(backgroundImageView)
     }
-    
+
+    private func addContentToScrollView() {
+        for i in 0..<contentViews.count {
+            let view = contentViews[i]
+            view.backgroundColor = .clear
+            view.frame = CGRect(
+                x: UIScreen.main.bounds.width * CGFloat(i),
+                y: 0,
+                width: UIScreen.main.bounds.width,
+                height: UIScreen.main.bounds.height
+            )
+            scrollView.addSubview(view)
+        }
+        scrollView.contentSize = CGSize(
+            width: UIScreen.main.bounds.width * CGFloat(contentViews.count),
+            height: UIScreen.main.bounds.height
+        )
+    }
+
     private func setConstraints() {
+        scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        
+        backgroundImageView.snp.makeConstraints {
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(scrollView.snp.height)
+        }
+
         titleView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide).offset(30)
             $0.centerX.equalToSuperview()
         }
-        
-        titleLabel.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 10, bottom: 8, right: 10))
-        }
-        
+        titleLabel.snp.makeConstraints { $0.edges.equalToSuperview().inset(10) }
         descriptionLabel.snp.makeConstraints {
-            $0.top.equalTo(titleLabel.snp.bottom).offset(20)
+            $0.top.equalTo(titleView.snp.bottom).offset(20)
             $0.leading.trailing.equalToSuperview().inset(20)
         }
-        
         pageControl.snp.makeConstraints {
             $0.top.equalTo(descriptionLabel.snp.bottom).offset(30)
             $0.centerX.equalToSuperview()
         }
-        
         imageView.snp.makeConstraints {
             $0.top.equalTo(pageControl.snp.bottom).offset(20)
             $0.centerX.equalToSuperview()
         }
-        
-        nextButton.snp.makeConstraints {
-            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(40)
-            $0.centerX.equalToSuperview()
-            $0.height.equalTo(44)
-        }
-
         gradationView.snp.makeConstraints {
             $0.leading.trailing.bottom.equalToSuperview()
             $0.height.equalTo(121)
         }
     }
-    
-    private func setTitle(text: String) -> NSMutableAttributedString {
-        let atString = NSMutableAttributedString(string: text)
-        let range = NSRange(location: 0, length: atString.length)
-        let font = UIFont.customFontForSubtitle(weight: .w700)
-        let color = UIColor.customColor(hexCode: .neutral950)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .center
-        paragraphStyle.lineHeightMultiple = 1.17
-        
-        atString.addAttribute(.font, value: font, range: range)
-        atString.addAttribute(.foregroundColor, value: color, range: range)
-        atString.addAttribute(.paragraphStyle, value: paragraphStyle, range: range)
-        return atString
-    }
-    
-    private func setDescription(text: String) -> NSMutableAttributedString {
-        let atString = NSMutableAttributedString(string: text)
-        let range = NSRange(location: 0, length: atString.length)
-        let font = UIFont.customFontForHeader(weight: .w950)
-        let color = UIColor.customColor(hexCode: .neutral950)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .center
-        paragraphStyle.lineHeightMultiple = 1.17
-        
-        atString.addAttribute(.font, value: font, range: range)
-        atString.addAttribute(.foregroundColor, value: color, range: range)
-        atString.addAttribute(.paragraphStyle, value: paragraphStyle, range: range)
-        return atString
-    }
-    
-    private func navigateToMain() {
-        // 메인 화면 전환 처리
-        print("온보딩 완료 -> 메인 화면으로 이동")
-    }
-}
 
-extension OnboardingViewController {
     func bind(reactor: Reactor) {
-        // Action: 최초 진입
         reactor.action.onNext(.viewDidLoad)
-        
-        // Action: 다음 버튼 탭
-        nextButton.rx.tap
-            .map { .nextTapped }
+
+        //  Rx로 스크롤 이벤트 감지 & NaN 방지
+        scrollView.rx.contentOffset
+            .map { [weak self] offset -> Int in
+                guard let self = self else { return 0 }
+                let pageWidth = self.scrollView.frame.width
+                guard pageWidth > 0, offset.x.isFinite else { return 0 }
+                return Int(round(offset.x / pageWidth))
+            }
+            .distinctUntilChanged()
+            .map(Reactor.Action.scrollAction)
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
-        
-        // State → UI 바인딩
-        reactor.state.map { $0.currentPageModel }
-            .distinctUntilChanged { $0.title == $1.title }
-            .subscribe(onNext: { [weak self] page in
-                self?.titleLabel.attributedText = self?.setTitle(text: page.title)
-            })
-            .disposed(by: disposeBag)
-        
-        reactor.state.map { $0.currentPageModel }
-            .distinctUntilChanged { $0.description == $1.description }
-            .subscribe(onNext: { [weak self] page in
-                self?.descriptionLabel.attributedText = self?.setDescription(text: page.description)
-            })
-            .disposed(by: disposeBag)
-        
-        reactor.state.map { UIImage(named: $0.currentPageModel.imageName) }
-            .distinctUntilChanged { $0 == $1 }
-            .bind(to: imageView.rx.image)
-            .disposed(by: disposeBag)
-        
-        reactor.state.map { $0.currentButtonTitle }
-            .distinctUntilChanged()
-            .bind(to: nextButton.rx.title(for: .normal))
-            .disposed(by: disposeBag)
-        
-        reactor.state.map { $0.currentPage }
-            .distinctUntilChanged()
-            .bind(to: pageControl.rx.currentPage)
-            .disposed(by: disposeBag)
-        
+
         reactor.state.map { $0.pages.count }
             .distinctUntilChanged()
             .bind(to: pageControl.rx.numberOfPages)
             .disposed(by: disposeBag)
-        
-        reactor.state.map { $0.isCompleted }
+
+        reactor.state.map { $0.currentPage }
             .distinctUntilChanged()
+            .bind(to: pageControl.rx.currentPage)
+            .disposed(by: disposeBag)
+
+        reactor.state.map { $0.currentPageModel }
+            .distinctUntilChanged { $0.title == $1.title }
+            .subscribe(onNext: { [weak self] page in
+                self?.titleLabel.attributedText = self?.setTitle(text: page.title)
+                self?.descriptionLabel.attributedText = self?.setDescription(text: page.description)
+                self?.imageView.image = UIImage(named: page.imageName)
+            })
+            .disposed(by: disposeBag)
+
+        reactor.state.map { $0.isCompleted }
             .filter { $0 }
             .subscribe(onNext: { [weak self] _ in
                 self?.navigateToMain()
@@ -217,6 +172,33 @@ extension OnboardingViewController {
             .disposed(by: disposeBag)
     }
 
+    private func setTitle(text: String) -> NSMutableAttributedString {
+        let attr = NSMutableAttributedString(string: text)
+        let range = NSRange(location: 0, length: attr.length)
+        let font = UIFont.customFontForSubtitle(weight: .w700)
+        let color = UIColor.customColor(hexCode: .neutral950)
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        paragraph.lineHeightMultiple = 1.17
+        attr.addAttributes([.font: font, .foregroundColor: color, .paragraphStyle: paragraph], range: range)
+        return attr
+    }
+
+    private func setDescription(text: String) -> NSMutableAttributedString {
+        let attr = NSMutableAttributedString(string: text)
+        let range = NSRange(location: 0, length: attr.length)
+        let font = UIFont.customFontForHeader(weight: .w950)
+        let color = UIColor.customColor(hexCode: .neutral950)
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        paragraph.lineHeightMultiple = 1.17
+        attr.addAttributes([.font: font, .foregroundColor: color, .paragraphStyle: paragraph], range: range)
+        return attr
+    }
+
+    private func navigateToMain() {
+        print("온보딩 완료 -> 메인으로 이동")
+    }
 }
 
 final class GradationView: UIView {
@@ -224,7 +206,7 @@ final class GradationView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        isUserInteractionEnabled = false   // 터치 방지
+        isUserInteractionEnabled = false
         gradientLayer.colors = [
             UIColor(red: 1, green: 1, blue: 1, alpha: 0).cgColor,
             UIColor(red: 1, green: 1, blue: 1, alpha: 1).cgColor
