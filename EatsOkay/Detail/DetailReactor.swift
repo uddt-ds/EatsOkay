@@ -1,10 +1,3 @@
-//
-//  DetailReactor.swift
-//  EatsOkay
-//
-//  Created by 허성필 on 6/12/25.
-//
-
 import Foundation
 import ReactorKit
 import RxSwift
@@ -13,6 +6,8 @@ import CoreLocation
 class DetailReactor: Reactor {
     var initialState: State
     var selectedKeywords: [String] // home에서 전달받는 검색 키워드 // State로 수정 예정
+    
+    let locationManager = CLLocationManager()
     
     var disposeBag = DisposeBag()
     
@@ -23,6 +18,8 @@ class DetailReactor: Reactor {
     
     enum Action {
         case viewDidLoad // 뷰가 DidLoad 되었을 때
+        case backButtonTapped // 뒤로가기 버튼을 클릭했을 때
+        case currentLocationButtonTapped // 현재 위치 버튼 클릭했을 때
         case tableViewItemTapped(IndexPath: IndexPath) // 테이블 뷰 셀을 클릭했을 때
         case sortButtonTapped(sortType: SortType) // 정렬 버튼을 클릭했을 때
         case webViewDidDismiss // 웹뷰가 닫혔을 때
@@ -36,6 +33,9 @@ class DetailReactor: Reactor {
     
     enum Mutation {
         case setStore([StoreSection])
+        case shouldPop(Bool)
+        case setCurrentLocation(lat: Double, lon: Double)
+        case showLocationAlert
         case setWebViewUrl(String)
         case sortStore([StoreSection]) // 데이터 정렬
         case dismissWebView // 웹뷰가 닫혔을 때
@@ -43,6 +43,11 @@ class DetailReactor: Reactor {
     
     struct State {
         var storeInfo = [StoreSection]()
+        var shouldPop: Bool = false
+        // 값이 없을 수 있기 때문에 옵셔널 타입으로 정의
+        var currentLatitude: Double?
+        var currentLongitute: Double?
+        @Pulse var showLocationAlert: Void?
         var shouldPresentWebView: Bool = false // 초기 웹뷰 여부 false
         var webViewUrl: String? = nil
         var sortType: SortType = .rating // 기본값은 별점순
@@ -76,6 +81,33 @@ class DetailReactor: Reactor {
                     return [StoreSection(items: sortedMergeStoreInfo)]
                 }
                 .map { .setStore($0) }
+        case .backButtonTapped:
+            return .just(.shouldPop(true))
+        case .currentLocationButtonTapped:
+            let status = locationManager.authorizationStatus
+            switch status {
+            case .notDetermined:
+                locationManager.requestWhenInUseAuthorization()
+                return .empty()
+            case .restricted, .authorizedWhenInUse, .authorizedAlways:
+                return locationManager.rx.getCurrentLocationOnce
+                    .flatMap { lat, lon -> Observable<Mutation> in
+                        print("\(lat), \(lon)")
+                        // 위도, 경도로 시/도 역지오코딩
+                        return NetworkManager.shared.fetchGeoCoding(lat: lat, lon: lon)
+                            .asObservable()
+                            .map { addressTuple in
+                                let address = addressTuple.map { "\($0.0) \($0.1)" } ?? "알 수 없는 위치"
+                                let location = UserDeafaultsManager.UserLocation(address: address, lat: lat, lon: lon)
+                                UserDeafaultsManager.shared.saveLocation(location: location)
+                                return .setCurrentLocation(lat: lat, lon: lon)
+                            }
+                    }
+            case .denied:
+                return .just(.showLocationAlert)
+            @unknown default:
+                return .empty()
+            }
             // 테이블 뷰 셀 클릭시 웹뷰 띄우기
         case .tableViewItemTapped(let indexPath):
             let storeInfo = currentState.storeInfo
@@ -124,6 +156,14 @@ class DetailReactor: Reactor {
         switch mutation {
         case .setStore(let storeInfo):
             newState.storeInfo = storeInfo
+        case .shouldPop(let flag):
+            newState.shouldPop = flag
+            // setCurrentLocation Mutation으로 전달된 위도, 경도 값을 state에 업데이트
+        case .setCurrentLocation(lat: let lat, lon: let lon):
+            newState.currentLatitude = lat
+            newState.currentLongitute = lon
+        case .showLocationAlert:
+            newState.showLocationAlert = Void()
         case .setWebViewUrl(let uri):
             newState.webViewUrl = uri
             newState.shouldPresentWebView = true

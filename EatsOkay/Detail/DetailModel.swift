@@ -1,9 +1,3 @@
-//
-//  DetailModel.swift
-//  EatsOkay
-//
-//  Created by 허성필 on 6/11/25.
-//
 
 import Foundation
 import RxDataSources
