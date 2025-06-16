@@ -1,0 +1,223 @@
+//
+//  LocationSelectReactor.swift
+//  EatsOkay
+//
+//  Created by LCH on 6/6/25.
+//
+
+import Foundation
+import RxSwift
+import ReactorKit
+import CoreLocation
+
+final class LocationSelectReactor: Reactor {
+    
+    var disposeBag = DisposeBag()
+    private let locationManager = CLLocationManager()
+    private let networkManger = NetworkManager.shared
+    
+    var initialState: State
+    
+    init() {
+        self.initialState = State(
+            pickerViewData: [],
+            selectedItem: (0, 0)
+        )
+    }
+    
+    enum Action {
+        case initialFetch
+        case locationButtonTapped
+        case pickerViewChanged(component: Int, row: Int)
+        case nextButtonTapped
+    }
+    
+    enum Mutation {
+        case setPickerViewDataList([[String]])
+        case setPickerViewInitialRows(firstRow: Int, secondRow: Int)
+        case setPickerViewSelectedItem(firstRow: Int, secondRow: Int)
+        case setNextView(Void?)
+        case setAlert(Void?)
+        case setError(Error?)
+    }
+    
+    struct State {
+        @Pulse var pickerViewData: [[String]]
+        @Pulse var pickerViewinitialRows: (firstRow: Int, secondRow: Int)?
+        var selectedItem: (firstRow: Int, secondRow: Int)
+        @Pulse var nextViewState: Void?
+        @Pulse var alretState: Void?
+        @Pulse var error: Error?
+    }
+    
+    func mutate(action: Action) -> Observable<Mutation> {
+        switch action {
+        case .initialFetch:
+            
+            do {
+                let decodedData = try AddressManager.shared.getAddressList()
+                let locality = Array(Set(decodedData.map { $0.locality }))
+                let subLocality = decodedData.map { $0.subLocality }
+                
+                // UserDefault에 저장된 위치가 없을 경우에 기본값을 서울 강남으로 작성
+                var savedLocation: UserDeafaultsManager.UserLocation
+                if let location = UserDeafaultsManager.shared.readLocation() {
+                    savedLocation = location
+                } else {
+                    let location = UserDeafaultsManager.UserLocation(address: "서울 강남구", lat: 37.5177, lon: 127.0473)
+                    savedLocation = location
+                }
+                
+                let saveLocationArray = savedLocation.address.split(separator: " ")
+                let savedlocality = saveLocationArray[0]
+                let savedSublcality = saveLocationArray[1]
+                
+                guard let localityIndex = locality.firstIndex(of: String(savedlocality)) else {
+                    return Observable.just(.setError(LocationSelectReactorError.noMatchingAddressAfterFiltering))
+                }
+                
+                guard let sublocalityIndex = subLocality.firstIndex(of: String(savedSublcality)) else {
+                    return Observable.just(.setError(LocationSelectReactorError.noMatchingAddressAfterFiltering))
+                }
+                
+                return Observable.concat(
+                    Observable.just(.setPickerViewDataList(
+                        [
+                            locality,
+                            subLocality
+                        ]
+                    )),
+                    
+                    Observable.just(.setPickerViewInitialRows(
+                        firstRow: localityIndex,
+                        secondRow: sublocalityIndex
+                    )),
+                    
+                    Observable.just(.setPickerViewSelectedItem(
+                        firstRow: localityIndex,
+                        secondRow: sublocalityIndex
+                    ))
+                )
+                
+            } catch {
+                print(error)
+                return Observable.just(.setError(error))
+            }
+            
+        case .locationButtonTapped:
+            
+            let status = locationManager.authorizationStatus
+            switch status {
+            case .notDetermined:
+                locationManager.requestWhenInUseAuthorization()
+                return .empty()
+                
+            case .restricted, .authorizedWhenInUse, .authorizedAlways:
+                
+                var lat: Double = 0
+                var lon: Double = 0
+                
+                return locationManager.rx.getCurrentLocationOnce
+                    .asObservable()
+                    .withUnretained(self)
+                    .flatMap{ reactor, location -> Observable<(String, String)?> in
+                        print(location)
+                        lat = location.lat
+                        lon = location.lon
+                        
+                        // TODO: 예외처리 추가하기
+                        return reactor.networkManger.fetchGeoCoding(
+                            lat: location.lat,
+                            lon: location.lon)
+                        .asObservable()
+                    }
+                    .flatMap { kakaoResponse -> Observable<UserDeafaultsManager.UserLocation> in
+                        guard let address = kakaoResponse else {
+                            return .empty()
+                        }
+                        
+                        return Observable.just(UserDeafaultsManager.UserLocation(
+                            address: "\(address.0) \(address.1)",
+                            lat: lat,
+                            lon: lon
+                        ))
+                    }
+                    .map { location in
+                        UserDeafaultsManager.shared.saveLocation(location: location)
+                        return .setNextView(Void())
+                    }
+                
+            case .denied:
+                
+                return Observable.just(.setAlert(Void()))
+                
+            @unknown default:
+                return .empty()
+            }
+            
+        case let .pickerViewChanged(component, row):
+            var rows = currentState.selectedItem
+            
+            if component == 0 {
+                rows.firstRow = row
+            } else if component == 1 {
+                rows.secondRow = row
+            }
+            
+            return Observable.just(
+                .setPickerViewSelectedItem(
+                    firstRow: rows.firstRow,
+                    secondRow: rows.secondRow
+                )
+            )
+            
+        case .nextButtonTapped:
+            
+            do {
+                let data = currentState.pickerViewData
+                let selectedItem = currentState.selectedItem
+                let subLocality = data[1][selectedItem.secondRow]
+                let filteredData = try AddressManager.shared.getCoordinates(with: subLocality)
+                
+                UserDeafaultsManager.shared.saveLocation(
+                    location: .init(
+                        address: "\(filteredData.locality) \(filteredData.subLocality)",
+                        lat: filteredData.lat,
+                        lon: filteredData.lon
+                    )
+                )
+                
+                return Observable.just(.setNextView(Void()))
+                
+            } catch {
+                return Observable.just(.setError(error))
+            }
+        }
+    }
+    
+    func reduce(state: State, mutation: Mutation) -> State {
+        var newState = state
+        
+        switch mutation {
+        case let .setPickerViewDataList(addressList):
+            newState.pickerViewData = addressList
+            
+        case let .setPickerViewInitialRows(firstRow, secondRow):
+            newState.pickerViewinitialRows = (firstRow, secondRow)
+            
+        case let .setPickerViewSelectedItem(firstRow, secondRow):
+            newState.selectedItem = (firstRow, secondRow)
+            
+        case let .setNextView(location):
+            newState.nextViewState = location
+            
+        case let .setAlert(alretTriger):
+            newState.alretState = alretTriger
+            
+        case let .setError(error):
+            newState.error = error
+        }
+        
+        return newState
+    }
+}

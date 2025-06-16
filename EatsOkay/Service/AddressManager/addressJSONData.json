@@ -1,0 +1,152 @@
+[
+    {
+        "locality": "서울",
+        "subLocality": "강남구",
+        "lat": 37.5177,
+        "lon": 127.0473
+    },
+    {
+        "locality": "서울",
+        "subLocality": "강동구",
+        "lat": 37.53,
+        "lon": 127.1237
+    },
+    {
+        "locality": "서울",
+        "subLocality": "강북구",
+        "lat": 37.6395,
+        "lon": 127.0255
+    },
+    {
+        "locality": "서울",
+        "subLocality": "강서구",
+        "lat": 37.5509,
+        "lon": 126.8497
+    },
+    {
+        "locality": "서울",
+        "subLocality": "관악구",
+        "lat": 37.4782,
+        "lon": 126.9518
+    },
+    {
+        "locality": "서울",
+        "subLocality": "광진구",
+        "lat": 37.5384,
+        "lon": 127.0828
+    },
+    {
+        "locality": "서울",
+        "subLocality": "구로구",
+        "lat": 37.4951999,
+        "lon": 126.8877
+    },
+    {
+        "locality": "서울",
+        "subLocality": "금천구",
+        "lat": 37.4565,
+        "lon": 126.8954
+    },
+    {
+        "locality": "서울",
+        "subLocality": "노원구",
+        "lat": 37.654,
+        "lon": 127.0567
+    },
+    {
+        "locality": "서울",
+        "subLocality": "도봉구",
+        "lat": 37.6686,
+        "lon": 127.0466
+    },
+    {
+        "locality": "서울",
+        "subLocality": "동대문구",
+        "lat": 37.5741982,
+        "lon": 127.0395092
+    },
+    {
+        "locality": "서울",
+        "subLocality": "동작구",
+        "lat": 37.5120999,
+        "lon": 126.9395
+    },
+    {
+        "locality": "서울",
+        "subLocality": "마포구",
+        "lat": 37.566571,
+        "lon": 126.9015317
+    },
+    {
+        "locality": "서울",
+        "subLocality": "서대문구",
+        "lat": 37.5790747,
+        "lon": 126.9367861
+    },
+    {
+        "locality": "서울",
+        "subLocality": "서초구",
+        "lat": 37.4835,
+        "lon": 127.0322
+    },
+    {
+        "locality": "서울",
+        "subLocality": "성동구",
+        "lat": 37.5635,
+        "lon": 127.0365
+    },
+    {
+        "locality": "서울",
+        "subLocality": "성북구",
+        "lat": 37.59,
+        "lon": 127.0165
+    },
+    {
+        "locality": "서울",
+        "subLocality": "송파구",
+        "lat": 37.5145,
+        "lon": 127.1058
+    },
+    {
+        "locality": "서울",
+        "subLocality": "양천구",
+        "lat": 37.5171,
+        "lon": 126.8663
+    },
+    {
+        "locality": "서울",
+        "subLocality": "영등포구",
+        "lat": 37.5262,
+        "lon": 126.8959
+    },
+    {
+        "locality": "서울",
+        "subLocality": "용산구",
+        "lat": 37.5323,
+        "lon": 126.99
+    },
+    {
+        "locality": "서울",
+        "subLocality": "은평구",
+        "lat": 37.6024,
+        "lon": 126.9293
+    },
+    {
+        "locality": "서울",
+        "subLocality": "종로구",
+        "lat": 37.5806949,
+        "lon": 126.9827989
+    },
+    {
+        "locality": "서울",
+        "subLocality": "중구",
+        "lat": 37.5636559,
+        "lon": 126.9975097
+    },
+    {
+        "locality": "서울",
+        "subLocality": "중랑구",
+        "lat": 37.6063,
+        "lon": 127.093
+    }
+]
