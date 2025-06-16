@@ -12,12 +12,12 @@ import CoreLocation
 
 class DetailReactor: Reactor {
     var initialState: State
-    var seletedKeywords: [String] // home에서 전달받는 검색 키워드 // State로 수정 예정
+    var selectedKeywords: [String] // home에서 전달받는 검색 키워드 // State로 수정 예정
     
     var disposeBag = DisposeBag()
     
-    init(seletedKeywords: [String]) {
-        self.seletedKeywords = seletedKeywords
+    init(selectedKeywords: [String]) {
+        self.selectedKeywords = selectedKeywords
         self.initialState = State()
     }
     
