@@ -81,5 +81,6 @@ final class CardSectionsCell: UITableViewCell {
         titleLabel.text = data.title
         hashTagLabel.text = "\(data.hashTags[0]) \(data.hashTags[1])"
         tagLabel.text = data.category.title
+        backgroundImageView.image = data.assetImage
     }
 }

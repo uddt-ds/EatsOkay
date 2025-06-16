@@ -14,6 +14,7 @@ import RxDataSources
 struct HomeSectionOfCellModel {
     var section: Section
     var items: [CellModel]
+    var title: String //이게 맞나...
 }
 
 extension HomeSectionOfCellModel {
@@ -22,12 +23,6 @@ extension HomeSectionOfCellModel {
      */
     enum Section: Int {
         case cardSection
-
-        var headerTitle: String {
-            switch self {
-            case .cardSection: return "카드 섹션"
-            }
-        }
     }
 }
 
@@ -39,7 +34,7 @@ extension HomeSectionOfCellModel: AnimatableSectionModelType {
 
     // section.headerTitle를 ID로 해서 식별이 가능하도록 설정
     var identity: String {
-        return section.headerTitle
+        return title
     }
 
     // AnimatableSectionModelType을 구현할 때 요구하는 생성자

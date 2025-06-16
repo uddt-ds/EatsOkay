@@ -17,7 +17,7 @@ class LocationHeaderView: UIView {
     private let iconImage = UIImageView()
     private let label = UILabel()
 
-    private let currentLocationLabel = UILabel()
+    let currentLocationLabel = UILabel()
     fileprivate let editIconButton = UIButton()
     private let locationStackView = UIStackView()
 
@@ -105,7 +105,7 @@ class LocationHeaderView: UIView {
 }
 
 extension Reactive where Base: LocationHeaderView {
-    var editIconButtonTap: ControlEvent<Void> {
+    var locationEditButton: ControlEvent<Void> {
         return base.editIconButton.rx.tap
     }
 }

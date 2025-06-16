@@ -2,7 +2,7 @@
 //  HomeViewController.swift
 //  EatsOkay
 //
-//  Created by Lee on 6/11/25.
+//  Created by Lee on 6/16/25.
 //
 
 import UIKit
@@ -11,16 +11,26 @@ import RxCocoa
 import RxRelay
 import SnapKit
 import RxDataSources
+import ReactorKit
 
-final class HomeViewController: UIViewController {
+final class HomeViewController: UIViewController, View {
+    typealias Reactor = HomeReactor
 
-    let situationDataManager = SituationDataManager()
+    private let reactor: HomeReactor
+    var disposeBag = DisposeBag()
 
-    let locationHeaderView = LocationHeaderView()
-    let categoryButtonView = CategoryBtnView()
-    let tableView = UITableView()
+    init(reactor: HomeReactor) {
+        self.reactor = reactor
+        super.init(nibName: nil, bundle: nil)
+    }
 
-    let disposeBag = DisposeBag()
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private let locationHeaderView = LocationHeaderView()
+    private let categoryButtonView = CategoryBtnView()
+    private let tableView = UITableView()
 
     typealias DataSource = RxTableViewSectionedAnimatedDataSource<HomeSectionOfCellModel>
 
@@ -29,26 +39,26 @@ final class HomeViewController: UIViewController {
 
         configureUI()
         setConstraints()
-        bind()
 
         tableView.register(CardSectionsCell.self,
                            forCellReuseIdentifier: String(describing: CardSectionsCell.self))
+
+        bind(reactor: reactor)
     }
 
     private lazy var dataSource = self.makeDataSource()
 
     private func configureUI() {
         view.backgroundColor = .white
-        
+
         [locationHeaderView, categoryButtonView, tableView]
             .forEach { view.addSubview($0) }
 
-        tableView.rowHeight = 228
+        tableView.rowHeight = 260
         tableView.separatorStyle = .none
     }
 
     private func setConstraints() {
-
         locationHeaderView.snp.makeConstraints { make in
             make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
             make.height.equalTo(92)
@@ -66,69 +76,77 @@ final class HomeViewController: UIViewController {
         }
     }
 
-    private func bind() {
+    func bind(reactor: HomeReactor) {
+        bindAction(reactor: reactor)
+        bindState(reactor: reactor)
+    }
+
+    func bindAction(reactor: HomeReactor) {
+        self.rx.viewWillAppear
+            .map { _ in
+                Reactor.Action.viewWillAppear
+            }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+
+        Observable.just(Void())
+            .map { Reactor.Action.viewDidLoad }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+
+        locationHeaderView.rx.locationEditButton
+            .map {
+                Reactor.Action.locationBtnTapped
+            }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+
         categoryButtonView.selectedIndex
             .distinctUntilChanged()
-            .withUnretained(self)
-            .map { vc, selectedIndex -> [HomeSectionOfCellModel] in
-                switch selectedIndex {
-                case 0:
-                    let totalData = vc.situationDataManager.loadTotalShuffledData()
-                    return [HomeSectionOfCellModel(
-                        section: .cardSection,
-                        items: totalData.map { .cardSection($0) }
-                    )]
-                case 1:
-                    let dailyData =
-                    vc.situationDataManager.loadCategoryData(category: .daily).sections
-                    return [HomeSectionOfCellModel(
-                        section: .cardSection,
-                        items: dailyData.map { .cardSection($0) }
-                    )]
-                case 2:
-                    let workoutData = vc.situationDataManager.loadCategoryData(category: .workout).sections
-                    return [HomeSectionOfCellModel(
-                        section: .cardSection, items: workoutData.map { .cardSection($0) }
-                    )]
-                case 3:
-                    let companyData = vc.situationDataManager.loadCategoryData(category: .company).sections
-                    return [HomeSectionOfCellModel(
-                        section: .cardSection, items: companyData.map { .cardSection($0)
-                        }
-                    )]
-                case 4:
-                    let loveData = vc.situationDataManager.loadCategoryData(category: .love).sections
-                    return [HomeSectionOfCellModel(section: .cardSection, items: loveData.map { .cardSection($0) }
-                    )]
-
-                case 5:
-                    let seasonData =
-                    vc.situationDataManager.loadCategoryData(category: .season).sections
-                    return [HomeSectionOfCellModel(section: .cardSection, items: seasonData.map{ .cardSection($0) }
-                    )]
-                default:
-                    return [HomeSectionOfCellModel(section: .cardSection, items: .init())]
-                }
+            .compactMap { index in
+                Category.allCases[index]
             }
-            .bind(to: tableView.rx.items(dataSource: dataSource))
+            .map {
+                Reactor.Action.categoryBtnTapped($0)
+            }
+            .bind(to: reactor.action)
             .disposed(by: disposeBag)
 
         tableView.rx.modelSelected(HomeSectionOfCellModel.CellModel.self)
-            .withUnretained(self)
-            .asDriver(onErrorDriveWith: .empty())
-            .drive { vc, selectedModel in
-                switch selectedModel {
-                case .cardSection(let sectionData):
-                    print("선택된 키워드 : \(sectionData.keywords)")
+            .map { model -> HomeReactor.Action in
+                switch model {
+                case .cardSection(let data):
+                    return .tableViewItemTapped(data)
                 }
-            }.disposed(by: disposeBag)
-
-        locationHeaderView.rx.editIconButtonTap
-            .withUnretained(self)
-            .asDriver(onErrorDriveWith: .empty())
-            .drive { vc, _ in
-                print("버튼이 눌렸습니다")
             }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+    }
+
+    func bindState(reactor: HomeReactor) {
+        reactor.state
+            .map { $0.currentLocation }
+            .distinctUntilChanged()
+            .bind(to: locationHeaderView.currentLocationLabel.rx.text)
+            .disposed(by: disposeBag)
+
+        reactor.state
+            .map { $0.cardSectionData }
+            .bind(to: tableView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
+
+        reactor.pulse(\.$pushLocationView)
+            .compactMap { $0 }
+            .bind(onNext: {
+                print("다음 뷰 push")
+            })
+            .disposed(by: disposeBag)
+
+        reactor.pulse(\.$pushDetailViewWithData)
+            .compactMap { $0 }
+            .bind(onNext: {
+                print("다음 뷰 push, data: \($0.keywords), \($0.title)")
+            })
             .disposed(by: disposeBag)
     }
 }
