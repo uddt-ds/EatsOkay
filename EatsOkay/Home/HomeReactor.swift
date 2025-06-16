@@ -11,12 +11,12 @@ import RxSwift
 class HomeReactor: Reactor {
     var initialState: State
 
-    init(initialLocation: UserDeafaultsManager.UserLocation) {
-        self.initialState = State(currentLocation: initialLocation)
+    init() {
+        self.initialState = State(currentLocation: "서울 강남구")
     }
 
     private let dataManager = SituationDataManager()
-    private lazy var totalData = dataManager.loadTotalShuffledData() // 상태로 처리(state의 초기 값으로 넣어주는 방향)
+    private lazy var totalData = dataManager.loadTotalShuffledData()
 
     enum Action {
         case viewWillAppear
@@ -27,14 +27,14 @@ class HomeReactor: Reactor {
     }
 
     enum Mutation {
-        case loadCurrentLocation(UserDeafaultsManager.UserLocation)
+        case loadCurrentLocation(String)
         case setCardSection([SectionData])
         case requestLocationView
         case pushDetailView(data: SectionData)
     }
 
     struct State {
-        var currentLocation: UserDeafaultsManager.UserLocation// 로케이션 초기값 필요
+        var currentLocation: String
         var cardSectionData: [SectionData] = []
         @Pulse var pushLocationView: Void?
         @Pulse var pushDetailViewWithData: SectionData?
@@ -43,8 +43,9 @@ class HomeReactor: Reactor {
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
         case .viewWillAppear:
-            let location = currentState.currentLocation
-            return .just(.loadCurrentLocation(location))
+            guard let location = UserDeafaultsManager.shared.readLocation()
+            else { return .empty() }
+            return .just(.loadCurrentLocation(location.address))
         case .viewDidLoad:
             return .just(.setCardSection(totalData))
         case .locationBtnTapped:
