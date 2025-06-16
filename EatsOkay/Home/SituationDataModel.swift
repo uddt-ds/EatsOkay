@@ -13,7 +13,8 @@ struct SituationDataModel {
     let sections: [SectionData]
 }
 
-enum Category: Hashable {
+enum Category: Hashable, CaseIterable {
+    case all
     case daily
     case workout
     case company
@@ -22,6 +23,7 @@ enum Category: Hashable {
 
     var title: String {
         switch self {
+        case .all: return "전체"
         case .daily: return "일상"
         case .workout: return "운동"
         case .company: return "직장"

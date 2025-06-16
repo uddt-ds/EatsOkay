@@ -195,6 +195,22 @@ struct SituationDataManager {
      */
     func loadCategoryData(category: Category) -> SituationDataModel {
         switch category {
+        case .all:
+            let allSectionData = [
+                dailySituationsData,
+                workoutSituationsData,
+                companySituationsData,
+                loveSituationsData,
+                seasonSituationsData
+            ]
+                .flatMap {
+                    $0.sections
+                }
+
+            return SituationDataModel(
+                category: .all,
+                sections: allSectionData
+            )
         case .daily:
             return dailySituationsData
         case .workout:
