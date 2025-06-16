@@ -16,7 +16,7 @@ class AddressManager {
     private init() {}
     
     private func loadAddressList() throws -> [LocationListData] {
-        guard let path = Bundle.main.path(forResource: "juso", ofType: "json") else {
+        guard let path = Bundle.main.path(forResource: "addressJSONData", ofType: "json") else {
             throw AddressManagerError.failedToGetAddressJSONFilePath
         }
         guard let jsonString = try? String(contentsOfFile: path) else {
