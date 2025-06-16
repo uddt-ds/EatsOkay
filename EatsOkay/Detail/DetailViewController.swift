@@ -60,6 +60,14 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         
         navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .customColor(hexCode: .neutral950)
+        
+        // test
+        let testLocation = UserDeafaultsManager.UserLocation(
+            address: "서울 강남구",
+            lat: 37.5171,
+            lon: 127.0412
+        )
+        UserDeafaultsManager.shared.saveLocation(location: testLocation)
     }
     
     private func setupMapView() {
@@ -151,6 +159,16 @@ extension DetailViewController {
             })
             .disposed(by: disposeBag)
         
+        reactor.pulse(\.$showLocationAlert)
+            .withUnretained(self)
+            .subscribe(onNext: { owner, void in
+                guard void != nil else { return }
+                let alert = CustomLocationAlert()
+                alert.modalPresentationStyle = .overFullScreen
+                owner.present(alert, animated: true)
+            })
+            .disposed(by: disposeBag)
+        
         reactor.state
             // currentLatitude, currentLongitute 값이 둘 다 존재할 경우 tuple로 return
             .compactMap { state -> (Double, Double)? in
@@ -160,7 +178,7 @@ extension DetailViewController {
             }
             .withUnretained(self)
             .subscribe(onNext: { owner, coordinate in
-                let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 15)
+                let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 12)
                 owner.mapView.animate(to: camera)
             })
             .disposed(by: disposeBag)
