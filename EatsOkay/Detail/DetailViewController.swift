@@ -59,10 +59,7 @@ class DetailViewController: UIViewController, View {
                 updateTitle("거리순") }),
             UIAction(title: "리뷰순", handler: { _ in
                 self.reactor.action.onNext(.sortButtonTapped(sortType: .reviewCount))
-                updateTitle("리뷰순") }),
-            UIAction(title: "가격순", handler: { _ in
-                self.reactor.action.onNext(.sortButtonTapped(sortType: .price))
-                updateTitle("가격순") })
+                updateTitle("리뷰순") })
         ]
         
         button.menu = UIMenu(title: "", options: .displayInline , children: menuItems)
@@ -139,12 +136,11 @@ class DetailViewController: UIViewController, View {
             .withLatestFrom(reactor.state.map { $0.webViewUrl })
             .compactMap { $0 }
             .subscribe(onNext: { [weak self] urlString in
-//                guard let self = self else { return }
                 guard let url = URL(string: urlString) else { return }
                 let safariVC = SFSafariViewController(url: url)
                 safariVC.modalPresentationStyle = .popover
-                safariVC.delegate = self
-                safariVC.presentationController?.delegate = self
+                safariVC.delegate = self // 모달 닫기 delegate
+                safariVC.presentationController?.delegate = self // 모달 드래그 delegate
                 self?.present(safariVC, animated: true, completion: nil)
             })
             .disposed(by: disposeBag)

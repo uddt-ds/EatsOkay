@@ -8,10 +8,11 @@
 import Foundation
 import ReactorKit
 import RxSwift
+import CoreLocation
 
 class DetailReactor: Reactor {
     var initialState: State
-    var seletedKeywords: [String] // home에서 전달받는 검색 키워드
+    var seletedKeywords: [String] // home에서 전달받는 검색 키워드 // State로 수정 예정
     
     var disposeBag = DisposeBag()
     
@@ -31,7 +32,6 @@ class DetailReactor: Reactor {
         case rating // 별점순
         case distance // 거리순
         case reviewCount // 리뷰순
-        case price
     }
     
     enum Mutation {
@@ -50,17 +50,22 @@ class DetailReactor: Reactor {
     
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
-        // TODO: viewDidLoad 될 때 네트워크 통신하기
+            // TODO: viewDidLoad 될 때 네트워크 통신하기
         case .viewDidLoad:
             // 네트워크 통신 하고 zip으로 병합
-            let firstRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스시", centerLat: 37.5665, centerLon: 126.9780)
+            let userLocation = UserDeafaultsManager.shared.readLocation()
+            let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
+            let centerLon = userLocation?.lon ?? 127.0473
+            
+            let firstRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스시", centerLat: centerLat, centerLon: centerLon)
                 .map { self.convertToStoreInfo(places: $0) }
                 .asObservable()
             
-            let secondRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스테이크", centerLat: 37.5665, centerLon: 126.9780)
+            let secondRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스테이크", centerLat: centerLat, centerLon: centerLon)
                 .map { self.convertToStoreInfo(places: $0) }
                 .asObservable()
             
+            // 이미지까지 네트워크 후 킹피셔등 사용해서 섹션 데이터 넘기기
             return Observable.zip(firstRequest, secondRequest)
                 .map { firstRequest, secondRequest in
                     let mergeStoreInfo = firstRequest + secondRequest
@@ -73,7 +78,7 @@ class DetailReactor: Reactor {
                     return [StoreSection(items: sortedMergeStoreInfo)]
                 }
                 .map { .setStore($0) }
-        // TODO: tableView cell 선택 시 웹 뷰 띄우기
+            // 테이블 뷰 셀 클릭시 웹뷰 띄우기
         case .tableViewItemTapped(let indexPath):
             let storeInfo = currentState.storeInfo
             guard indexPath.section < storeInfo.count,
@@ -82,26 +87,37 @@ class DetailReactor: Reactor {
             }
             let uri = storeInfo[indexPath.section].items[indexPath.row].googleMapsUri
             return Observable.just(.setWebViewUrl(uri)) // 웹뷰 띄우기
-        // TODO: 정렬 버튼 눌렀을 때 데이터 정렬하기 current State 사용
+            // 정렬 부분
         case .sortButtonTapped(let sortType):
             let currentStoreInfo = currentState.storeInfo
+            
+            // userDefualt 사용해서 위치 가져오기
+            let userLocation = UserDeafaultsManager.shared.readLocation()
+            let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
+            let centerLon = userLocation?.lon ?? 127.0473
+            
             let sortedItems = currentStoreInfo.flatMap { $0.items }
                 .sorted { item1, item2 in
                     switch sortType {
                     case .rating:
                         return item1.rating > item2.rating
                     case .distance:
-                        // TODO: 거리 계산 로직 구현 필요 (예: 현재 위치와의 거리)
-                        return true
+                        let distance1 = self.calculateDistance(
+                            from: centerLat, lon1: centerLon,
+                            to: item1.latitude, lon2: item1.longitude
+                        )
+                        let distance2 = self.calculateDistance(
+                            from: centerLat, lon1: centerLon,
+                            to: item2.latitude, lon2: item2.longitude
+                        )
+                        return distance1 < distance2
                     case .reviewCount:
                         return item1.userRatingCount > item2.userRatingCount
-                    case .price:
-                        // TODO: 가격순은 StoreInfo에 price 정보가 필요
-                        return true
                     }
                 }
             let sortedStoreInfo = [StoreSection(items: sortedItems)]
             return Observable.just(.sortStore(sortedStoreInfo)) // storeInfo 정렬
+            // 웹뷰를 닫았을 때
         case .webViewDidDismiss:
             return Observable.just(.dismissWebView) // viewDidmiss
         }
@@ -133,7 +149,7 @@ extension DetailReactor {
                   let googleMapsUri = place.googleMapsUri,
                   let rating = place.rating,
                   let userRatingCount = place.userRatingCount,
-                  let currentOpeningHours = place.currentOpeningHours                  
+                  let currentOpeningHours = place.currentOpeningHours
             else { return nil }
             
             // photosNames: photos 배열의 첫번째 name 값, 없으면 빈 문자열
@@ -183,5 +199,12 @@ extension DetailReactor {
             return OpeningHours.Periods(open: open, close: close)
         }
         return OpeningHours(openNow: openingHours.openNow, periods: periods, weekdayDescriptions: openingHours.weekdayDescriptions)
+    }
+    
+    // 현재 위치와 가게의 거리를 구하는 함수
+    func calculateDistance(from lat1: Double, lon1: Double, to lat2: Double, lon2: Double) -> CLLocationDistance {
+        let location1 = CLLocation(latitude: lat1, longitude: lon1)
+        let location2 = CLLocation(latitude: lat2, longitude: lon2)
+        return location1.distance(from: location2)
     }
 }
