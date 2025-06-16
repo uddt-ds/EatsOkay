@@ -68,13 +68,13 @@ final class SplashViewController: UIViewController, View {
     private func goToOnboarding() {
         guard let nav = self.navigationController else { return }
 
-        let mainVC = MainViewController()
+        let onBoardingVC = OnboardingViewController()
 
         UIView.transition(with: nav.view,
                           duration: 0.3,
                           options: .transitionCrossDissolve,
                           animations: {
-                              nav.setViewControllers([mainVC], animated: false)
+                              nav.setViewControllers([onBoardingVC], animated: false)
                           })
     }
 
