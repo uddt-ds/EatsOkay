@@ -136,7 +136,6 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         let options = GMSMapViewOptions()
         options.camera = camera
         mapView = GMSMapView(options: options)
-        
         mapView.delegate = self
     }
     
@@ -273,7 +272,7 @@ extension DetailViewController {
             // currentLatitude, currentLongitute 값이 둘 다 존재할 경우 tuple로 return
             .compactMap { state -> (Double, Double)? in
                 guard let lat = state.currentLatitude,
-                      let lon = state.currentLongitute else { return nil }
+                      let lon = state.currentLongitude else { return nil }
                 return (lat, lon)
             }
             .withUnretained(self)
