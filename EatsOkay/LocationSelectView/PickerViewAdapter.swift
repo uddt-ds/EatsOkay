@@ -1,5 +1,5 @@
 //
-//  PickerViewViewAdapter.swift
+//  PickerViewAdapter.swift
 //  EatsOkay
 //
 //  Created by LCH on 6/16/25.
@@ -9,7 +9,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-final class PickerViewViewAdapter: NSObject,
+final class PickerViewAdapter: NSObject,
                                    UIPickerViewDataSource,
                                    UIPickerViewDelegate,
                                    RxPickerViewDataSourceType,

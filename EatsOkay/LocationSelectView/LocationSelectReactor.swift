@@ -46,7 +46,7 @@ final class LocationSelectReactor: Reactor {
         @Pulse var pickerViewinitialRows: (firstRow: Int, secondRow: Int)?
         var selectedItem: (firstRow: Int, secondRow: Int)
         @Pulse var nextViewState: Void?
-        @Pulse var alretState: Void?
+        @Pulse var alertState: Void?
         @Pulse var error: Error?
     }
     
@@ -212,7 +212,7 @@ final class LocationSelectReactor: Reactor {
             newState.nextViewState = location
             
         case let .setAlert(alretTriger):
-            newState.alretState = alretTriger
+            newState.alertState = alretTriger
             
         case let .setError(error):
             newState.error = error
