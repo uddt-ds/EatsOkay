@@ -53,9 +53,7 @@ class DetailReactor: Reactor {
             // TODO: viewDidLoad 될 때 네트워크 통신하기
         case .viewDidLoad:
             // 네트워크 통신 하고 zip으로 병합
-            let userLocation = UserDeafaultsManager.shared.readLocation()
-            let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
-            let centerLon = userLocation?.lon ?? 127.0473
+            let (centerLat, centerLon) = getCenterLocation()
             
             let firstRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스시", centerLat: centerLat, centerLon: centerLon)
                 .map { self.convertToStoreInfo(places: $0) }
@@ -92,9 +90,7 @@ class DetailReactor: Reactor {
             let currentStoreInfo = currentState.storeInfo
             
             // userDefualt 사용해서 위치 가져오기
-            let userLocation = UserDeafaultsManager.shared.readLocation()
-            let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
-            let centerLon = userLocation?.lon ?? 127.0473
+            let (centerLat, centerLon) = getCenterLocation()
             
             let sortedItems = currentStoreInfo.flatMap { $0.items }
                 .sorted { item1, item2 in
@@ -207,4 +203,12 @@ extension DetailReactor {
         let location2 = CLLocation(latitude: lat2, longitude: lon2)
         return location1.distance(from: location2)
     }
+    
+    // 위도와 경도를 받아오는 함수
+    private func getCenterLocation() -> (lat: Double, lon: Double) {
+            let userLocation = UserDeafaultsManager.shared.readLocation()
+            let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
+            let centerLon = userLocation?.lon ?? 127.0473
+            return (centerLat, centerLon)
+        }
 }
