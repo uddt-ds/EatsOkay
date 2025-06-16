@@ -30,14 +30,14 @@ class HomeReactor: Reactor {
         case loadCurrentLocation(UserDeafaultsManager.UserLocation)
         case setCardSection([SectionData])
         case requestLocationView
-        case pushDetailView(keyword: [String])
+        case pushDetailView(data: SectionData)
     }
 
     struct State {
         var currentLocation: UserDeafaultsManager.UserLocation// 로케이션 초기값 필요
         var cardSectionData: [SectionData] = []
         @Pulse var pushLocationView: Bool? = nil
-        @Pulse var pushWithKeyword: [String]? = nil
+        @Pulse var pushDetailViewWithData: SectionData? = nil
     }
 
     func mutate(action: Action) -> Observable<Mutation> {
@@ -53,8 +53,8 @@ class HomeReactor: Reactor {
             let categoryData =
             category == .all ? totalData : totalData.filter { $0.category == category }
             return .just(.setCardSection(categoryData))
-        case .tableViewItemTapped(let dataModel):
-            return .just(.pushDetailView(keyword: dataModel.keywords))
+        case .tableViewItemTapped(let data):
+            return .just(.pushDetailView(data: data))
         }
     }
 
@@ -67,8 +67,8 @@ class HomeReactor: Reactor {
             newState.cardSectionData = sectionData
         case .requestLocationView:
             newState.pushLocationView = true
-        case .pushDetailView(keyword: let keyword):
-            newState.pushWithKeyword = keyword
+        case .pushDetailView(data: let data):
+            newState.pushDetailViewWithData = data
         }
         return newState
     }
