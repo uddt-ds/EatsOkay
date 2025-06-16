@@ -16,7 +16,7 @@ class HomeReactor: Reactor {
     }
 
     private let dataManager = SituationDataManager()
-    private lazy var totalData = dataManager.loadTotalShuffledData()
+    private lazy var totalData = dataManager.loadTotalShuffledData() // 상태로 처리(state의 초기 값으로 넣어주는 방향)
 
     enum Action {
         case viewWillAppear
@@ -36,8 +36,8 @@ class HomeReactor: Reactor {
     struct State {
         var currentLocation: UserDeafaultsManager.UserLocation// 로케이션 초기값 필요
         var cardSectionData: [SectionData] = []
-        @Pulse var pushLocationView: Bool? = nil
-        @Pulse var pushDetailViewWithData: SectionData? = nil
+        @Pulse var pushLocationView: Void?
+        @Pulse var pushDetailViewWithData: SectionData?
     }
 
     func mutate(action: Action) -> Observable<Mutation> {
@@ -66,7 +66,7 @@ class HomeReactor: Reactor {
         case .setCardSection(let sectionData):
             newState.cardSectionData = sectionData
         case .requestLocationView:
-            newState.pushLocationView = true
+            newState.pushLocationView = ()
         case .pushDetailView(data: let data):
             newState.pushDetailViewWithData = data
         }
