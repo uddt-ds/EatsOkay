@@ -1,17 +1,34 @@
-
+import Foundation
 import ReactorKit
-import CoreLocation
 import RxSwift
+import CoreLocation
 
 class DetailReactor: Reactor {
-    var initialState: State = .init()
+    var initialState: State
+    var selectedKeywords: [String] // home에서 전달받는 검색 키워드 // State로 수정 예정
     
     let locationManager = CLLocationManager()
     
+    var disposeBag = DisposeBag()
+    
+    init(selectedKeywords: [String]) {
+        self.selectedKeywords = selectedKeywords
+        self.initialState = State()
+    }
+    
     enum Action {
-        case viewDidLoad
-        case backButtonTapped
-        case currentLocationButtonTapped
+        case viewDidLoad // 뷰가 DidLoad 되었을 때
+        case backButtonTapped // 뒤로가기 버튼을 클릭했을 때
+        case currentLocationButtonTapped // 현재 위치 버튼 클릭했을 때
+        case tableViewItemTapped(IndexPath: IndexPath) // 테이블 뷰 셀을 클릭했을 때
+        case sortButtonTapped(sortType: SortType) // 정렬 버튼을 클릭했을 때
+        case webViewDidDismiss // 웹뷰가 닫혔을 때
+    }
+    
+    enum SortType: String {
+        case rating // 별점순
+        case distance // 거리순
+        case reviewCount // 리뷰순
     }
     
     enum Mutation {
@@ -19,6 +36,9 @@ class DetailReactor: Reactor {
         case shouldPop(Bool)
         case setCurrentLocation(lat: Double, lon: Double)
         case showLocationAlert
+        case setWebViewUrl(String)
+        case sortStore([StoreSection]) // 데이터 정렬
+        case dismissWebView // 웹뷰가 닫혔을 때
     }
     
     struct State {
@@ -28,20 +48,27 @@ class DetailReactor: Reactor {
         var currentLatitude: Double?
         var currentLongitute: Double?
         @Pulse var showLocationAlert: Void?
+        var shouldPresentWebView: Bool = false // 초기 웹뷰 여부 false
+        var webViewUrl: String? = nil
+        var sortType: SortType = .rating // 기본값은 별점순
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
+            // TODO: viewDidLoad 될 때 네트워크 통신하기
         case .viewDidLoad:
             // 네트워크 통신 하고 zip으로 병합
-            let firstRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스시", centerLat: 37.5665, centerLon: 126.9780)
+            let (centerLat, centerLon) = getCenterLocation()
+            
+            let firstRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스시", centerLat: centerLat, centerLon: centerLon)
                 .map { self.convertToStoreInfo(places: $0) }
                 .asObservable()
             
-            let secondRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스테이크", centerLat: 37.5665, centerLon: 126.9780)
+            let secondRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스테이크", centerLat: centerLat, centerLon: centerLon)
                 .map { self.convertToStoreInfo(places: $0) }
                 .asObservable()
             
+            // 이미지까지 네트워크 후 킹피셔등 사용해서 섹션 데이터 넘기기
             return Observable.zip(firstRequest, secondRequest)
                 .map { firstRequest, secondRequest in
                     let mergeStoreInfo = firstRequest + secondRequest
@@ -81,6 +108,46 @@ class DetailReactor: Reactor {
             @unknown default:
                 return .empty()
             }
+            // 테이블 뷰 셀 클릭시 웹뷰 띄우기
+        case .tableViewItemTapped(let indexPath):
+            let storeInfo = currentState.storeInfo
+            guard indexPath.section < storeInfo.count,
+                  indexPath.row < storeInfo[indexPath.section].items.count else {
+                return .empty()
+            }
+            let uri = storeInfo[indexPath.section].items[indexPath.row].googleMapsUri
+            return Observable.just(.setWebViewUrl(uri)) // 웹뷰 띄우기
+            // 정렬 부분
+        case .sortButtonTapped(let sortType):
+            let currentStoreInfo = currentState.storeInfo
+            
+            // userDefault 사용해서 위치 가져오기
+            let (centerLat, centerLon) = getCenterLocation()
+            
+            let sortedItems = currentStoreInfo.flatMap { $0.items }
+                .sorted { item1, item2 in
+                    switch sortType {
+                    case .rating:
+                        return item1.rating > item2.rating
+                    case .distance:
+                        let distance1 = self.calculateDistance(
+                            from: centerLat, lon1: centerLon,
+                            to: item1.latitude, lon2: item1.longitude
+                        )
+                        let distance2 = self.calculateDistance(
+                            from: centerLat, lon1: centerLon,
+                            to: item2.latitude, lon2: item2.longitude
+                        )
+                        return distance1 < distance2
+                    case .reviewCount:
+                        return item1.userRatingCount > item2.userRatingCount
+                    }
+                }
+            let sortedStoreInfo = [StoreSection(items: sortedItems)]
+            return Observable.just(.sortStore(sortedStoreInfo)) // storeInfo 정렬
+            // 웹뷰를 닫았을 때
+        case .webViewDidDismiss:
+            return Observable.just(.dismissWebView) // viewDidmiss
         }
     }
     
@@ -97,11 +164,17 @@ class DetailReactor: Reactor {
             newState.currentLongitute = lon
         case .showLocationAlert:
             newState.showLocationAlert = Void()
+        case .setWebViewUrl(let uri):
+            newState.webViewUrl = uri
+            newState.shouldPresentWebView = true
+        case .sortStore(let storeInfo):
+            newState.storeInfo = storeInfo
+        case .dismissWebView:
+            newState.shouldPresentWebView = false
         }
         return newState
     }
 }
-
 
 extension DetailReactor {
     // Google Place Response를 StoreInfo로 변환
@@ -163,4 +236,19 @@ extension DetailReactor {
         }
         return OpeningHours(openNow: openingHours.openNow, periods: periods, weekdayDescriptions: openingHours.weekdayDescriptions)
     }
+    
+    // 현재 위치와 가게의 거리를 구하는 함수
+    func calculateDistance(from lat1: Double, lon1: Double, to lat2: Double, lon2: Double) -> CLLocationDistance {
+        let location1 = CLLocation(latitude: lat1, longitude: lon1)
+        let location2 = CLLocation(latitude: lat2, longitude: lon2)
+        return location1.distance(from: location2)
+    }
+    
+    // 위도와 경도를 받아오는 함수
+    private func getCenterLocation() -> (lat: Double, lon: Double) {
+            let userLocation = UserDeafaultsManager.shared.readLocation()
+            let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
+            let centerLon = userLocation?.lon ?? 127.0473
+            return (centerLat, centerLon)
+        }
 }
