@@ -20,7 +20,7 @@ final class LocationSelectReactor: Reactor {
     
     init() {
         self.initialState = State(
-            pcikerViewData: [],
+            pickerViewData: [],
             selectedItem: (0, 0)
         )
     }
@@ -28,7 +28,7 @@ final class LocationSelectReactor: Reactor {
     enum Action {
         case initialFetch
         case locationButtonTapped
-        case pickerViewChnaged(component: Int, row: Int)
+        case pickerViewChanged(component: Int, row: Int)
         case nextButtonTapped
     }
     
@@ -37,12 +37,12 @@ final class LocationSelectReactor: Reactor {
         case setPickerViewInitialRows(firstRow: Int, secondRow: Int)
         case setPickerViewSelectedItem(firstRow: Int, secondRow: Int)
         case setNextView(Void?)
-        case setAlret(Void?)
+        case setAlert(Void?)
         case setError(Error?)
     }
     
     struct State {
-        @Pulse var pcikerViewData: [[String]]
+        @Pulse var pickerViewData: [[String]]
         @Pulse var pickerViewinitialRows: (firstRow: Int, secondRow: Int)?
         var selectedItem: (firstRow: Int, secondRow: Int)
         @Pulse var nextViewState: Void?
@@ -149,13 +149,13 @@ final class LocationSelectReactor: Reactor {
                 
             case .denied:
                 
-                return Observable.just(.setAlret(Void()))
+                return Observable.just(.setAlert(Void()))
                 
             @unknown default:
                 return .empty()
             }
             
-        case let .pickerViewChnaged(component, row):
+        case let .pickerViewChanged(component, row):
             var rows = currentState.selectedItem
             
             if component == 0 {
@@ -174,10 +174,9 @@ final class LocationSelectReactor: Reactor {
         case .nextButtonTapped:
             
             do {
-                let data = currentState.pcikerViewData
+                let data = currentState.pickerViewData
                 let selectedItem = currentState.selectedItem
                 let subLocality = data[1][selectedItem.secondRow]
-                print(subLocality)
                 let filteredData = try AddressManager.shared.getCoordinates(with: subLocality)
                 
                 UserDeafaultsManager.shared.saveLocation(
@@ -191,7 +190,6 @@ final class LocationSelectReactor: Reactor {
                 return Observable.just(.setNextView(Void()))
                 
             } catch {
-                print(error)
                 return Observable.just(.setError(error))
             }
         }
@@ -202,7 +200,7 @@ final class LocationSelectReactor: Reactor {
         
         switch mutation {
         case let .setPickerViewDataList(addressList):
-            newState.pcikerViewData = addressList
+            newState.pickerViewData = addressList
             
         case let .setPickerViewInitialRows(firstRow, secondRow):
             newState.pickerViewinitialRows = (firstRow, secondRow)
@@ -213,7 +211,7 @@ final class LocationSelectReactor: Reactor {
         case let .setNextView(location):
             newState.nextViewState = location
             
-        case let .setAlret(alretTriger):
+        case let .setAlert(alretTriger):
             newState.alretState = alretTriger
             
         case let .setError(error):
