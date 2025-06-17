@@ -19,6 +19,7 @@ class DetailReactor: Reactor {
     enum Action {
         case viewDidLoad // 뷰가 DidLoad 되었을 때
         case backButtonTapped // 뒤로가기 버튼을 클릭했을 때
+        case currentLocationSearchButtonTapped(centerLat: Double, centerLon: Double) // 현 위치에서 검색 버튼 눌렀을 때
         case currentLocationButtonTapped // 현재 위치 버튼 클릭했을 때
         case tableViewItemTapped(IndexPath: IndexPath) // 테이블 뷰 셀을 클릭했을 때
         case sortButtonTapped(sortType: SortType) // 정렬 버튼을 클릭했을 때
@@ -83,31 +84,21 @@ class DetailReactor: Reactor {
                 .map { .setStore($0) }
         case .backButtonTapped:
             return .just(.shouldPop(true))
-        case .currentLocationButtonTapped:
-            let status = locationManager.authorizationStatus
-            switch status {
-            case .notDetermined:
-                locationManager.requestWhenInUseAuthorization()
-                return .empty()
-            case .restricted, .authorizedWhenInUse, .authorizedAlways:
-                return locationManager.rx.getCurrentLocationOnce
-                    .flatMap { lat, lon -> Observable<Mutation> in
-                        print("\(lat), \(lon)")
-                        // 위도, 경도로 시/도 역지오코딩
-                        return NetworkManager.shared.fetchGeoCoding(lat: lat, lon: lon)
-                            .asObservable()
-                            .map { addressTuple in
-                                let address = addressTuple.map { "\($0.0) \($0.1)" } ?? "알 수 없는 위치"
-                                let location = UserDeafaultsManager.UserLocation(address: address, lat: lat, lon: lon)
-                                UserDeafaultsManager.shared.saveLocation(location: location)
-                                return .setCurrentLocation(lat: lat, lon: lon)
-                            }
-                    }
-            case .denied:
-                return .just(.showLocationAlert)
-            @unknown default:
-                return .empty()
+        case .currentLocationSearchButtonTapped(let centerLat, let centerLon):
+            let requests = selectedKeywords.map {
+                NetworkManager.shared.fetchPlacesWithCircle(textQuery: $0, centerLat: centerLat, centerLon: centerLon)
+                    .map { self.convertToStoreInfo(places: $0) }
+                    .asObservable()
             }
+            return Observable.zip(requests)
+                .map { $0.flatMap { $0 }}
+                .map { stores in
+                    let sorted = stores.sorted { $0.rating > $1.rating }
+                    return [StoreSection(items: sorted)]
+                }
+                .map { .setStore($0) }
+        case .currentLocationButtonTapped:
+            return handleLocationAuthorization()
             // 테이블 뷰 셀 클릭시 웹뷰 띄우기
         case .tableViewItemTapped(let indexPath):
             let storeInfo = currentState.storeInfo
@@ -246,9 +237,35 @@ extension DetailReactor {
     
     // 위도와 경도를 받아오는 함수
     private func getCenterLocation() -> (lat: Double, lon: Double) {
-            let userLocation = UserDeafaultsManager.shared.readLocation()
-            let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
-            let centerLon = userLocation?.lon ?? 127.0473
-            return (centerLat, centerLon)
+        let userLocation = UserDeafaultsManager.shared.readLocation()
+        let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
+        let centerLon = userLocation?.lon ?? 127.0473
+        return (centerLat, centerLon)
+    }
+    
+    // 권한 설정에 따른 동작을 설정하는 함수
+    private func handleLocationAuthorization() -> Observable<Mutation> {
+        let status = locationManager.authorizationStatus
+        switch status {
+        case .notDetermined:
+            locationManager.requestWhenInUseAuthorization()
+            return .empty()
+        case .restricted, .authorizedWhenInUse, .authorizedAlways:
+            return locationManager.rx.getCurrentLocationOnce
+                .flatMap { lat, lon -> Observable<Mutation> in
+                    return NetworkManager.shared.fetchGeoCoding(lat: lat, lon: lon)
+                        .asObservable()
+                        .map { addressTuple in
+                            let address = addressTuple.map { "\($0.0) \($0.1)" } ?? "알 수 없는 위치"
+                            let location = UserDeafaultsManager.UserLocation(address: address, lat: lat, lon: lon)
+                            UserDeafaultsManager.shared.saveLocation(location: location)
+                            return .setCurrentLocation(lat: lat, lon: lon)
+                        }
+                }
+        case .denied:
+            return .just(.showLocationAlert)
+        @unknown default:
+            return .empty()
         }
+    }
 }
