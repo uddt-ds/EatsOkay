@@ -53,26 +53,11 @@ final class HomeViewController: UIViewController, View {
     private func configureUI() {
         view.backgroundColor = .white
 
-        [locationHeaderView, tableView, categoryBtnShadowView, categoryButtonView]
+        [locationHeaderView, tableView, categoryButtonView]
             .forEach { view.addSubview($0) }
-
-        let width = UIScreen.main.bounds.width
-        let height = 2.0
-        let cgRect = CGRect(x: 0, y: 0, width: width, height: height)
-
-        categoryBtnShadowView.layer.shadowPath = UIBezierPath(
-            roundedRect: cgRect,
-            cornerRadius: 0
-        ).cgPath
 
         tableView.rowHeight = 260
         tableView.separatorStyle = .none
-
-        categoryBtnShadowView.layer.shadowColor = UIColor.customColor(hexCode: .neutral950).cgColor
-        categoryBtnShadowView.layer.shadowOpacity = 1.0
-        categoryBtnShadowView.layer.shadowOffset = CGSize(width: 0, height: 2)
-        categoryBtnShadowView.layer.shadowRadius = 20
-        categoryBtnShadowView.backgroundColor = .clear
     }
 
     private func setConstraints() {
@@ -90,12 +75,6 @@ final class HomeViewController: UIViewController, View {
         tableView.snp.makeConstraints { make in
             make.top.equalTo(categoryButtonView.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
-        }
-
-        categoryBtnShadowView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.top.equalTo(categoryButtonView.snp.bottom)
-            make.height.equalTo(1)
         }
     }
 
