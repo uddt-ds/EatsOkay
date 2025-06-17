@@ -8,13 +8,56 @@
 import UIKit
 
 final class CardSectionsCell: UITableViewCell {
-    private let tagLabel = UILabel()
-    private let titleStackView = UIStackView()
-    private let stackBgView = UIView()
+    private let tagLabel: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = .customColor(hexCode: .neutral950).withAlphaComponent(0.4)
+        label.layer.cornerRadius = 8
+        label.clipsToBounds = true
+        return label
+    }()
+
     private let titleLabel = UILabel()
     private let hashTagLabel = UILabel()
-    private let backgroundImageView = UIImageView()
-    private let shadowBackgroundView = UIView()
+    
+    private let titleStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.layoutMargins = .init(top: 20, left: 20, bottom: 20, right: 20)
+        stackView.axis = .vertical
+        stackView.spacing = 4
+        stackView.distribution = .equalCentering
+        stackView.alignment = .leading
+        stackView.backgroundColor = .clear
+        return stackView
+    }()
+
+    private lazy var titleStackBgView: UIView = {
+        let bgView = UIView()
+        bgView.addSubview(titleStackView)
+        bgView.backgroundColor = .white.withAlphaComponent(0.8)
+        bgView.layer.maskedCorners = CACornerMask(arrayLiteral: .layerMinXMaxYCorner, .layerMaxXMaxYCorner)
+        bgView.layer.cornerRadius = 12
+        return bgView
+    }()
+
+    private let backgroundImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.layer.cornerRadius = 12
+        imageView.clipsToBounds = true
+        return imageView
+    }()
+
+    private lazy var shadowBackgroundView: UIView = {
+        let view = UIView()
+        view.addSubview(backgroundImageView)
+
+        view.layer.shadowColor = UIColor.customColor(hexCode: .neutral950).cgColor
+        view.layer.shadowOpacity = 0.2
+        view.layer.shadowOffset = CGSize(width: 0, height: 0)
+        view.layer.shadowRadius = 8
+        view.layer.masksToBounds = false
+        return view
+    }()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -42,38 +85,10 @@ final class CardSectionsCell: UITableViewCell {
             titleStackView.addArrangedSubview($0)
         }
 
-        stackBgView.addSubview(titleStackView)
-
-        [shadowBackgroundView, tagLabel, stackBgView].forEach {
+        [shadowBackgroundView, titleStackBgView, tagLabel].forEach {
             contentView.addSubview($0)
         }
 
-        shadowBackgroundView.addSubview(backgroundImageView)
-
-        shadowBackgroundView.layer.shadowColor = UIColor.customColor(hexCode: .neutral950).cgColor
-        shadowBackgroundView.layer.shadowOpacity = 0.2
-        shadowBackgroundView.layer.shadowOffset = CGSize(width: 0, height: 0)
-        shadowBackgroundView.layer.shadowRadius = 8
-        shadowBackgroundView.layer.masksToBounds = false
-
-        backgroundImageView.layer.cornerRadius = 12
-        backgroundImageView.clipsToBounds = true
-
-        titleStackView.isLayoutMarginsRelativeArrangement = true
-        titleStackView.layoutMargins = .init(top: 20, left: 20, bottom: 20, right: 20)
-        titleStackView.axis = .vertical
-        titleStackView.spacing = 4
-        titleStackView.distribution = .equalCentering
-        titleStackView.alignment = .leading
-        titleStackView.backgroundColor = .clear
-
-        stackBgView.backgroundColor = .white.withAlphaComponent(0.8)
-        stackBgView.layer.maskedCorners = CACornerMask(arrayLiteral: .layerMinXMaxYCorner, .layerMaxXMaxYCorner)
-        stackBgView.layer.cornerRadius = 12
-
-        tagLabel.backgroundColor = .customColor(hexCode: .neutral950).withAlphaComponent(0.4)
-        tagLabel.layer.cornerRadius = 8
-        tagLabel.clipsToBounds = true
     }
 
     private func setContraints() {
@@ -86,19 +101,19 @@ final class CardSectionsCell: UITableViewCell {
             make.edges.equalToSuperview()
         }
 
-        tagLabel.snp.makeConstraints { make in
-            make.top.equalTo(backgroundImageView.snp.top).offset(20)
-            make.trailing.equalTo(backgroundImageView.snp.trailing).offset(-20)
-            make.width.equalTo(41)
-            make.height.equalTo(25)
+        titleStackBgView.snp.makeConstraints { make in
+            make.leading.bottom.trailing.equalTo(backgroundImageView)
         }
 
         titleStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
 
-        stackBgView.snp.makeConstraints { make in
-            make.leading.bottom.trailing.equalTo(backgroundImageView)
+        tagLabel.snp.makeConstraints { make in
+            make.top.equalTo(backgroundImageView.snp.top).offset(20)
+            make.trailing.equalTo(backgroundImageView.snp.trailing).offset(-20)
+            make.width.equalTo(41)
+            make.height.equalTo(25)
         }
     }
 

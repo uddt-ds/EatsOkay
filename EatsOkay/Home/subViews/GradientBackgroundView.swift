@@ -12,7 +12,7 @@ final class GradientBackgroundView: UIView {
         return CAGradientLayer.self
     }
 
-    var gradientLayer: CAGradientLayer {
+    private var gradientLayer: CAGradientLayer {
         return layer as! CAGradientLayer
     }
 

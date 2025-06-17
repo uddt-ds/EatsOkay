@@ -9,17 +9,73 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-class LocationHeaderView: UIView {
-
+final class LocationHeaderView: UIView {
     private let gradientView = GradientBackgroundView()
 
-    private let topLabelStackView = UIStackView()
-    private let iconImage = UIImageView()
-    private let label = UILabel()
+    private let iconImage: UIImageView = {
+        let iconImage = UIImageView()
+        iconImage.image = .headerLocation
+        iconImage.tintColor = .white
+        return iconImage
+    }()
 
-    let currentLocationLabel = UILabel()
-    fileprivate let editIconButton = UIButton()
-    private let locationStackView = UIStackView()
+    private let label: UILabel = {
+        let label = UILabel()
+        let titleText: NSAttributedString = AttributedStringManager
+            .configureString(
+                text: "현재 위치",
+                font: .customFontForSubtitle(weight: .w700),
+                color: .bgColor
+            )
+        label.attributedText = titleText
+        return label
+    }()
+
+    private lazy var topLabelStackView: UIStackView = {
+        let stackView = UIStackView()
+
+        [iconImage, label].forEach {
+            stackView.addArrangedSubview($0)
+        }
+
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        return stackView
+    }()
+
+    let currentLocationLabel: UILabel = {
+        let label = UILabel()
+        let titleText: NSAttributedString = AttributedStringManager
+            .configureString(
+                text: "서울 강남구",
+                font: .customFontForHeader(weight: .w900),
+                color: .bgColor
+            )
+
+        label.attributedText = titleText
+        return label
+    }()
+
+    fileprivate let editIconButton: UIButton = {
+        let button = UIButton()
+        button.setImage(.headerEdit, for: .normal)
+        button.tintColor = .white
+        return button
+    }()
+
+    private lazy var locationStackView: UIStackView = {
+        let stackView = UIStackView()
+
+        [currentLocationLabel, editIconButton].forEach {
+            stackView.addArrangedSubview($0)
+        }
+
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        stackView.alignment = .center
+        stackView.distribution = .fill
+        return stackView
+    }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -32,64 +88,12 @@ class LocationHeaderView: UIView {
     }
 
     private func configureUI() {
-
-        [iconImage, label].forEach {
-            topLabelStackView.addArrangedSubview($0)
-        }
-
-        [currentLocationLabel, editIconButton].forEach {
-            locationStackView.addArrangedSubview($0)
-        }
-
         [gradientView, topLabelStackView, locationStackView].forEach {
             self.addSubview($0)
         }
-
-        configureTopLabelStackView()
-        configureLocationStackView()
-    }
-
-    private func configureTopLabelStackView() {
-
-        let titleText: NSAttributedString = AttributedStringManager
-            .configureString(
-                text: "현재 위치",
-                font: .customFontForSubtitle(weight: .w700),
-                color: .bgColor
-            )
-
-        label.attributedText = titleText
-
-        iconImage.image = .headerLocation
-        iconImage.tintColor = .white
-        label.textColor = .white
-
-        topLabelStackView.axis = .horizontal
-        topLabelStackView.spacing = 4
-    }
-
-    private func configureLocationStackView() {
-
-        let titleText: NSAttributedString = AttributedStringManager
-            .configureString(
-                text: "서울 강남구",
-                font: .customFontForHeader(weight: .w900),
-                color: .bgColor
-            )
-
-        currentLocationLabel.attributedText = titleText
-
-        editIconButton.setImage(.headerEdit, for: .normal)
-        editIconButton.tintColor = .white
-
-        locationStackView.axis = .horizontal
-        locationStackView.spacing = 4
-        locationStackView.alignment = .center
-        locationStackView.distribution = .fill
     }
 
     private func setConstraints() {
-
         gradientView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }

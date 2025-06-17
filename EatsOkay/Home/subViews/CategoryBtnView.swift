@@ -9,14 +9,47 @@ import UIKit
 import RxCocoa
 import RxSwift
 
-class CategoryBtnView: UIView {
-
+final class CategoryBtnView: UIView {
     private var disposeBag = DisposeBag()
 
     let selectedIndex = BehaviorRelay<Int>(value: 0)
 
-    private let scrollView = UIScrollView()
-    private let btnStackView = UIStackView()
+    private let btnStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 8
+        stackView.alignment = .fill
+        stackView.distribution = .fill
+        return stackView
+    }()
+
+    private lazy var scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.alwaysBounceHorizontal = true
+        scrollView.backgroundColor = .white
+
+        scrollView.addSubview(btnStackView)
+
+        scrollView.isPagingEnabled = true
+
+        let shadowLayer = CALayer()
+        shadowLayer.frame = CGRect(
+            x: 0,
+            y: 72,
+            width: UIScreen.main.bounds.width,
+            height: 2
+        )
+        shadowLayer.shadowColor = UIColor.black.cgColor
+        shadowLayer.shadowOpacity = 0.08
+        shadowLayer.shadowOffset = CGSize(width: 0, height: 2)
+        shadowLayer.shadowRadius = 20
+        shadowLayer.shadowPath = UIBezierPath(rect: shadowLayer.bounds).cgPath
+        scrollView.layer.addSublayer(shadowLayer)
+
+        return scrollView
+    }()
+
     private var buttons: [UIButton] = []
     private let buttonTitles = ["전체", "일상", "운동", "직장", "연애", "계절"]
 
@@ -66,34 +99,9 @@ class CategoryBtnView: UIView {
     }
 
     private func configureUI() {
-        scrollView.showsHorizontalScrollIndicator = false
-        scrollView.alwaysBounceHorizontal = true
-        scrollView.backgroundColor = .white
-
-        btnStackView.axis = .horizontal
-        btnStackView.spacing = 8
-        btnStackView.alignment = .fill
-        btnStackView.distribution = .fill
-
-        [scrollView].forEach { self.addSubview($0) }
-        scrollView.addSubview(btnStackView)
-
-        scrollView.isPagingEnabled = true
-
-        let shadowLayer = CALayer()
-        shadowLayer.frame = CGRect(
-            x: 0,
-            y: 72,
-            width: UIScreen.main.bounds.width,
-            height: 2
-        )
-        shadowLayer.shadowColor = UIColor.black.cgColor
-        shadowLayer.shadowOpacity = 0.08
-        shadowLayer.shadowOffset = CGSize(width: 0, height: 2)
-        shadowLayer.shadowRadius = 20
-        shadowLayer.shadowPath = UIBezierPath(rect: shadowLayer.bounds).cgPath
-
-        scrollView.layer.addSublayer(shadowLayer)
+        [scrollView].forEach {
+            self.addSubview($0)
+        }
     }
 
     private func setConstraints() {
