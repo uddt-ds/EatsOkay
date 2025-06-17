@@ -11,6 +11,8 @@ import RxDataSources
 /**
 홈 섹션을 구성해주는 SectionModel 구조체입니다
  */
+
+//Todo: Init에 identitiy
 struct HomeSectionOfCellModel {
     var section: Section
     var items: [CellModel]
@@ -21,9 +23,10 @@ extension HomeSectionOfCellModel {
     /**
      CollectionView에 들어가는 Section입니다.
      */
-    enum Section: Int {
+    enum Section {
         case cardSection
     }
+
 }
 
 // 애니메이션 구현을 위해 AnimatableSectionModelType을 채택
@@ -32,7 +35,7 @@ extension HomeSectionOfCellModel: AnimatableSectionModelType {
     typealias Identity = String    // Identity의 Type을 String Type으로 지정
     typealias Item = CellModel    // Item의 Type을 CellModel Type으로 지정
 
-    // section.headerTitle를 ID로 해서 식별이 가능하도록 설정
+    // title을 ID로 해서 식별이 가능하도록 설정
     var identity: String {
         return title
     }

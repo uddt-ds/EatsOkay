@@ -49,25 +49,35 @@ class LocationHeaderView: UIView {
         configureLocationStackView()
     }
 
-
     private func configureTopLabelStackView() {
+
+        let titleText: NSAttributedString = AttributedStringManager
+            .configureString(
+                text: "현재 위치",
+                font: .customFontForSubtitle(weight: .w700),
+                color: .bgColor
+            )
+
+        label.attributedText = titleText
+
         iconImage.image = .headerLocation
         iconImage.tintColor = .white
-        label.text = "현재 위치"
-        label.font = .customFontForSubtitle(weight: .w700)
-        label.sizeToFit()
         label.textColor = .white
-
 
         topLabelStackView.axis = .horizontal
         topLabelStackView.spacing = 4
     }
 
     private func configureLocationStackView() {
-        currentLocationLabel.text = "서울 강남구"
-        currentLocationLabel.font = .customFontForHeader(weight: .w900)
-        currentLocationLabel.textColor = .white
-        currentLocationLabel.sizeToFit()
+
+        let titleText: NSAttributedString = AttributedStringManager
+            .configureString(
+                text: "서울 강남구",
+                font: .customFontForHeader(weight: .w900),
+                color: .bgColor
+            )
+
+        currentLocationLabel.attributedText = titleText
 
         editIconButton.setImage(.headerEdit, for: .normal)
         editIconButton.tintColor = .white

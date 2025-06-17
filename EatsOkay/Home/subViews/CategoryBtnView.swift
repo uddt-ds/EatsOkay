@@ -39,9 +39,9 @@ class CategoryBtnView: UIView {
             button.setTitle(title, for: .normal)
             button.setTitleColor(.customColor(hexCode: .neutral700), for: .normal)
             button.backgroundColor = .customColor(hexCode: .neutral50)
-            button.layer.cornerRadius = 12
             button.layer.borderWidth = 1
-            button.layer.borderColor = UIColor.customColor(hexCode: .neutral50).withAlphaComponent(0.1).cgColor
+            button.layer.borderColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.04).cgColor
+            button.layer.cornerRadius = 12
             button.titleLabel?.font = .customFontForSubtitle(weight: .w600)
 
             button.tag = index
