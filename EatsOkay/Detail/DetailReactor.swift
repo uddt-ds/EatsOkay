@@ -40,6 +40,8 @@ class DetailReactor: Reactor {
         case setWebViewUrl(String)
         case sortStore([StoreSection]) // 데이터 정렬
         case dismissWebView // 웹뷰가 닫혔을 때
+//        case readCacheDictionary([String:String]) // 초기 viewDidLoad 시점에 Cache Dictionary 받아오기
+//        case updateCacheDictionary([String:String]) // Cache Dictionary 업데이트
     }
     
     struct State {
@@ -52,6 +54,7 @@ class DetailReactor: Reactor {
         var shouldPresentWebView: Bool = false // 초기 웹뷰 여부 false
         var webViewUrl: String? = nil
         var sortType: SortType = .rating // 기본값은 별점순
+//        var photoUriCache: [String: String] = [:] // 캐시 상태
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
@@ -61,19 +64,26 @@ class DetailReactor: Reactor {
             // 네트워크 통신 하고 zip으로 병합
             let (centerLat, centerLon) = getCenterLocation()
             
+            // userDefault에서 캐시 딕셔너리 불러오기
+            if let savedCache = UserDeafaultsManager.shared.readPhotoUriCache() {
+                photoUriCache = savedCache
+            } else {
+                    photoUriCache = [:]
+            }
+            
             // 가게 정보와 이미지까지 비동기로 네트워크 통신
-            let firstRequest = fetchStoreInfosWithImages(textQuery: "닭발", centerLat: centerLat, centerLon: centerLon)
-            let secondRequest = fetchStoreInfosWithImages(textQuery: "짜장면", centerLat: centerLat, centerLon: centerLon)
+            let firstRequest = fetchStoreInfosWithImages(textQuery: "국밥", centerLat: centerLat, centerLon: centerLon)
+            let secondRequest = fetchStoreInfosWithImages(textQuery: "갈비", centerLat: centerLat, centerLon: centerLon)
             
             return Observable.zip(firstRequest, secondRequest)
-                .map { first, second in
-                    let merged = (first + second).sorted { $0.rating > $1.rating }
-                    print("첫번째 가게 수 : \(first.count)")
-                    print("두번째 가게 수 : \(second.count)")
-                    print("총 표시 가게 수 : \(merged.count)")
-                    return [StoreSection(items: merged)]
-                }
-                .map { .setStore($0) }
+                    .map { first, second in
+                        let merged = (first + second).sorted { $0.rating > $1.rating }
+                        print("첫번째 가게 수 : \(first.count)")
+                        print("두번째 가게 수 : \(second.count)")
+                        print("총 표시 가게 수 : \(merged.count)")
+                        return [StoreSection(items: merged)]
+                    }
+                    .map { .setStore($0) }
         case .backButtonTapped:
             return .just(.shouldPop(true))
         case .currentLocationButtonTapped:
@@ -164,6 +174,10 @@ class DetailReactor: Reactor {
             newState.storeInfo = storeInfo
         case .dismissWebView:
             newState.shouldPresentWebView = false
+//        case .readCacheDictionary(let cache):
+//            newState.photoUriCache = cache
+//        case .updateCacheDictionary(let cache):
+//            newState.photoUriCache = cache
         }
         return newState
     }
@@ -248,9 +262,10 @@ extension DetailReactor {
             .flatMap { places in
                 Observable.from(places)
                     .flatMap { place -> Observable<StoreInfo?> in
-                        let placeName = place.displayName?.text ?? ""
+                        let placeName = place.photos?.first?.name ?? ""
+                        let splitPlaceName = placeName.split(separator: "/")
                         let photoName = place.photos?.first?.name ?? ""
-                        return self.fetchPhotoUriWithCache(placeName: placeName, photoName: photoName)
+                        return self.fetchPhotoUriWithCache(placeName: "\(splitPlaceName[0])/\(splitPlaceName[1])", photoName: photoName)
                             .asObservable()
                             .map { photoUri in
                                 return self.convertToStoreInfo(place: place, photoUri: photoUri)
@@ -278,6 +293,7 @@ extension DetailReactor {
                 print("네트워크 통신")
                 let photoUri = googleUri.photoUri
                 self.photoUriCache[cacheKey] = photoUri
+                UserDeafaultsManager.shared.savePhotoUriCache(self.photoUriCache)
                 return photoUri
             }
     }
