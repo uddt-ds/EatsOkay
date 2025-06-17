@@ -175,10 +175,10 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         
         // 매장 카운드
         storeCountLabel.snp.makeConstraints { make in
-            // 구한 safeAreaHeight에 비율 0.389를 곱해서 위치 잡기
-//            make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top).offset(safeAreaHeight * 0.389)
-            make.top.equalTo(mapView.snp.bottom).offset(8)
+            make.top.equalTo(mapView.snp.bottom)
             make.leading.equalToSuperview().offset(20)
+            // TODO: 높이 40정도로 설정하기
+            make.height.equalTo(view.snp.height).multipliedBy(0.04926)
         }
         
         // 정렬 버튼
@@ -189,7 +189,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         
         // 구분선
         separatorView.snp.makeConstraints { make in
-            make.top.equalTo(storeCountLabel.snp.bottom).offset(8)
+            make.top.equalTo(storeCountLabel.snp.bottom)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(2)
         }
