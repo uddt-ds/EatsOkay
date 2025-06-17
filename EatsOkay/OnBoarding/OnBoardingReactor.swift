@@ -12,6 +12,7 @@ final class OnboardingReactor: Reactor {
     enum Action {
         case viewDidLoad
         case scrollAction(Int)
+        case startButtonTapped
     }
 
     enum Mutation {
@@ -30,8 +31,8 @@ final class OnboardingReactor: Reactor {
         ]
 
         var currentPageModel: OnboardingPageModel {
-            let index = max(0, min(currentPage, pages.count - 1))
-            return pages[index]
+            return pages[currentPage]
+            
         }
     }
 
@@ -44,15 +45,11 @@ final class OnboardingReactor: Reactor {
             return hasSeen ? .just(.completeOnboarding) : .empty()
 
         case .scrollAction(let page):
-            if page >= currentState.pages.count - 1 {
-                UserDeafaultsManager.shared.saveStatus()
-                return Observable.concat([
-                    .just(.setCurrentPage(page)),
-                    .just(.completeOnboarding)
-                ])
-            } else {
-                return .just(.setCurrentPage(page))
-            }
+            return .just(.setCurrentPage(page))
+            
+        case .startButtonTapped:
+            UserDeafaultsManager.shared.saveStatus()
+            return .just(.completeOnboarding)
         }
     }
 
