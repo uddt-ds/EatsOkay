@@ -244,6 +244,7 @@ extension DetailViewController {
                     let marker = GMSMarker()
                     marker.position = CLLocationCoordinate2D(latitude: store.latitude, longitude: store.longitude)
                     marker.title = store.displayName
+                    marker.icon = UIImage(named: "customMarker")
                     marker.map = mapView
                 }
             })
