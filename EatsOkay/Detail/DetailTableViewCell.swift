@@ -202,7 +202,15 @@ class DetailTableViewCell: UITableViewCell {
         addressLabel.text = address
         storeTypeLabel.text = storeInfo.primaryTypeDisplayName
         openNowLabel.text = storeInfo.currentOpeningHours.openNow ? "영업중" + " • \(openInfoText)" : "영업 종료" + " • \(openInfoText)"
-        storeImageView.image = UIImage(named: "DefaultImage")
+        
+        // photoNames이 빈문자열이면 DefaultImage 표시
+        if storeInfo.photosNames != "" {
+            if let url = URL(string: storeInfo.photosNames) {
+                storeImageView.kf.setImage(with: url)
+            }
+        } else {
+            storeImageView.image = UIImage(named: "DefaultImage")
+        }
     }
 }
 

@@ -6,6 +6,7 @@ import CoreLocation
 class DetailReactor: Reactor {
     var initialState: State
     var selectedKeywords: [String] // home에서 전달받는 검색 키워드 // State로 수정 예정
+    var photoUriCache: [String: String] = [:]
     
     let locationManager = CLLocationManager()
     
@@ -60,25 +61,17 @@ class DetailReactor: Reactor {
             // 네트워크 통신 하고 zip으로 병합
             let (centerLat, centerLon) = getCenterLocation()
             
-            let firstRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스시", centerLat: centerLat, centerLon: centerLon)
-                .map { self.convertToStoreInfo(places: $0) }
-                .asObservable()
+            // 가게 정보와 이미지까지 비동기로 네트워크 통신
+            let firstRequest = fetchStoreInfosWithImages(textQuery: "닭발", centerLat: centerLat, centerLon: centerLon)
+            let secondRequest = fetchStoreInfosWithImages(textQuery: "짜장면", centerLat: centerLat, centerLon: centerLon)
             
-            let secondRequest = NetworkManager.shared.fetchPlacesWithCircle(textQuery: "스테이크", centerLat: centerLat, centerLon: centerLon)
-                .map { self.convertToStoreInfo(places: $0) }
-                .asObservable()
-            
-            // 이미지까지 네트워크 후 킹피셔등 사용해서 섹션 데이터 넘기기
             return Observable.zip(firstRequest, secondRequest)
-                .map { firstRequest, secondRequest in
-                    let mergeStoreInfo = firstRequest + secondRequest
-                    print("첫번째 가게 수 : \(firstRequest.count)")
-                    print("두번째 가게 수 : \(secondRequest.count)")
-                    print("총 표시 가게 수 : \(mergeStoreInfo.count)")
-                    // 별점 순으로 데이터 정렬
-                    let sortedMergeStoreInfo = mergeStoreInfo.sorted { $0.rating > $1.rating}
-                    
-                    return [StoreSection(items: sortedMergeStoreInfo)]
+                .map { first, second in
+                    let merged = (first + second).sorted { $0.rating > $1.rating }
+                    print("첫번째 가게 수 : \(first.count)")
+                    print("두번째 가게 수 : \(second.count)")
+                    print("총 표시 가게 수 : \(merged.count)")
+                    return [StoreSection(items: merged)]
                 }
                 .map { .setStore($0) }
         case .backButtonTapped:
@@ -178,9 +171,8 @@ class DetailReactor: Reactor {
 
 extension DetailReactor {
     // Google Place Response를 StoreInfo로 변환
-    func convertToStoreInfo(places: [GoogleMap.Place]) -> [StoreInfo] {
-        return places.compactMap { place -> StoreInfo? in
-            guard let displayName = place.displayName?.text,
+    func convertToStoreInfo(place: GoogleMap.Place, photoUri: String) -> StoreInfo? {
+        guard let displayName = place.displayName?.text,
                   let primaryTypeDisplayName = place.primaryTypeDisplayName?.text,
                   let googleMapsUri = place.googleMapsUri,
                   let rating = place.rating,
@@ -188,26 +180,22 @@ extension DetailReactor {
                   let currentOpeningHours = place.currentOpeningHours
             else { return nil }
             
-            // photosNames: photos 배열의 첫번째 name 값, 없으면 빈 문자열
-            let photosName = place.photos?.first?.name ?? ""
-            
-            // OpeningHours 변환
             let convertedOpeningHours = convertOpeningHours(currentOpeningHours)
             
             return StoreInfo(
-                displayName: displayName, // 가게 이름
-                primaryTypeDisplayName: primaryTypeDisplayName, // 가게 종류
-                formattedAddress: place.formattedAddress, // 가게 주소
-                latitude: place.location.latitude, // 위도
-                longitude: place.location.longitude, // 경도
-                rating: rating, // 별점
-                googleMapsUri: googleMapsUri, // 구글맵 주소
-                userRatingCount: userRatingCount, // 리뷰수
-                photosNames: photosName, // 리뷰 사진
-                currentOpeningHours: convertedOpeningHours // 영업 시간
+                displayName: displayName,
+                primaryTypeDisplayName: primaryTypeDisplayName,
+                formattedAddress: place.formattedAddress,
+                latitude: place.location.latitude,
+                longitude: place.location.longitude,
+                rating: rating,
+                googleMapsUri: googleMapsUri,
+                userRatingCount: userRatingCount,
+                photosNames: photoUri, // photoUri(이미지 URL)를 여기에 저장
+                currentOpeningHours: convertedOpeningHours
             )
+
         }
-    }
     
     // googleMap.Place.OpeningHours를 DetailModel의 OpeningHours에 맞춰서 변경
     func convertOpeningHours(_ openingHours: GoogleMap.Place.OpeningHours) -> OpeningHours {
@@ -246,9 +234,53 @@ extension DetailReactor {
     
     // 위도와 경도를 받아오는 함수
     private func getCenterLocation() -> (lat: Double, lon: Double) {
-            let userLocation = UserDeafaultsManager.shared.readLocation()
-            let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
-            let centerLon = userLocation?.lon ?? 127.0473
-            return (centerLat, centerLon)
+        let userLocation = UserDeafaultsManager.shared.readLocation()
+        let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
+        let centerLon = userLocation?.lon ?? 127.0473
+        return (centerLat, centerLon)
+    }
+    
+    func fetchStoreInfosWithImages(textQuery: String, centerLat: Double, centerLon: Double) -> Observable<[StoreInfo]> {
+        return NetworkManager.shared.fetchPlacesWithCircle(
+            textQuery: textQuery,
+            centerLat: centerLat,
+            centerLon: centerLon)
+            .flatMap { places in
+                Observable.from(places)
+                    .flatMap { place -> Observable<StoreInfo?> in
+                        let placeName = place.displayName?.text ?? ""
+                        let photoName = place.photos?.first?.name ?? ""
+                        return self.fetchPhotoUriWithCache(placeName: placeName, photoName: photoName)
+                            .asObservable()
+                            .map { photoUri in
+                                return self.convertToStoreInfo(place: place, photoUri: photoUri)
+                            }
+                        
+                    }
+                    .toArray()
+                    .map { $0.compactMap { $0 } }
+            }
+            .asObservable()
+        
+    }
+    
+    // photoUri를 캐싱하여 반환하는 함수
+    func fetchPhotoUriWithCache(placeName: String, photoName: String) -> Single<String> {
+        let cacheKey = placeName
+        if let cachedUri = photoUriCache[cacheKey] {
+            return .just(cachedUri)
         }
+        // photoName이 없으면 빈 문자열 반환
+        guard !photoName.isEmpty else { return .just("") }
+        // 캐시에 없으면 네트워크 요청
+        return NetworkManager.shared.fetchImage(mediaName: photoName)
+            .map { googleUri in
+                print("네트워크 통신")
+                let photoUri = googleUri.photoUri
+                self.photoUriCache[cacheKey] = photoUri
+                return photoUri
+            }
+    }
+    
 }
+
