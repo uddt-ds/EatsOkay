@@ -67,7 +67,7 @@ final class OnboardingViewController: UIViewController, View {
     
     private let gradationView = GradationView()
     private let startButton = CustomButton(title: "시작하기")
-    
+    private let contentView = UIView()
     private lazy var contentViews: [UIView] = [
         UIView(), UIView(), UIView()
     ]
@@ -79,48 +79,70 @@ final class OnboardingViewController: UIViewController, View {
         super.viewDidLoad()
         configureUI()
         setConstraints()
-        addContentToScrollView()
+//        addContentToScrollView()
         bind(reactor: reactor)
     }
     
     private func configureUI() {
         view.backgroundColor = .white
         
-        [scrollView, titleView, titleLabel, descriptionLabel, pageControl, imageView, gradationView, startButton].forEach {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(backgroundImageView)
+        contentViews.forEach { contentView.addSubview($0) }
+        
+        [titleView, titleLabel, descriptionLabel, pageControl, imageView, gradationView, startButton].forEach {
             view.addSubview($0)
         }
         
         titleView.addSubview(titleLabel)
-        scrollView.addSubview(backgroundImageView)
     }
     
-    private func addContentToScrollView() {
-        for i in 0..<contentViews.count {
-            let view = contentViews[i]
-            view.backgroundColor = .clear
-            view.frame = CGRect(
-                x: UIScreen.main.bounds.width * CGFloat(i),
-                y: 0,
-                width: UIScreen.main.bounds.width,
-                height: UIScreen.main.bounds.height
-            )
-            scrollView.addSubview(view)
-        }
-        scrollView.contentSize = CGSize(
-            width: UIScreen.main.bounds.width * CGFloat(contentViews.count),
-            height: UIScreen.main.bounds.height
-        )
-    }
+//    private func addContentToScrollView() {
+//        for i in 0..<contentViews.count {
+//            let view = contentViews[i]
+//            view.backgroundColor = .clear
+//            view.frame = CGRect(
+//                x: UIScreen.main.bounds.width * CGFloat(i),
+//                y: 0,
+//                width: UIScreen.main.bounds.width,
+//                height: UIScreen.main.bounds.height
+//            )
+//            scrollView.addSubview(view)
+//        }
+//        scrollView.contentSize = CGSize(
+//            width: UIScreen.main.bounds.width * CGFloat(contentViews.count),
+//            height: UIScreen.main.bounds.height
+//        )
+//    }
     
     private func setConstraints() {
         scrollView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
         
-        backgroundImageView.snp.makeConstraints {
-            $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(scrollView.snp.height)
+        contentView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+            $0.height.equalToSuperview()
+            $0.width.equalToSuperview().multipliedBy(contentViews.count)
         }
+        
+        backgroundImageView.snp.makeConstraints {
+            $0.centerX.equalToSuperview()
+            $0.centerY.equalToSuperview().offset(100)
+        }
+        
+        for (index, view) in contentViews.enumerated() {
+                    view.snp.makeConstraints {
+                        $0.top.bottom.equalToSuperview()
+                        $0.width.equalTo(scrollView.snp.width)
+                        if index == 0 {
+                            $0.leading.equalToSuperview()
+                        } else {
+                            $0.leading.equalTo(contentViews[index - 1].snp.trailing)
+                        }
+                    }
+                }
         
         titleView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide).offset(30)
@@ -187,8 +209,8 @@ final class OnboardingViewController: UIViewController, View {
         reactor.state.map { $0.currentPageModel }
             .distinctUntilChanged { $0.title == $1.title }
             .subscribe(onNext: { [weak self] page in
-                self?.titleLabel.attributedText = self?.setTitle(text: page.title)
-                self?.descriptionLabel.attributedText = self?.setDescription(text: page.description)
+                self?.titleLabel.attributedText = AttributedStringManager.configureString(text: page.title, font: .customFontForSubtitle(weight: .w700), color: .neutral950)
+                self?.descriptionLabel.attributedText = AttributedStringManager.configureString(text: page.description, font: .customFontForHeader(weight: .w950), color: .neutral950, alignment: .center)
                 self?.imageView.image = UIImage(named: page.imageName)
             })
             .disposed(by: disposeBag)
@@ -207,7 +229,7 @@ final class OnboardingViewController: UIViewController, View {
         reactor.state.map { $0.isCompleted }
             .filter { $0 }
             .subscribe(onNext: { [weak self] _ in
-                self?.navigateToMain()
+                self?.navigateToLocationSelectView()
             })
             .disposed(by: disposeBag)
     }
@@ -236,8 +258,8 @@ final class OnboardingViewController: UIViewController, View {
         return attr
     }
     
-    private func navigateToMain() {
-        print("온보딩 완료 -> 메인으로 이동")
+    private func navigateToLocationSelectView() {
+        print("온보딩 완료 -> 위치설정 뷰로 이동")
     }
 }
 
