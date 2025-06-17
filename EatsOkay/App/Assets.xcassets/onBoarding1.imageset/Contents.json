@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "onBoarding1.png",
+      "filename" : "1onboarding1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "onBoarding2.png",
+      "filename" : "1onboarding2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "onBoarding3.png",
+      "filename" : "1onboarding3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

@@ -1,23 +1,15 @@
 {
   "images" : [
     {
-      "filename" : "background1.png",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "background2.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "filename" : "background3.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "filename" : "background.svg",
+      "idiom" : "universal"
     }
   ],
   "info" : {
     "author" : "xcode",
     "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true
   }
 }

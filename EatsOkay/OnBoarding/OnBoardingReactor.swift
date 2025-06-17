@@ -9,8 +9,8 @@ import Foundation
 import ReactorKit
 
 final class OnboardingReactor: Reactor {
+    
     enum Action {
-        case viewDidLoad
         case scrollAction(Int)
         case startButtonTapped
     }
@@ -22,7 +22,7 @@ final class OnboardingReactor: Reactor {
 
     struct State {
         var currentPage: Int = 0
-        var isCompleted: Bool = false
+        var isCompleted: Bool?
 
         let pages: [OnboardingPageModel] = [
             .init(title: "맞춤 큐레이션", description: "상황별 딱 맞는\n다양한 외식 큐레이션 제공!", imageName: "onBoarding1"),
@@ -39,10 +39,8 @@ final class OnboardingReactor: Reactor {
     let initialState = State()
 
     func mutate(action: Action) -> Observable<Mutation> {
+        
         switch action {
-        case .viewDidLoad:
-            let hasSeen = UserDeafaultsManager.shared.readStatus()
-            return hasSeen ? .just(.completeOnboarding) : .empty()
 
         case .scrollAction(let page):
             return .just(.setCurrentPage(page))
@@ -54,6 +52,7 @@ final class OnboardingReactor: Reactor {
     }
 
     func reduce(state: State, mutation: Mutation) -> State {
+        
         var newState = state
         switch mutation {
         case .setCurrentPage(let page):

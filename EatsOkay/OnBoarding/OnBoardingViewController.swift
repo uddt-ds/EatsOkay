@@ -17,7 +17,7 @@ final class OnboardingViewController: UIViewController, View {
     private let backgroundImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = .background
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
@@ -61,7 +61,7 @@ final class OnboardingViewController: UIViewController, View {
     
     private let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
@@ -79,7 +79,6 @@ final class OnboardingViewController: UIViewController, View {
         super.viewDidLoad()
         configureUI()
         setConstraints()
-//        addContentToScrollView()
         bind(reactor: reactor)
     }
     
@@ -88,7 +87,7 @@ final class OnboardingViewController: UIViewController, View {
         
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
-        contentView.addSubview(backgroundImageView)
+        scrollView.addSubview(backgroundImageView)
         contentViews.forEach { contentView.addSubview($0) }
         
         [titleView, titleLabel, descriptionLabel, pageControl, imageView, gradationView, startButton].forEach {
@@ -97,24 +96,6 @@ final class OnboardingViewController: UIViewController, View {
         
         titleView.addSubview(titleLabel)
     }
-    
-//    private func addContentToScrollView() {
-//        for i in 0..<contentViews.count {
-//            let view = contentViews[i]
-//            view.backgroundColor = .clear
-//            view.frame = CGRect(
-//                x: UIScreen.main.bounds.width * CGFloat(i),
-//                y: 0,
-//                width: UIScreen.main.bounds.width,
-//                height: UIScreen.main.bounds.height
-//            )
-//            scrollView.addSubview(view)
-//        }
-//        scrollView.contentSize = CGSize(
-//            width: UIScreen.main.bounds.width * CGFloat(contentViews.count),
-//            height: UIScreen.main.bounds.height
-//        )
-//    }
     
     private func setConstraints() {
         scrollView.snp.makeConstraints {
@@ -128,8 +109,9 @@ final class OnboardingViewController: UIViewController, View {
         }
         
         backgroundImageView.snp.makeConstraints {
-            $0.centerX.equalToSuperview()
-            $0.centerY.equalToSuperview().offset(100)
+            $0.horizontalEdges.equalToSuperview()
+            $0.bottom.equalToSuperview()
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(UIScreen.main.bounds.height*0.1)
         }
         
         for (index, view) in contentViews.enumerated() {
@@ -146,30 +128,35 @@ final class OnboardingViewController: UIViewController, View {
         
         titleView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide).offset(30)
+            $0.height.equalTo(38)
             $0.centerX.equalToSuperview()
         }
+        
         titleLabel.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(10)
+            $0.verticalEdges.equalToSuperview().inset(8)
+            $0.horizontalEdges.equalToSuperview().inset(10)
         }
         
         descriptionLabel.snp.makeConstraints {
             $0.top.equalTo(titleView.snp.bottom).offset(20)
             $0.leading.trailing.equalToSuperview().inset(20)
+            $0.height.equalTo(68)
         }
         
         pageControl.snp.makeConstraints {
-            $0.top.equalTo(descriptionLabel.snp.bottom).offset(30)
+            $0.top.equalTo(descriptionLabel.snp.bottom).offset(10)
             $0.centerX.equalToSuperview()
         }
         
         imageView.snp.makeConstraints {
-            $0.top.equalTo(pageControl.snp.bottom).offset(20)
+            $0.top.equalTo(pageControl.snp.bottom).offset(10.33)
+            $0.bottom.equalToSuperview()
             $0.centerX.equalToSuperview()
         }
         
         gradationView.snp.makeConstraints {
             $0.leading.trailing.bottom.equalToSuperview()
-            $0.height.equalTo(121)
+            $0.height.equalTo(100)
         }
         
         startButton.snp.makeConstraints {
@@ -181,9 +168,7 @@ final class OnboardingViewController: UIViewController, View {
     }
     
     func bind(reactor: Reactor) {
-        reactor.action.onNext(.viewDidLoad)
         
-        //  Rx로 스크롤 이벤트 감지 & NaN 방지
         scrollView.rx.contentOffset
             .map { [weak self] offset -> Int in
                 guard let self = self else { return 0 }
@@ -196,17 +181,20 @@ final class OnboardingViewController: UIViewController, View {
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
-        reactor.state.map { $0.pages.count }
+        reactor.state
+            .map { $0.pages.count }
             .distinctUntilChanged()
             .bind(to: pageControl.rx.numberOfPages)
             .disposed(by: disposeBag)
         
-        reactor.state.map { $0.currentPage }
+        reactor.state
+            .map { $0.currentPage }
             .distinctUntilChanged()
             .bind(to: pageControl.rx.currentPage)
             .disposed(by: disposeBag)
         
-        reactor.state.map { $0.currentPageModel }
+        reactor.state
+            .map { $0.currentPageModel }
             .distinctUntilChanged { $0.title == $1.title }
             .subscribe(onNext: { [weak self] page in
                 self?.titleLabel.attributedText = AttributedStringManager.configureString(text: page.title, font: .customFontForSubtitle(weight: .w700), color: .neutral950)
@@ -226,7 +214,8 @@ final class OnboardingViewController: UIViewController, View {
             .bind(to: startButton.rx.isHidden)
             .disposed(by: disposeBag)
         
-        reactor.state.map { $0.isCompleted }
+        reactor.state
+            .compactMap { $0.isCompleted }
             .filter { $0 }
             .subscribe(onNext: { [weak self] _ in
                 self?.navigateToLocationSelectView()
@@ -234,32 +223,9 @@ final class OnboardingViewController: UIViewController, View {
             .disposed(by: disposeBag)
     }
     
-    private func setTitle(text: String) -> NSMutableAttributedString {
-        let attr = NSMutableAttributedString(string: text)
-        let range = NSRange(location: 0, length: attr.length)
-        let font = UIFont.customFontForSubtitle(weight: .w700)
-        let color = UIColor.customColor(hexCode: .neutral950)
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = .center
-        paragraph.lineHeightMultiple = 1.17
-        attr.addAttributes([.font: font, .foregroundColor: color, .paragraphStyle: paragraph], range: range)
-        return attr
-    }
-    
-    private func setDescription(text: String) -> NSMutableAttributedString {
-        let attr = NSMutableAttributedString(string: text)
-        let range = NSRange(location: 0, length: attr.length)
-        let font = UIFont.customFontForHeader(weight: .w950)
-        let color = UIColor.customColor(hexCode: .neutral950)
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = .center
-        paragraph.lineHeightMultiple = 1.17
-        attr.addAttributes([.font: font, .foregroundColor: color, .paragraphStyle: paragraph], range: range)
-        return attr
-    }
-    
     private func navigateToLocationSelectView() {
         print("온보딩 완료 -> 위치설정 뷰로 이동")
+//        self.navigationController?.pushViewController(<#T##viewController: UIViewController##UIViewController#>, animated: <#T##Bool#>)
     }
 }
 
