@@ -24,6 +24,7 @@ struct AttributedStringManager {
         let baselineOffset = (targetLineHeight - font.lineHeight) / 2
         
         let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = alignment
         paragraphStyle.lineHeightMultiple = lineHeightMultiple
         paragraphStyle.minimumLineHeight = targetLineHeight
         paragraphStyle.maximumLineHeight = targetLineHeight
@@ -51,6 +52,7 @@ struct AttributedStringManager {
         let baselineOffset = (targetLineHeight - font.lineHeight) / 2
         
         let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = alignment
         paragraphStyle.lineHeightMultiple = lineHeightMultiple
         paragraphStyle.minimumLineHeight = targetLineHeight
         paragraphStyle.maximumLineHeight = targetLineHeight
