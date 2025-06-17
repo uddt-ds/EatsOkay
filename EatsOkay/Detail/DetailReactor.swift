@@ -19,7 +19,7 @@ class DetailReactor: Reactor {
     enum Action {
         case viewDidLoad // 뷰가 DidLoad 되었을 때
         case backButtonTapped // 뒤로가기 버튼을 클릭했을 때
-        case currentLocationSearchButtonTapped // 현 위치에서 검색 버튼 눌렀을 때
+        case currentLocationSearchButtonTapped(centerLat: Double, centerLon: Double) // 현 위치에서 검색 버튼 눌렀을 때
         case currentLocationButtonTapped // 현재 위치 버튼 클릭했을 때
         case tableViewItemTapped(IndexPath: IndexPath) // 테이블 뷰 셀을 클릭했을 때
         case sortButtonTapped(sortType: SortType) // 정렬 버튼을 클릭했을 때
@@ -84,8 +84,19 @@ class DetailReactor: Reactor {
                 .map { .setStore($0) }
         case .backButtonTapped:
             return .just(.shouldPop(true))
-        case .currentLocationSearchButtonTapped:
-            
+        case .currentLocationSearchButtonTapped(let centerLat, let centerLon):
+            let requests = selectedKeywords.map {
+                NetworkManager.shared.fetchPlacesWithCircle(textQuery: $0, centerLat: centerLat, centerLon: centerLon)
+                    .map { self.convertToStoreInfo(places: $0) }
+                    .asObservable()
+            }
+            return Observable.zip(requests)
+                .map { $0.flatMap { $0 }}
+                .map { stores in
+                    let sorted = stores.sorted { $0.rating > $1.rating }
+                    return [StoreSection(items: sorted)]
+                }
+                .map { .setStore($0) }
         case .currentLocationButtonTapped:
             return handleLocationAuthorization()
             // 테이블 뷰 셀 클릭시 웹뷰 띄우기
