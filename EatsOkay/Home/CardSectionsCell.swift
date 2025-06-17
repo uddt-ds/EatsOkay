@@ -36,7 +36,7 @@ final class CardSectionsCell: UITableViewCell {
     }
 
     private func configureUI() {
-        contentView.backgroundColor = .white.withAlphaComponent(0.8)
+        contentView.backgroundColor = .white
 
         [titleLabel, hashTagLabel].forEach {
             titleStackView.addArrangedSubview($0)
@@ -50,10 +50,10 @@ final class CardSectionsCell: UITableViewCell {
 
         shadowBackgroundView.addSubview(backgroundImageView)
 
-        shadowBackgroundView.layer.shadowColor = .init(red: 0, green: 0, blue: 0, alpha: 0.08)
-        shadowBackgroundView.layer.shadowOpacity = 1.0
+        shadowBackgroundView.layer.shadowColor = UIColor.customColor(hexCode: .neutral950).cgColor
+        shadowBackgroundView.layer.shadowOpacity = 0.2
         shadowBackgroundView.layer.shadowOffset = CGSize(width: 0, height: 0)
-        shadowBackgroundView.layer.shadowRadius = 20
+        shadowBackgroundView.layer.shadowRadius = 8
         shadowBackgroundView.layer.masksToBounds = false
 
         backgroundImageView.layer.cornerRadius = 12
@@ -71,7 +71,7 @@ final class CardSectionsCell: UITableViewCell {
         stackBgView.layer.maskedCorners = CACornerMask(arrayLiteral: .layerMinXMaxYCorner, .layerMaxXMaxYCorner)
         stackBgView.layer.cornerRadius = 12
 
-        tagLabel.backgroundColor = .customColor(hexCode: .neutral700)
+        tagLabel.backgroundColor = .customColor(hexCode: .neutral950).withAlphaComponent(0.4)
         tagLabel.layer.cornerRadius = 8
         tagLabel.clipsToBounds = true
     }
