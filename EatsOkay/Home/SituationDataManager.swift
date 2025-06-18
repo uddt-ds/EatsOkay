@@ -62,7 +62,7 @@ struct SituationDataManager {
                         assetImage: .workout1),
             SectionData(title: "그래도 건강하게 먹어야지",
                         hashTags: ["#다이어트", "#유지어터"],
-                        keywords: ["포케", "키토김밥"],
+                        keywords: ["포케", "키토"],
                         category: .workout,
                         assetImage: .workout2),
             SectionData(title: "벌크업 벌크업 마시자",
