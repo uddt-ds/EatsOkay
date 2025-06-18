@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>현재 위치를 기반으로 주변 식당 정보를 제공하기 위해 위치 접근 권한이 필요합니다.</string>
 	<key>GoogleAPIKey</key>
 	<string>$(GoogleAPIKey)</string>
 	<key>KakaoAPIKey</key>
