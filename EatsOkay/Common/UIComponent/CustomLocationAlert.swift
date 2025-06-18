@@ -163,13 +163,13 @@ final class CustomLocationAlert: UIViewController {
     }
     
     private func addAction() {
-        cancelButton.addAction(UIAction(handler: { _ in
-            self.dismiss(animated: true)
+        cancelButton.addAction(UIAction(handler: { [weak self] _ in
+            self?.dismiss(animated: true)
         }), for: .touchUpInside)
         
-        goSettingButton.addAction(UIAction(handler: { _ in
+        goSettingButton.addAction(UIAction(handler: { [weak self] _ in
             guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-            self.dismiss(animated: true)
+            self?.dismiss(animated: true)
             UIApplication.shared.open(url)
         }), for: .touchUpInside)
     }
