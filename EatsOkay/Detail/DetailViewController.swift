@@ -10,13 +10,21 @@ import SafariServices
 class DetailViewController: UIViewController, GMSMapViewDelegate, View {
 
     typealias Reactor = DetailReactor
+    let reactor: DetailReactor
 
     // 선언 시에는 초기화 하지 않고 viewDidLoad 시 초기화
     private var mapView: GMSMapView!
 
     var disposeBag = DisposeBag()
     
-    let reactor = DetailReactor(selectedKeywords: ["치킨", "족발"])
+    init(reactor: DetailReactor) {
+        self.reactor = reactor
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private var shouldAnimateCamera = false
     
@@ -123,8 +131,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         
         bind(reactor: reactor)
         
-        // 임시 타이틀 → 추후 UI 변경 및 키워드 기반으로 바인딩 예정
-        self.title = "퇴근 후, 혼술 타임"
+        self.title = reactor.title
         
         navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .customColor(hexCode: .neutral950)
@@ -137,7 +144,6 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         let options = GMSMapViewOptions()
         options.camera = camera
         mapView = GMSMapView(options: options)
-        
         mapView.delegate = self
     }
     
@@ -213,7 +219,7 @@ extension DetailViewController {
 
     func bindAction(reactor: DetailReactor) {
         // viewDidLoad 될 때 Action
-        reactor.action.onNext(.viewDidLoad) // 주로 just 사용
+        reactor.action.onNext(.viewDidLoad)
         
         // 테이블 뷰 cell 클릭시 Action
         tableView.rx.itemSelected
@@ -291,7 +297,7 @@ extension DetailViewController {
             // currentLatitude, currentLongitute 값이 둘 다 존재할 경우 tuple로 return
             .compactMap { state -> (Double, Double)? in
                 guard let lat = state.currentLatitude,
-                      let lon = state.currentLongitute else { return nil }
+                      let lon = state.currentLongitude else { return nil }
                 return (lat, lon)
             }
             .withUnretained(self)
