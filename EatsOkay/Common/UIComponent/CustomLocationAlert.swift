@@ -72,6 +72,13 @@ final class CustomLocationAlert: UIViewController {
         button.layer.borderColor = UIColor(hexCode: "3C3C43").withAlphaComponent(0.29).cgColor
         button.layer.borderWidth = 0.5
         
+        button.configurationUpdateHandler = { button in
+            let isHighlighted = button.isHighlighted
+            button.backgroundColor = isHighlighted
+            ? .customColor(hexCode: .neutral100)
+            : .customColor(hexCode: .neutral50)
+        }
+        
         return button
     }()
     
@@ -89,6 +96,13 @@ final class CustomLocationAlert: UIViewController {
         let button = UIButton(configuration: configuration)
         button.layer.borderColor = UIColor(hexCode: "3C3C43").withAlphaComponent(0.29).cgColor
         button.layer.borderWidth = 0.5
+        
+        button.configurationUpdateHandler = { button in
+            let isHighlighted = button.isHighlighted
+            button.backgroundColor = isHighlighted
+            ? .customColor(hexCode: .neutral100)
+            : .customColor(hexCode: .neutral50)
+        }
         
         return button
     }()
