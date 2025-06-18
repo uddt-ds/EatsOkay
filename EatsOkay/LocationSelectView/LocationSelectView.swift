@@ -14,57 +14,33 @@ import ReactorKit
 final class LocationSelectView: UIViewController, View {
     
     var disposeBag: DisposeBag = DisposeBag()
-    let reactor: LocationSelectReactor
+    private let reactor: LocationSelectReactor
     
-    let guideLabel: UILabel = {
-        
-        let titleText = NSMutableAttributedString(
-            string: "어디에 계신가요?\n지역을 골라주세요!"
-        )
-        
-        let range = NSRange(location: 0, length: titleText.length)
-        
-        let headerFont = UIFont.customFontForHeader(weight: .w950)
-        let textColor = UIColor.customColor(hexCode: .neutral950)
-        
-        let textStyle = NSMutableParagraphStyle()
-        textStyle.alignment = .left
-        textStyle.lineHeightMultiple = 1.17
-        
-        titleText.addAttribute(.font, value: headerFont, range: range)
-        titleText.addAttribute(.foregroundColor, value: textColor, range: range)
-        titleText.addAttribute(.paragraphStyle, value: textStyle, range: range)
+    private let guideLabel: UILabel = {
         
         let label = UILabel()
         label.numberOfLines = 2
-        label.attributedText = titleText
+        label.attributedText = AttributedStringManager.configureString(
+            text: "어디에 계신가요?\n지역을 골라주세요!",
+            font: .customFontForHeader(weight: .w950),
+            color: .neutral950
+        )
         
         return label
     }()
     
-    let locationButton: UIButton = {
-        
-        let titleText = NSMutableAttributedString(string: "현재 위치로 설정")
-        let range = NSRange(location: 0, length: titleText.length)
-        
-        let headerFont = UIFont.customFontForSubtitle(weight: .w600)
-        let textColor = UIColor.customColor(hexCode: .neutral400)
-        
-        let textStyle = NSMutableParagraphStyle()
-        textStyle.alignment = .left
-        textStyle.lineHeightMultiple = 1.17
-        
-        titleText.addAttribute(.font, value: headerFont, range: range)
-        titleText.addAttribute(.foregroundColor, value: textColor, range: range)
-        titleText.addAttribute(.paragraphStyle, value: textStyle, range: range)
-        
+    private let locationButton: UIButton = {
         
         var configuration = UIButton.Configuration.plain()
         configuration.image = UIImage(resource: .locationMark)
         configuration.imagePlacement = .leading
         configuration.imagePadding = 4
         configuration.contentInsets = .zero
-        configuration.attributedTitle = AttributedString(titleText)
+        configuration.attributedTitle = AttributedStringManager.configureString(
+                text: "현재 위치로 설정",
+                font: .customFontForSubtitle(weight: .w600),
+                color: .neutral400
+        )
         
         let button = UIButton(configuration: configuration)
         return button
@@ -84,12 +60,12 @@ final class LocationSelectView: UIViewController, View {
         return stackView
     }()
     
-    let pickerView: UIPickerView = {
+    private let pickerView: UIPickerView = {
         let pickerView = UIPickerView()
         return pickerView
     }()
     
-    let startButton = CustomButton(title: "설정하기")
+    private let startButton = CustomButton(title: "설정하기")
     
     init(reactor: LocationSelectReactor) {
         self.reactor = reactor
@@ -176,37 +152,38 @@ final class LocationSelectView: UIViewController, View {
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$pickerViewinitialRows)
+            .compactMap { $0 }
             .withUnretained(self)
             .bind { vc, rows in
-                guard let rows else { return }
                 vc.pickerView.selectRow(rows.firstRow, inComponent: 0, animated: true)
                 vc.pickerView.selectRow(rows.secondRow, inComponent: 1, animated: true)
             }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$alertState)
+            .compactMap { $0 }
             .withUnretained(self)
-            .bind { vc, void in
-                guard void != nil else { return }
+            .bind { vc, _ in
                 let locationAlert = CustomLocationAlert()
+                locationAlert.modalPresentationStyle = .overFullScreen
+                locationAlert.modalTransitionStyle = .crossDissolve
                 vc.present(locationAlert, animated: true)
             }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$nextViewState)
-            .withUnretained(self)
-            .bind { vc, test in
-                guard test != nil else { return }
-                let testView = MainViewController()
-                vc.present(testView, animated: true)
+            .compactMap { $0 }
+            .bind { _ in
+                // TODO: merge후 HomeViewContoller로 전환
             }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$error)
-            .withUnretained(self)
-            .bind { vc, error in
+            .compactMap { $0 }
+            .bind { error in
                 guard error != nil else { return }
                 guard let errorString = error?.localizedDescription else { return }
+                // TODO: 예외처리 방법 논의 후 구현
                 print(errorString)
             }
             .disposed(by: disposeBag)
