@@ -24,11 +24,10 @@ extension GoogleMap {
         let formattedAddress: String // 전체 주소
         let location: Location // 위경도
         let rating: Double? // 별점
-        let googleMapsURI: String? // 웹뷰 주소
+        let googleMapsUri: String? // 웹뷰 주소  // googleMapsURI -> googleMapsUri로 수정
         let userRatingCount: Int? // 리뷰 수
         let photos: [Photo]? // 사진요청 쿼리
-        let postalAddress: PostalAddress? // 구분된 주소
-        let currentOpeningHours: OpeningHours? // 오픈 시간
+        let currentOpeningHours: OpeningHours? // 오픈 시간 일->토 순서
         
     }
 }
@@ -51,15 +50,11 @@ extension GoogleMap.Place {
     struct Photo: Decodable {
         let name: String
     }
-    // 구분된 주소
-    struct PostalAddress: Decodable {
-        let administrativeArea: String // ex) 서울특별시
-        let locality: String // ex) 종로구
-    }
     // 오픈 시간
     struct OpeningHours: Decodable {
         let openNow: Bool
         let periods: [Periods]
+        let weekdayDescriptions: [String]?
     }
     
 }
