@@ -37,18 +37,23 @@ extension OpeningHours {
 }
 
 extension StoreInfo: IdentifiableType {
-    var identity: String { return displayName } // 고유 식별자로 가게명 사용
+    var identity: String { return UUID().uuidString } // 고유 식별자로 가게명 사용
 }
 
 struct StoreSection {
+    var identity: String
     var items: [StoreInfo]
+    
+    init(items: [StoreInfo]) {
+        self.identity = UUID().uuidString
+        self.items = items
+    }
 }
 
 extension StoreSection: AnimatableSectionModelType {
     typealias Item = StoreInfo
-    typealias Identity = String
-    
-    var identity: String { "default" }
+//    typealias Identity = UUID // Identity 타입을 UUID로 변경
+
     init(original: StoreSection, items: [StoreInfo]) {
         self = original
         self.items = items
