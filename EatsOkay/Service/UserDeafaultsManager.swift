@@ -17,6 +17,7 @@ final class UserDeafaultsManager {
     private enum Keys: String {
         case onBoardingKey
         case locationKey
+        case photoUriCacheKey
     }
     
     // 메서드 호출 시 true 값 저장
@@ -48,4 +49,13 @@ final class UserDeafaultsManager {
         let lat: Double
         let lon: Double
     }
+    
+    func savePhotoUriCache(_ cache: [String: String]) {
+        defaults.set(cache, forKey: Keys.photoUriCacheKey.rawValue)
+    }
+
+    func readPhotoUriCache() -> [String: String]? {
+        return defaults.object(forKey: Keys.photoUriCacheKey.rawValue) as? [String: String]
+    }
+
 }
