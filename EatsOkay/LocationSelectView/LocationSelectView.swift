@@ -14,9 +14,9 @@ import ReactorKit
 final class LocationSelectView: UIViewController, View {
     
     var disposeBag: DisposeBag = DisposeBag()
-    let reactor: LocationSelectReactor
+    private let reactor: LocationSelectReactor
     
-    let guideLabel: UILabel = {
+    private let guideLabel: UILabel = {
         
         let label = UILabel()
         label.numberOfLines = 2
@@ -29,7 +29,7 @@ final class LocationSelectView: UIViewController, View {
         return label
     }()
     
-    let locationButton: UIButton = {
+    private let locationButton: UIButton = {
         
         var configuration = UIButton.Configuration.plain()
         configuration.image = UIImage(resource: .locationMark)
@@ -60,12 +60,12 @@ final class LocationSelectView: UIViewController, View {
         return stackView
     }()
     
-    let pickerView: UIPickerView = {
+    private let pickerView: UIPickerView = {
         let pickerView = UIPickerView()
         return pickerView
     }()
     
-    let startButton = CustomButton(title: "설정하기")
+    private let startButton = CustomButton(title: "설정하기")
     
     init(reactor: LocationSelectReactor) {
         self.reactor = reactor
