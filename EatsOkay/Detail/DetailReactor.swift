@@ -6,7 +6,7 @@ import CoreLocation
 class DetailReactor: Reactor {
     var initialState: State
     private var selectedKeywords: [String] // home에서 전달받는 검색 키워드
-    private var title: String
+    var title: String
     private var photoUriCache: [String: String] = [:]
     
     let locationManager = CLLocationManager()
