@@ -9,6 +9,13 @@ import UIKit
 
 class CustomButton: UIButton {
     
+    override var isHighlighted: Bool {
+        didSet {
+            self.backgroundColor = isHighlighted ?
+                .customColor(hexCode: .primary600) : .customColor(hexCode: .primary400)
+        }
+    }
+    
     init(title: String) {
         super.init(frame: .zero)
         self.setTitle(title, for: .normal)
@@ -17,13 +24,6 @@ class CustomButton: UIButton {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    override var isHighlighted: Bool {
-        didSet {
-            self.backgroundColor = isHighlighted ?
-                .customColor(hexCode: .primary600) : .customColor(hexCode: .primary400)
-        }
     }
     
     private func configure() {
