@@ -10,7 +10,6 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import ReactorKit
-import RxGesture
 
 final class LocationSelectView: UIViewController, View {
     
@@ -187,8 +186,20 @@ final class LocationSelectView: UIViewController, View {
         
         reactor.pulse(\.$nextViewState)
             .compactMap { $0 }
-            .bind { _ in
-                // TODO: merge후 HomeViewContoller로 전환
+            .withUnretained(self)
+            .bind { vc, _ in
+                if let rootVC = vc.navigationController?.viewControllers.first {
+                    switch rootVC {
+                    case is HomeViewController:
+                        vc.navigationController?.popViewController(animated: true)
+                    case is OnboardingViewController:
+                        let reactor = HomeReactor()
+                        let homeVC = HomeViewController(reactor: reactor)
+                        vc.navigationController?.setViewControllers([homeVC], animated: true)
+                    default:
+                        vc.navigationController?.popViewController(animated: true)
+                    }
+                }
             }
             .disposed(by: disposeBag)
         
