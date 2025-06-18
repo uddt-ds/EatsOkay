@@ -20,6 +20,7 @@ class DetailReactor: Reactor {
     enum Action {
         case viewDidLoad // 뷰가 DidLoad 되었을 때
         case backButtonTapped // 뒤로가기 버튼을 클릭했을 때
+        case currentLocationSearchButtonTapped(centerLat: Double, centerLon: Double) // 현 위치에서 검색 버튼 눌렀을 때
         case currentLocationButtonTapped // 현재 위치 버튼 클릭했을 때
         case tableViewItemTapped(IndexPath: IndexPath) // 테이블 뷰 셀을 클릭했을 때
         case sortButtonTapped(sortType: SortType) // 정렬 버튼을 클릭했을 때
@@ -40,8 +41,6 @@ class DetailReactor: Reactor {
         case setWebViewUrl(String)
         case sortStore([StoreSection]) // 데이터 정렬
         case dismissWebView // 웹뷰가 닫혔을 때
-//        case readCacheDictionary([String:String]) // 초기 viewDidLoad 시점에 Cache Dictionary 받아오기
-//        case updateCacheDictionary([String:String]) // Cache Dictionary 업데이트
     }
     
     struct State {
@@ -54,7 +53,6 @@ class DetailReactor: Reactor {
         var shouldPresentWebView: Bool = false // 초기 웹뷰 여부 false
         var webViewUrl: String? = nil
         var sortType: SortType = .rating // 기본값은 별점순
-//        var photoUriCache: [String: String] = [:] // 캐시 상태
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
@@ -86,31 +84,18 @@ class DetailReactor: Reactor {
                     .map { .setStore($0) }
         case .backButtonTapped:
             return .just(.shouldPop(true))
-        case .currentLocationButtonTapped:
-            let status = locationManager.authorizationStatus
-            switch status {
-            case .notDetermined:
-                locationManager.requestWhenInUseAuthorization()
-                return .empty()
-            case .restricted, .authorizedWhenInUse, .authorizedAlways:
-                return locationManager.rx.getCurrentLocationOnce
-                    .flatMap { lat, lon -> Observable<Mutation> in
-                        print("\(lat), \(lon)")
-                        // 위도, 경도로 시/도 역지오코딩
-                        return NetworkManager.shared.fetchGeoCoding(lat: lat, lon: lon)
-                            .asObservable()
-                            .map { addressTuple in
-                                let address = addressTuple.map { "\($0.0) \($0.1)" } ?? "알 수 없는 위치"
-                                let location = UserDeafaultsManager.UserLocation(address: address, lat: lat, lon: lon)
-                                UserDeafaultsManager.shared.saveLocation(location: location)
-                                return .setCurrentLocation(lat: lat, lon: lon)
-                            }
+        case .currentLocationSearchButtonTapped(let centerLat, let centerLon):
+            let firstRequest = fetchStoreInfosWithImages(textQuery: "국밥", centerLat: centerLat, centerLon: centerLon)
+            let secondRequest = fetchStoreInfosWithImages(textQuery: "갈비", centerLat: centerLat, centerLon: centerLon)
+            
+            return Observable.zip(firstRequest, secondRequest)
+                    .map { first, second in
+                        let merged = (first + second).sorted { $0.rating > $1.rating }
+                        return [StoreSection(items: merged)]
                     }
-            case .denied:
-                return .just(.showLocationAlert)
-            @unknown default:
-                return .empty()
-            }
+                    .map { .setStore($0) }
+        case .currentLocationButtonTapped:
+            return handleLocationAuthorization()
             // 테이블 뷰 셀 클릭시 웹뷰 띄우기
         case .tableViewItemTapped(let indexPath):
             let storeInfo = currentState.storeInfo
@@ -174,10 +159,6 @@ class DetailReactor: Reactor {
             newState.storeInfo = storeInfo
         case .dismissWebView:
             newState.shouldPresentWebView = false
-//        case .readCacheDictionary(let cache):
-//            newState.photoUriCache = cache
-//        case .updateCacheDictionary(let cache):
-//            newState.photoUriCache = cache
         }
         return newState
     }
@@ -265,7 +246,18 @@ extension DetailReactor {
                         let placeName = place.photos?.first?.name ?? ""
                         let splitPlaceName = placeName.split(separator: "/")
                         let photoName = place.photos?.first?.name ?? ""
-                        return self.fetchPhotoUriWithCache(placeName: "\(splitPlaceName[0])/\(splitPlaceName[1])", photoName: photoName)
+                        
+                        // Index out of range error 방지
+                        let cacheKey: String
+                        if splitPlaceName.count >= 2 {
+                            cacheKey = "\(splitPlaceName[0])/\(splitPlaceName[1])"
+                        } else if splitPlaceName.count == 1 {
+                            cacheKey = String(splitPlaceName[0])
+                        } else {
+                            cacheKey = ""
+                        }
+                        
+                        return self.fetchPhotoUriWithCache(placeName: cacheKey, photoName: photoName)
                             .asObservable()
                             .map { photoUri in
                                 return self.convertToStoreInfo(place: place, photoUri: photoUri)
@@ -298,5 +290,31 @@ extension DetailReactor {
             }
     }
     
+    // 권한 설정에 따른 동작을 설정하는 함수
+    private func handleLocationAuthorization() -> Observable<Mutation> {
+        let status = locationManager.authorizationStatus
+        switch status {
+        case .notDetermined:
+            locationManager.requestWhenInUseAuthorization()
+            return .empty()
+        case .restricted, .authorizedWhenInUse, .authorizedAlways:
+            return locationManager.rx.getCurrentLocationOnce
+                .flatMap { lat, lon -> Observable<Mutation> in
+                    return NetworkManager.shared.fetchGeoCoding(lat: lat, lon: lon)
+                        .asObservable()
+                        .map { addressTuple in
+                            let address = addressTuple.map { "\($0.0) \($0.1)" } ?? "알 수 없는 위치"
+                            let location = UserDeafaultsManager.UserLocation(address: address, lat: lat, lon: lon)
+                            UserDeafaultsManager.shared.saveLocation(location: location)
+                            return .setCurrentLocation(lat: lat, lon: lon)
+                        }
+                }
+        case .denied:
+            return .just(.showLocationAlert)
+        @unknown default:
+            return .empty()
+        }
+    }
+
 }
 

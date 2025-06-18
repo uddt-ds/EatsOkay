@@ -18,6 +18,8 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
     
     let reactor = DetailReactor(selectedKeywords: ["치킨", "족발"])
     
+    private var shouldAnimateCamera = false
+    
     private let backButton: UIBarButtonItem = {
         let button = UIBarButtonItem(
             image: UIImage(named: "chevronLeft"),
@@ -30,9 +32,8 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
     
     private let currentLocationSearchButton: UIButton = {
         let button = UIButton()
-        button.setTitle("현 위치에서 검색", for: .normal)
-        button.setTitleColor(.customColor(hexCode: .bgColor), for: .normal)
-        button.titleLabel?.font = .customFontForBody(weight: .w400)
+        let text: NSMutableAttributedString = AttributedStringManager.configureString(text: "현 위치에서 검색", font: .customFontForBody(weight: .w400), color: .bgColor)
+        button.setAttributedTitle(text, for: .normal)
         button.backgroundColor = .customColor(hexCode: .primary400)
         button.setImage(UIImage(named: "reloadButton"), for: .normal)
         button.imageView?.contentMode = .scaleAspectFill
@@ -130,7 +131,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
     }
     
     private func setupMapView() {
-        let camera = GMSCameraPosition.camera(withLatitude: 37.5171, longitude: 127.0412, zoom: 12)
+        let camera = GMSCameraPosition.camera(withLatitude: 37.5171, longitude: 127.0412, zoom: 13)
         
         // GMSMapViewOptions는 지도를 생성할 때 적용할 다양한 설정 값들을 담는 클래스
         let options = GMSMapViewOptions()
@@ -225,8 +226,24 @@ extension DetailViewController {
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
+        currentLocationSearchButton.rx.tap
+            .withUnretained(self)
+            .do(onNext: { owner, _ in
+                owner.shouldAnimateCamera = false
+            })
+            .map { owner, _ in
+                let center = owner.mapView.camera.target
+                return Reactor.Action.currentLocationSearchButtonTapped(centerLat: center.latitude, centerLon: center.longitude)
+            }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
         currentLocationButton.rx.tap
-            .map { Reactor.Action.currentLocationButtonTapped }
+            .withUnretained(self)
+            .do(onNext: { owner, _ in
+                owner.shouldAnimateCamera = true
+            })
+            .map {_ in Reactor.Action.currentLocationButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
     }
@@ -244,6 +261,7 @@ extension DetailViewController {
                     let marker = GMSMarker()
                     marker.position = CLLocationCoordinate2D(latitude: store.latitude, longitude: store.longitude)
                     marker.title = store.displayName
+                    marker.icon = UIImage(named: "customMarker")
                     marker.map = mapView
                 }
             })
@@ -278,7 +296,8 @@ extension DetailViewController {
             }
             .withUnretained(self)
             .subscribe(onNext: { owner, coordinate in
-                let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 12)
+                guard owner.shouldAnimateCamera else { return }
+                let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 13)
                 owner.mapView.animate(to: camera)
             })
             .disposed(by: disposeBag)
