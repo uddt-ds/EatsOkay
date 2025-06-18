@@ -139,8 +139,11 @@ final class HomeViewController: UIViewController, View {
 
         reactor.pulse(\.$pushLocationView)
             .compactMap { $0 }
-            .bind(onNext: {
-                print("다음 뷰 push")
+            .withUnretained(self)
+            .bind(onNext: { vc, _ in
+                let reactor = LocationSelectReactor()
+                let locationVC = LocationSelectView(reactor: reactor)
+                vc.navigationController?.pushViewController(locationVC, animated: true)
             })
             .disposed(by: disposeBag)
 

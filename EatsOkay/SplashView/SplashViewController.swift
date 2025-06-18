@@ -56,13 +56,14 @@ final class SplashViewController: UIViewController, View {
     private func goToMain() {
         guard let nav = self.navigationController else { return }
 
-        let mainVC = MainViewController()
+        let reactor = HomeReactor()
+        let homeVC = HomeViewController(reactor: reactor)
 
         UIView.transition(with: nav.view,
                           duration: 0.3,
                           options: .transitionCrossDissolve,
                           animations: {
-                              nav.setViewControllers([mainVC], animated: false)
+                              nav.setViewControllers([homeVC], animated: false)
                           })    }
     // 온보딩 페이지 완료 시 수정
     private func goToOnboarding() {
