@@ -5,8 +5,8 @@ import CoreLocation
 
 class DetailReactor: Reactor {
     var initialState: State
-    var selectedKeywords: [String] // home에서 전달받는 검색 키워드 // State로 수정 예정
-    var photoUriCache: [String: String] = [:]
+    private var selectedKeywords: [String] // home에서 전달받는 검색 키워드 // State로 수정 예정
+    private var photoUriCache: [String: String] = [:]
     
     let locationManager = CLLocationManager()
     
