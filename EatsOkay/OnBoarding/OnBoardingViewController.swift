@@ -67,7 +67,7 @@ final class OnboardingViewController: UIViewController, View {
     private let gradationView = GradationView()
     private let startButton = CustomButton(title: "시작하기")
     private let contentView = UIView()
-    private lazy var contentViews: [UIView] = [
+    private let contentViews: [UIView] = [
         UIView(), UIView(), UIView()
     ]
     
@@ -89,9 +89,15 @@ final class OnboardingViewController: UIViewController, View {
         scrollView.addSubview(backgroundImageView)
         contentViews.forEach { contentView.addSubview($0) }
         
-        [titleView, descriptionLabel, pageControl, imageView, gradationView, startButton].forEach {
-            view.addSubview($0)
-        }
+        [
+            titleView,
+            descriptionLabel,
+            pageControl,
+            imageView,
+            gradationView,
+            startButton
+        ]
+            .forEach { view.addSubview($0) }
         
         titleView.addSubview(titleLabel)
     }
@@ -169,9 +175,9 @@ final class OnboardingViewController: UIViewController, View {
     func bind(reactor: Reactor) {
         
         scrollView.rx.contentOffset
-            .map { [weak self] offset -> Int in
-                guard let self = self else { return 0 }
-                let pageWidth = self.scrollView.frame.width
+            .withUnretained(self)
+            .map { vc, offset -> Int in
+                let pageWidth = vc.scrollView.frame.width
                 guard pageWidth > 0, offset.x.isFinite else { return 0 }
                 return Int(round(offset.x / pageWidth))
             }
@@ -179,6 +185,7 @@ final class OnboardingViewController: UIViewController, View {
             .map(Reactor.Action.scrollAction)
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
+
         
         reactor.state
             .map { $0.pages.count }
