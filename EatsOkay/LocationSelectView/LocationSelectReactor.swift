@@ -13,7 +13,6 @@ import CoreLocation
 final class LocationSelectReactor: Reactor {
     
     var disposeBag = DisposeBag()
-    private let locationManager = CLLocationManager()
     private let networkManger = NetworkManager.shared
     
     var initialState: State
@@ -73,11 +72,11 @@ final class LocationSelectReactor: Reactor {
                 let savedSublcality = saveLocationArray[1]
                 
                 guard let localityIndex = locality.firstIndex(of: String(savedlocality)) else {
-                    return Observable.just(.setError(LocationSelectReactorError.noMatchingAddressAfterFiltering))
+                    return Observable.just(.setError(AddressManagerError.noMatchingAddressAfterFiltering))
                 }
                 
                 guard let sublocalityIndex = subLocality.firstIndex(of: String(savedSublcality)) else {
-                    return Observable.just(.setError(LocationSelectReactorError.noMatchingAddressAfterFiltering))
+                    return Observable.just(.setError(AddressManagerError.noMatchingAddressAfterFiltering))
                 }
                 
                 return Observable.concat(
@@ -100,11 +99,11 @@ final class LocationSelectReactor: Reactor {
                 )
                 
             } catch {
-                print(error)
                 return Observable.just(.setError(error))
             }
             
         case .locationButtonTapped:
+            let locationManager = CLLocationManager()
             
             let status = locationManager.authorizationStatus
             switch status {
@@ -113,39 +112,49 @@ final class LocationSelectReactor: Reactor {
                 return .empty()
                 
             case .restricted, .authorizedWhenInUse, .authorizedAlways:
-                
                 var lat: Double = 0
                 var lon: Double = 0
                 
                 return locationManager.rx.getCurrentLocationOnce
-                    .asObservable()
                     .withUnretained(self)
-                    .flatMap{ reactor, location -> Observable<(String, String)?> in
-                        print(location)
-                        lat = location.lat
-                        lon = location.lon
+                    .flatMap { reactor, locationEvent -> Observable<(String, String)?> in
                         
-                        // TODO: 예외처리 추가하기
+                        lat = locationEvent.lat
+                        lon = locationEvent.lon
+                        
+                        let guardSWcoord = (lat: 34.3607042, lon: 126.0890561)
+                        let guardNEcoord = (lat: 38.6111004, lon: 129.5847337)
+                        
+                        guard (guardSWcoord.lat...guardNEcoord.lat).contains(lat),
+                              (guardSWcoord.lon...guardNEcoord.lon).contains(lon) else {
+                            throw LocationSelectReactorError.locationOutsideKorea
+                        }
+                        
                         return reactor.networkManger.fetchGeoCoding(
-                            lat: location.lat,
-                            lon: location.lon)
+                            lat: locationEvent.lat,
+                            lon: locationEvent.lon
+                        )
                         .asObservable()
                     }
-                    .flatMap { kakaoResponse -> Observable<UserDeafaultsManager.UserLocation> in
-                        guard let address = kakaoResponse else {
+                    .flatMap { location -> Observable<UserDeafaultsManager.UserLocation> in
+                        guard let location else {
                             return .empty()
                         }
                         
                         return Observable.just(UserDeafaultsManager.UserLocation(
-                            address: "\(address.0) \(address.1)",
+                            address: "\(location.0) \(location.1)",
                             lat: lat,
                             lon: lon
                         ))
+                        
                     }
                     .map { location in
                         UserDeafaultsManager.shared.saveLocation(location: location)
                         return .setNextView(Void())
                     }
+                    .catch({ error in
+                        return .just(.setError(error))
+                    })
                 
             case .denied:
                 
