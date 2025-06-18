@@ -12,11 +12,11 @@ class HomeReactor: Reactor {
     var initialState: State
 
     init() {
-        self.initialState = State(currentLocation: "서울 강남구")
+        self.initialState = State(
+            currentLocation: "서울 강남구",
+            totalData: []
+        )
     }
-
-    private let dataManager = SituationDataManager()
-    private lazy var totalData = dataManager.loadTotalShuffledData()
 
     enum Action {
         case viewWillAppear
@@ -28,14 +28,16 @@ class HomeReactor: Reactor {
 
     enum Mutation {
         case loadCurrentLocation(String)
-        case setCardSection([SectionData])
+        case setCardSection([HomeSectionOfCellModel])
+        case initialData([HomeSectionOfCellModel])
         case requestLocationView
         case pushDetailView(data: SectionData)
     }
 
     struct State {
         var currentLocation: String
-        var cardSectionData: [SectionData] = []
+        var cardSectionData: [HomeSectionOfCellModel] = []
+        fileprivate var totalData: [HomeSectionOfCellModel]
         @Pulse var pushLocationView: Void?
         @Pulse var pushDetailViewWithData: SectionData?
     }
@@ -43,17 +45,38 @@ class HomeReactor: Reactor {
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
         case .viewWillAppear:
-            guard let location = UserDeafaultsManager.shared.readLocation()
-            else { return .empty() }
+            guard let location = UserDeafaultsManager.shared.readLocation() else {
+                return .empty()
+            }
             return .just(.loadCurrentLocation(location.address))
         case .viewDidLoad:
-            return .just(.setCardSection(totalData))
+            let totalData = SituationDataManager().loadTotalShuffledData()
+
+            let sectionModel = totalData
+                .map { sectionData in
+                    HomeSectionOfCellModel(
+                        section: .cardSection,
+                        items: [.cardSection(sectionData)],
+                        title: sectionData.title
+                    )
+            }
+            return .just(.initialData(sectionModel))
         case .locationBtnTapped:
             return .just(.requestLocationView)
         case .categoryBtnTapped(let category):
-            let categoryData =
-            category == .all ? totalData : totalData.filter { $0.category == category }
-            return .just(.setCardSection(categoryData))
+            let totalData: [HomeSectionOfCellModel]
+            if category == .all {
+                totalData = currentState.totalData
+                return .just(.setCardSection(totalData))
+            } else {
+                totalData = currentState.totalData.filter { sectionModel in
+                    guard case let .cardSection(data) = sectionModel.items.first else {
+                        return false
+                    }
+                    return data.category == category
+                }
+                return .just(.setCardSection(totalData))
+            }
         case .tableViewItemTapped(let data):
             return .just(.pushDetailView(data: data))
         }
@@ -66,6 +89,8 @@ class HomeReactor: Reactor {
             newState.currentLocation = location
         case .setCardSection(let sectionData):
             newState.cardSectionData = sectionData
+        case .initialData(let totalData):
+            newState.totalData = totalData
         case .requestLocationView:
             newState.pushLocationView = Void()
         case .pushDetailView(let data):
