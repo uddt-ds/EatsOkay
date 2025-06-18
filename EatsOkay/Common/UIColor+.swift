@@ -17,6 +17,7 @@ extension UIColor {
         case neutral200 = "CACACA"
         case neutral100 = "DFDFDF"
         case neutral50 = "F5F5F5"
+        case primary600 = "C10B2F"
         case primary400 = "F44366"
         case primary50 = "FEECEF"
         case secondary100 = "FFDEBE"
