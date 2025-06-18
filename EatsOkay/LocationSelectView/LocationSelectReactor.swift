@@ -20,13 +20,15 @@ final class LocationSelectReactor: Reactor {
     init() {
         self.initialState = State(
             pickerViewData: [],
-            selectedItem: (0, 0)
+            selectedItem: (0, 0),
+            isScrolling: false
         )
     }
     
     enum Action {
         case initialFetch
         case locationButtonTapped
+        case panGestureBegan
         case pickerViewChanged(component: Int, row: Int)
         case nextButtonTapped
     }
@@ -35,6 +37,7 @@ final class LocationSelectReactor: Reactor {
         case setPickerViewDataList([[String]])
         case setPickerViewInitialRows(firstRow: Int, secondRow: Int)
         case setPickerViewSelectedItem(firstRow: Int, secondRow: Int)
+        case setScrolling(Bool)
         case setNextView(Void?)
         case setAlert(Void?)
         case setError(Error?)
@@ -44,6 +47,7 @@ final class LocationSelectReactor: Reactor {
         @Pulse var pickerViewData: [[String]]
         @Pulse var pickerViewinitialRows: (firstRow: Int, secondRow: Int)?
         var selectedItem: (firstRow: Int, secondRow: Int)
+        var isScrolling: Bool
         @Pulse var nextViewState: Void?
         @Pulse var alertState: Void?
         @Pulse var error: Error?
@@ -164,6 +168,9 @@ final class LocationSelectReactor: Reactor {
                 return .empty()
             }
             
+        case .panGestureBegan:
+            return Observable.just(.setScrolling(true))
+            
         case let .pickerViewChanged(component, row):
             var rows = currentState.selectedItem
             
@@ -173,11 +180,15 @@ final class LocationSelectReactor: Reactor {
                 rows.secondRow = row
             }
             
-            return Observable.just(
-                .setPickerViewSelectedItem(
-                    firstRow: rows.firstRow,
-                    secondRow: rows.secondRow
-                )
+            return Observable.concat(
+                Observable.just(
+                    .setPickerViewSelectedItem(
+                        firstRow: rows.firstRow,
+                        secondRow: rows.secondRow
+                    )
+                ),
+                
+                Observable.just(.setScrolling(false))
             )
             
         case .nextButtonTapped:
@@ -216,6 +227,10 @@ final class LocationSelectReactor: Reactor {
             
         case let .setPickerViewSelectedItem(firstRow, secondRow):
             newState.selectedItem = (firstRow, secondRow)
+            newState.isScrolling = false
+        
+        case let .setScrolling(bool):
+            newState.isScrolling = bool
             
         case let .setNextView(location):
             newState.nextViewState = location

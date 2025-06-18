@@ -10,11 +10,13 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import ReactorKit
+import RxGesture
 
 final class LocationSelectView: UIViewController, View {
     
     var disposeBag: DisposeBag = DisposeBag()
     private let reactor: LocationSelectReactor
+    private let panGesture = UIPanGestureRecognizer()
     
     private let guideLabel: UILabel = {
         
@@ -80,6 +82,7 @@ final class LocationSelectView: UIViewController, View {
         super.viewDidLoad()
         configureUI()
         setConstraints()
+        setGesture()
         bind(reactor: reactor)
     }
     
@@ -118,6 +121,10 @@ final class LocationSelectView: UIViewController, View {
         }
     }
     
+    private func setGesture() {
+        pickerView.addGestureRecognizer(panGesture)
+    }
+    
     func bind(reactor: LocationSelectReactor) {
         bindAction(reactor: reactor)
         bindState(reactor: reactor)
@@ -143,6 +150,13 @@ final class LocationSelectView: UIViewController, View {
             .map { Reactor.Action.nextButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
+        
+        panGesture.rx.panGestureWithSimultaneousRecognition
+            .filter { $0.state == .began }
+            .map { _ in Reactor.Action.panGestureBegan }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+
     }
     
     private func bindState(reactor: LocationSelectReactor) {
@@ -185,6 +199,14 @@ final class LocationSelectView: UIViewController, View {
                 guard let errorString = error?.localizedDescription else { return }
                 // TODO: 예외처리 방법 논의 후 구현
                 print(errorString)
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.state.map { $0.isScrolling }
+            .distinctUntilChanged()
+            .withUnretained(self)
+            .bind { vc, isScrolling in
+                vc.startButton.isEnabled = !isScrolling
             }
             .disposed(by: disposeBag)
     }
