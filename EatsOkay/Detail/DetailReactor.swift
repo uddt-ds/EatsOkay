@@ -50,7 +50,7 @@ class DetailReactor: Reactor {
         var shouldPop: Bool = false
         // 값이 없을 수 있기 때문에 옵셔널 타입으로 정의
         var currentLatitude: Double?
-        var currentLongitute: Double?
+        var currentLongitude: Double?
         @Pulse var showLocationAlert: Void?
         var shouldPresentWebView: Bool = false // 초기 웹뷰 여부 false
         var webViewUrl: String? = nil
@@ -151,7 +151,7 @@ class DetailReactor: Reactor {
             // setCurrentLocation Mutation으로 전달된 위도, 경도 값을 state에 업데이트
         case .setCurrentLocation(lat: let lat, lon: let lon):
             newState.currentLatitude = lat
-            newState.currentLongitute = lon
+            newState.currentLongitude = lon
         case .showLocationAlert:
             newState.showLocationAlert = Void()
         case .setWebViewUrl(let uri):
