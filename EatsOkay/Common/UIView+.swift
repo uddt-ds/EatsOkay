@@ -6,10 +6,11 @@
 //
 
 import UIKit
+import SnapKit
 
 extension UIView {
     
-    func showToast(message: String, alpha: CGFloat) {
+    func showToast(message: String, alpha: CGFloat, constraints: @escaping (_ make: ConstraintMaker) -> Void) {
         
         let imageView = UIImageView(image: .alertCircle)
         imageView.contentMode = .scaleAspectFit
@@ -35,10 +36,7 @@ extension UIView {
         
         self.addSubview(stack)
         
-        stack.snp.makeConstraints {
-            $0.centerX.equalToSuperview()
-            $0.bottom.equalTo(self.safeAreaLayoutGuide.snp.bottom).inset(80)
-        }
+        stack.snp.makeConstraints { constraints($0) }
         
         imageView.snp.makeConstraints {
             $0.size.equalTo(16)
