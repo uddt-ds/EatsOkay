@@ -152,37 +152,38 @@ final class LocationSelectView: UIViewController, View {
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$pickerViewinitialRows)
+            .compactMap { $0 }
             .withUnretained(self)
             .bind { vc, rows in
-                guard let rows else { return }
                 vc.pickerView.selectRow(rows.firstRow, inComponent: 0, animated: true)
                 vc.pickerView.selectRow(rows.secondRow, inComponent: 1, animated: true)
             }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$alertState)
+            .compactMap { $0 }
             .withUnretained(self)
-            .bind { vc, void in
-                guard void != nil else { return }
+            .bind { vc, _ in
                 let locationAlert = CustomLocationAlert()
+                locationAlert.modalPresentationStyle = .overFullScreen
+                locationAlert.modalTransitionStyle = .crossDissolve
                 vc.present(locationAlert, animated: true)
             }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$nextViewState)
-            .withUnretained(self)
-            .bind { vc, test in
-                guard test != nil else { return }
-                let testView = MainViewController()
-                vc.present(testView, animated: true)
+            .compactMap { $0 }
+            .bind { _ in
+                // TODO: merge후 HomeViewContoller로 전환
             }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$error)
-            .withUnretained(self)
-            .bind { vc, error in
+            .compactMap { $0 }
+            .bind { error in
                 guard error != nil else { return }
                 guard let errorString = error?.localizedDescription else { return }
+                // TODO: 예외처리 방법 논의 후 구현
                 print(errorString)
             }
             .disposed(by: disposeBag)
