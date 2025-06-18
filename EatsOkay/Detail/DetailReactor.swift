@@ -5,15 +5,17 @@ import CoreLocation
 
 class DetailReactor: Reactor {
     var initialState: State
-    private var selectedKeywords: [String] // home에서 전달받는 검색 키워드 // State로 수정 예정
-    private var photoUriCache: [String: String] = [:]
+    var selectedKeywords: [String] // home에서 전달받는 검색 키워드
+    var title: String
+    var photoUriCache: [String: String] = [:]
     
     let locationManager = CLLocationManager()
     
     var disposeBag = DisposeBag()
     
-    init(selectedKeywords: [String]) {
-        self.selectedKeywords = selectedKeywords
+    init(sectionData: SectionData) {
+        self.selectedKeywords = sectionData.keywords
+        self.title = sectionData.title
         self.initialState = State()
     }
     
@@ -48,7 +50,7 @@ class DetailReactor: Reactor {
         var shouldPop: Bool = false
         // 값이 없을 수 있기 때문에 옵셔널 타입으로 정의
         var currentLatitude: Double?
-        var currentLongitude: Double?
+        var currentLongitute: Double?
         @Pulse var showLocationAlert: Void?
         var shouldPresentWebView: Bool = false // 초기 웹뷰 여부 false
         var webViewUrl: String? = nil
@@ -70,8 +72,8 @@ class DetailReactor: Reactor {
             }
             
             // 가게 정보와 이미지까지 비동기로 네트워크 통신
-            let firstRequest = fetchStoreInfosWithImages(textQuery: "국밥", centerLat: centerLat, centerLon: centerLon)
-            let secondRequest = fetchStoreInfosWithImages(textQuery: "갈비", centerLat: centerLat, centerLon: centerLon)
+            let firstRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[0], centerLat: centerLat, centerLon: centerLon)
+            let secondRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[1], centerLat: centerLat, centerLon: centerLon)
             
             return Observable.zip(firstRequest, secondRequest)
                     .map { first, second in
@@ -85,8 +87,8 @@ class DetailReactor: Reactor {
         case .backButtonTapped:
             return .just(.shouldPop(true))
         case .currentLocationSearchButtonTapped(let centerLat, let centerLon):
-            let firstRequest = fetchStoreInfosWithImages(textQuery: "국밥", centerLat: centerLat, centerLon: centerLon)
-            let secondRequest = fetchStoreInfosWithImages(textQuery: "갈비", centerLat: centerLat, centerLon: centerLon)
+            let firstRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[0], centerLat: centerLat, centerLon: centerLon)
+            let secondRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[1], centerLat: centerLat, centerLon: centerLon)
             
             return Observable.zip(firstRequest, secondRequest)
                     .map { first, second in
@@ -149,7 +151,7 @@ class DetailReactor: Reactor {
             // setCurrentLocation Mutation으로 전달된 위도, 경도 값을 state에 업데이트
         case .setCurrentLocation(lat: let lat, lon: let lon):
             newState.currentLatitude = lat
-            newState.currentLongitude = lon
+            newState.currentLongitute = lon
         case .showLocationAlert:
             newState.showLocationAlert = Void()
         case .setWebViewUrl(let uri):

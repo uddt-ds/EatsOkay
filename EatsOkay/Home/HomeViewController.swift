@@ -148,6 +148,9 @@ final class HomeViewController: UIViewController, View {
             .compactMap { $0 }
             .bind(onNext: {
                 print("다음 뷰 push, data: \($0.keywords), \($0.title)")
+                let reactor = DetailReactor(sectionData: $0)
+                let vc = DetailViewController(reactor: reactor)
+                self.navigationController?.pushViewController(vc, animated: true)
             })
             .disposed(by: disposeBag)
     }
