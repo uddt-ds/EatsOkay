@@ -24,7 +24,6 @@ final class OnboardingViewController: UIViewController, View {
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.isPagingEnabled = true
-        scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
         scrollView.bounces = false
         return scrollView
@@ -90,7 +89,7 @@ final class OnboardingViewController: UIViewController, View {
         scrollView.addSubview(backgroundImageView)
         contentViews.forEach { contentView.addSubview($0) }
         
-        [titleView, titleLabel, descriptionLabel, pageControl, imageView, gradationView, startButton].forEach {
+        [titleView, descriptionLabel, pageControl, imageView, gradationView, startButton].forEach {
             view.addSubview($0)
         }
         
@@ -229,28 +228,32 @@ final class OnboardingViewController: UIViewController, View {
     }
 }
 
+
 final class GradationView: UIView {
-    private let gradientLayer = CAGradientLayer()
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        isUserInteractionEnabled = false
-        gradientLayer.colors = [
-            UIColor(red: 1, green: 1, blue: 1, alpha: 0).cgColor,
-            UIColor(red: 1, green: 1, blue: 1, alpha: 1).cgColor
-        ]
-        gradientLayer.locations = [0, 1]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-        layer.addSublayer(gradientLayer)
-    }
+  override class var layerClass: AnyClass {
+    return CAGradientLayer.self
+  }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+  var gradientLayer: CAGradientLayer {
+    return layer as! CAGradientLayer
+  }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        gradientLayer.frame = bounds
-    }
+  override init(frame: CGRect) {
+    super.init(frame: frame)
+    setupGradient()
+  }
+    
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+    
+  private func setupGradient() {
+    gradientLayer.colors = [
+        UIColor(red: 1, green: 1, blue: 1, alpha: 0).cgColor,
+        UIColor(red: 1, green: 1, blue: 1, alpha: 1).cgColor
+    ]
+    gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+    gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+  }
 }
