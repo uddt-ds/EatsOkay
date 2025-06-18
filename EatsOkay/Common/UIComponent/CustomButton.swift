@@ -16,6 +16,13 @@ class CustomButton: UIButton {
         }
     }
     
+    override var isEnabled: Bool {
+        didSet {
+            self.backgroundColor = isEnabled ?
+                .customColor(hexCode: .primary400) : .customColor(hexCode: .neutral200)
+        }
+    }
+    
     init(title: String) {
         super.init(frame: .zero)
         self.setTitle(title, for: .normal)
