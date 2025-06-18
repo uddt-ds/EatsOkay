@@ -11,7 +11,6 @@ import SnapKit
 final class CustomLocationAlert: UIViewController {
     
     private let alertView: UIView = {
-        
         let view = UIView()
         view.backgroundColor = .customColor(hexCode: .neutral50)
         view.layer.cornerRadius = 16
@@ -21,53 +20,35 @@ final class CustomLocationAlert: UIViewController {
     }()
     
     private let titleLabel: UILabel = {
-        
-        let text = NSMutableAttributedString(
-            string: "위치정보 이용에 대한 액세스 권한이 없어요"
-        )
-        
-        let range = NSRange(location: 0, length: text.length)
-        
-        let textFont = UIFont.customFontForHeader(weight: .w800)
-        let textColor = UIColor.customColor(hexCode: .neutral950)
-        
-        let textStyle = NSMutableParagraphStyle()
-        textStyle.alignment = .center
-        textStyle.lineHeightMultiple = 1.17
-        textStyle.lineBreakMode = .byWordWrapping
-        textStyle.lineBreakStrategy = .hangulWordPriority
-        
-        text.addAttribute(.font, value: textFont, range: range)
-        text.addAttribute(.foregroundColor, value: textColor, range: range)
-        text.addAttribute(.paragraphStyle, value: textStyle, range: range)
-        
         let label = UILabel()
         label.numberOfLines = 2
-        label.attributedText = text
+        label.attributedText = AttributedStringManager.configureString(
+            text: "위치정보 이용에 대한\n액세스 권한이 없어요",
+            font: .customFontForHeader(weight: .w800),
+            color: .neutral950,
+            alignment: .center
+        )
         
         return label
     }()
     
     private let messageLabel: UILabel = {
-        
-        let text = NSMutableAttributedString(
-            string: "앱 설정으로 가서 액세스 권한을 수정할 수 있어요. 이동하시겠어요?"
+        let text: NSMutableAttributedString = AttributedStringManager.configureString(
+            text: "앱 설정으로 가서 액세스 권한을 수정할 수 있어요. 이동하시겠어요?",
+            font: .customFontForBody(weight: .w500),
+            color: .neutral950,
+            alignment: .center
         )
-        
-        let range = NSRange(location: 0, length: text.length)
-        
-        let textFont = UIFont.customFontForBody(weight: .w500)
-        let textColor = UIColor.customColor(hexCode: .neutral950)
-        
-        let textStyle = NSMutableParagraphStyle()
-        textStyle.alignment = .center
-        textStyle.lineHeightMultiple = 1.17
-        textStyle.lineBreakMode = .byWordWrapping
-        textStyle.lineBreakStrategy = .hangulWordPriority
-        
-        text.addAttribute(.font, value: textFont, range: range)
-        text.addAttribute(.foregroundColor, value: textColor, range: range)
-        text.addAttribute(.paragraphStyle, value: textStyle, range: range)
+
+        if let paragraphStyle = text.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle,
+           let mutableStyle = paragraphStyle.mutableCopy() as? NSMutableParagraphStyle {
+            
+            mutableStyle.lineBreakMode = .byWordWrapping
+            mutableStyle.lineBreakStrategy = .hangulWordPriority
+            
+            let fullRange = NSRange(location: 0, length: text.length)
+            text.addAttribute(.paragraphStyle, value: mutableStyle, range: fullRange)
+        }
         
         let label = UILabel()
         label.numberOfLines = 2
@@ -78,58 +59,50 @@ final class CustomLocationAlert: UIViewController {
     
     private let goSettingButton: UIButton = {
         
-        let titleText = NSMutableAttributedString(
-            string: "설정하러가기"
-        )
-        
-        let range = NSRange(location: 0, length: titleText.length)
-        
-        let titleFont = UIFont.customFontForSubtitle(weight: .w700)
-        let titleColor = UIColor.customColor(hexCode: .infoColor)
-        
-        let titleStyle = NSMutableParagraphStyle()
-        titleStyle.lineHeightMultiple = 1.17
-        
-        titleText.addAttribute(.font, value: titleFont, range: range)
-        titleText.addAttribute(.foregroundColor, value: titleColor, range: range)
-        titleText.addAttribute(.paragraphStyle, value: titleStyle, range: range)
-        
         var configuration = UIButton.Configuration.plain()
         configuration.contentInsets = .init(top: 10, leading: 0, bottom: 10, trailing: 0)
-        configuration.attributedTitle = AttributedString(titleText)
+        configuration.attributedTitle = AttributedStringManager.configureString(
+            text: "설정하러가기",
+            font: .customFontForSubtitle(weight: .w700),
+            color: .infoColor,
+            alignment: .center
+        )
         
         let button = UIButton(configuration: configuration)
         button.layer.borderColor = UIColor(hexCode: "3C3C43").withAlphaComponent(0.29).cgColor
         button.layer.borderWidth = 0.5
+        
+        button.configurationUpdateHandler = { button in
+            let isHighlighted = button.isHighlighted
+            button.backgroundColor = isHighlighted
+            ? .customColor(hexCode: .neutral100)
+            : .customColor(hexCode: .neutral50)
+        }
         
         return button
     }()
     
     private let cancelButton: UIButton = {
         
-        let titleText = NSMutableAttributedString(
-            string: "취소"
-        )
-        
-        let range = NSRange(location: 0, length: titleText.length)
-        
-        let titleFont = UIFont.customFontForSubtitle(weight: .w700)
-        let titleColor = UIColor.customColor(hexCode: .neutral700)
-        
-        let titleStyle = NSMutableParagraphStyle()
-        titleStyle.lineHeightMultiple = 1.17
-        
-        titleText.addAttribute(.font, value: titleFont, range: range)
-        titleText.addAttribute(.foregroundColor, value: titleColor, range: range)
-        titleText.addAttribute(.paragraphStyle, value: titleStyle, range: range)
-        
         var configuration = UIButton.Configuration.plain()
         configuration.contentInsets = .init(top: 10, leading: 0, bottom: 10, trailing: 0)
-        configuration.attributedTitle = AttributedString(titleText)
+        configuration.attributedTitle = AttributedStringManager.configureString(
+            text: "취소",
+            font: .customFontForSubtitle(weight: .w700),
+            color: .neutral700,
+            alignment: .center
+        )
         
         let button = UIButton(configuration: configuration)
         button.layer.borderColor = UIColor(hexCode: "3C3C43").withAlphaComponent(0.29).cgColor
         button.layer.borderWidth = 0.5
+        
+        button.configurationUpdateHandler = { button in
+            let isHighlighted = button.isHighlighted
+            button.backgroundColor = isHighlighted
+            ? .customColor(hexCode: .neutral100)
+            : .customColor(hexCode: .neutral50)
+        }
         
         return button
     }()
