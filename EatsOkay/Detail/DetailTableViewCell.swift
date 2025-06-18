@@ -113,6 +113,8 @@ class DetailTableViewCell: UITableViewCell {
     // MARK: - UI setUP 부분 -
     func setupViews() {
         
+        contentView.backgroundColor = .customColor(hexCode: .bgColor)
+        
         [storeNameLabel, rateImageView, rateLabel, userRateCountLabel, storeTypeLabel, addressLabel, timeImageView, openNowLabel, separatorView, storeImageView].forEach {
             contentView.addSubview($0)
         }
