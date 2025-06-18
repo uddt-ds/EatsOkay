@@ -18,53 +18,29 @@ final class LocationSelectView: UIViewController, View {
     
     let guideLabel: UILabel = {
         
-        let titleText = NSMutableAttributedString(
-            string: "어디에 계신가요?\n지역을 골라주세요!"
-        )
-        
-        let range = NSRange(location: 0, length: titleText.length)
-        
-        let headerFont = UIFont.customFontForHeader(weight: .w950)
-        let textColor = UIColor.customColor(hexCode: .neutral950)
-        
-        let textStyle = NSMutableParagraphStyle()
-        textStyle.alignment = .left
-        textStyle.lineHeightMultiple = 1.17
-        
-        titleText.addAttribute(.font, value: headerFont, range: range)
-        titleText.addAttribute(.foregroundColor, value: textColor, range: range)
-        titleText.addAttribute(.paragraphStyle, value: textStyle, range: range)
-        
         let label = UILabel()
         label.numberOfLines = 2
-        label.attributedText = titleText
+        label.attributedText = AttributedStringManager.configureString(
+            text: "어디에 계신가요?\n지역을 골라주세요!",
+            font: .customFontForHeader(weight: .w950),
+            color: .neutral950
+        )
         
         return label
     }()
     
     let locationButton: UIButton = {
         
-        let titleText = NSMutableAttributedString(string: "현재 위치로 설정")
-        let range = NSRange(location: 0, length: titleText.length)
-        
-        let headerFont = UIFont.customFontForSubtitle(weight: .w600)
-        let textColor = UIColor.customColor(hexCode: .neutral400)
-        
-        let textStyle = NSMutableParagraphStyle()
-        textStyle.alignment = .left
-        textStyle.lineHeightMultiple = 1.17
-        
-        titleText.addAttribute(.font, value: headerFont, range: range)
-        titleText.addAttribute(.foregroundColor, value: textColor, range: range)
-        titleText.addAttribute(.paragraphStyle, value: textStyle, range: range)
-        
-        
         var configuration = UIButton.Configuration.plain()
         configuration.image = UIImage(resource: .locationMark)
         configuration.imagePlacement = .leading
         configuration.imagePadding = 4
         configuration.contentInsets = .zero
-        configuration.attributedTitle = AttributedString(titleText)
+        configuration.attributedTitle = AttributedStringManager.configureString(
+                text: "현재 위치로 설정",
+                font: .customFontForSubtitle(weight: .w600),
+                color: .neutral400
+        )
         
         let button = UIButton(configuration: configuration)
         return button
