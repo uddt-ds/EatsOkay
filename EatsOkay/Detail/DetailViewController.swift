@@ -219,7 +219,7 @@ extension DetailViewController {
 
     func bindAction(reactor: DetailReactor) {
         // viewDidLoad 될 때 Action
-        reactor.action.onNext(.viewDidLoad) // 주로 just 사용
+        reactor.action.onNext(.viewDidLoad)
         
         // 테이블 뷰 cell 클릭시 Action
         tableView.rx.itemSelected

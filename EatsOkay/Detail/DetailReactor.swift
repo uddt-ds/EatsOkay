@@ -59,7 +59,6 @@ class DetailReactor: Reactor {
     
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
-            // TODO: viewDidLoad 될 때 네트워크 통신하기
         case .viewDidLoad:
             // 네트워크 통신 하고 zip으로 병합
             let (centerLat, centerLon) = getCenterLocation()
@@ -78,9 +77,6 @@ class DetailReactor: Reactor {
             return Observable.zip(firstRequest, secondRequest)
                     .map { first, second in
                         let merged = (first + second).sorted { $0.rating > $1.rating }
-                        print("첫번째 가게 수 : \(first.count)")
-                        print("두번째 가게 수 : \(second.count)")
-                        print("총 표시 가게 수 : \(merged.count)")
                         return [StoreSection(items: merged)]
                     }
                     .map { .setStore($0) }
@@ -284,7 +280,6 @@ extension DetailReactor {
         // 캐시에 없으면 네트워크 요청
         return NetworkManager.shared.fetchImage(mediaName: photoName)
             .map { googleUri in
-                print("네트워크 통신")
                 let photoUri = googleUri.photoUri
                 self.photoUriCache[cacheKey] = photoUri
                 UserDeafaultsManager.shared.savePhotoUriCache(self.photoUriCache)
