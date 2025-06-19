@@ -143,17 +143,17 @@ final class HomeViewController: UIViewController, View {
             .bind(onNext: { vc, _ in
                 let reactor = LocationSelectReactor()
                 let locationVC = LocationSelectView(reactor: reactor)
-                vc.navigationController?.pushViewController(locationVC, animated: true)
+                vc.navigationController?.setViewControllers([locationVC], animated: true)
             })
             .disposed(by: disposeBag)
 
         reactor.pulse(\.$pushDetailViewWithData)
             .compactMap { $0 }
-            .bind(onNext: {
-                print("다음 뷰 push, data: \($0.keywords), \($0.title)")
-                let reactor = DetailReactor(sectionData: $0)
-                let vc = DetailViewController(reactor: reactor)
-                self.navigationController?.pushViewController(vc, animated: true)
+            .withUnretained(self)
+            .bind(onNext: { vc, data in
+                let reactor = DetailReactor(sectionData: data)
+                let detailVC = DetailViewController(reactor: reactor)
+                vc.navigationController?.pushViewController(detailVC, animated: true)
             })
             .disposed(by: disposeBag)
     }

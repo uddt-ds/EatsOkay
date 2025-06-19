@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import UIKit
 
 struct SituationDataModel {
     let category: Category
@@ -38,5 +37,5 @@ struct SectionData: Hashable {
     let hashTags: [String]
     let keywords: [String]
     let category: Category
-    let assetImage: UIImage
+    let assetImage: String
 }

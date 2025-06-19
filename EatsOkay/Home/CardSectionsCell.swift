@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import RxSwift
 
 final class CardSectionsCell: UITableViewCell {
     private let tagLabel: UILabel = {
@@ -18,7 +19,7 @@ final class CardSectionsCell: UITableViewCell {
 
     private let titleLabel = UILabel()
     private let hashTagLabel = UILabel()
-    
+
     private let titleStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.isLayoutMarginsRelativeArrangement = true
@@ -143,7 +144,7 @@ final class CardSectionsCell: UITableViewCell {
         titleLabel.attributedText = labelText
         hashTagLabel.attributedText = hashLabel
         tagLabel.attributedText = taggingLabel
-        backgroundImageView.image = data.assetImage
+        backgroundImageView.image = UIImage(named: data.assetImage)
     }
 }
 
