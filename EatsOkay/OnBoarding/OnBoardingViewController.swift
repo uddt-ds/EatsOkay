@@ -115,7 +115,6 @@ final class OnboardingViewController: UIViewController, View {
         
         backgroundImageView.snp.makeConstraints {
             $0.horizontalEdges.equalToSuperview()
-            $0.bottom.equalToSuperview()
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(UIScreen.main.bounds.height*0.1)
         }
         

@@ -88,13 +88,16 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         }
         
         let menuItems = [
-            UIAction(title: "별점순", handler: { _ in
+            UIAction(title: "별점순", handler: { [weak self] _ in
+                guard let self else { return }
                 self.reactor.action.onNext(.sortButtonTapped(sortType: .rating))
                 updateTitle("별점순") }),
-            UIAction(title: "거리순", handler: { _ in
+            UIAction(title: "거리순", handler: { [weak self] _ in
+                guard let self else { return }
                 self.reactor.action.onNext(.sortButtonTapped(sortType: .distance))
                 updateTitle("거리순") }),
-            UIAction(title: "리뷰순", handler: { _ in
+            UIAction(title: "리뷰순", handler: { [weak self] _ in
+                guard let self else { return }
                 self.reactor.action.onNext(.sortButtonTapped(sortType: .reviewCount))
                 updateTitle("리뷰순") })
         ]
@@ -122,6 +125,10 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         return tableView
     }()
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.isHidden = false
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -137,6 +144,11 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         
         navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .customColor(hexCode: .neutral950)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.navigationBar.isHidden = true
     }
     
     private func setupMapView() {
