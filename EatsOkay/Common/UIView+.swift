@@ -16,6 +16,7 @@ extension UIView {
         imageView.contentMode = .scaleAspectFit
         
         let label = UILabel()
+        label.numberOfLines = 0
         label.attributedText = AttributedStringManager.configureString(
             text: message,
             font: .customFontForBody(weight: .w400),
