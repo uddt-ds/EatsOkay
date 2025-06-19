@@ -140,7 +140,15 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
     }
     
     private func setupMapView() {
-        let camera = GMSCameraPosition.camera(withLatitude: 37.5171, longitude: 127.0412, zoom: 13)
+        // 초기값은 강남구로 설정
+        let defaultLat = 37.5171
+        let defaultLon = 127.0412
+        
+        let userLocation = UserDeafaultsManager.shared.readLocation()
+        let lat = userLocation?.lat ?? defaultLat
+        let lon = userLocation?.lon ?? defaultLon
+        
+        let camera = GMSCameraPosition.camera(withLatitude: lat, longitude: lon, zoom: 14)
         
         // GMSMapViewOptions는 지도를 생성할 때 적용할 다양한 설정 값들을 담는 클래스
         let options = GMSMapViewOptions()
@@ -305,7 +313,7 @@ extension DetailViewController {
             .asDriver(onErrorDriveWith: .empty())
             .drive(with: self, onNext: { owner, coordinate in
                 guard owner.shouldAnimateCamera else { return }
-                let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 13)
+                let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 14)
                 owner.mapView.animate(to: camera)
             })
             .disposed(by: disposeBag)
