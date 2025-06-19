@@ -8,8 +8,8 @@
 import Foundation
 
 // 제네릭 확인
-final class UserDeafaultsManager {
-    static let shared = UserDeafaultsManager()
+final class UserDefaultsManager {
+    static let shared = UserDefaultsManager()
     private let defaults = UserDefaults.standard
     
     private init() {}
@@ -44,12 +44,6 @@ final class UserDeafaultsManager {
         return try? JSONDecoder().decode(UserLocation.self, from: data)
     }
     
-    struct UserLocation: Codable {
-        let address: String
-        let lat: Double
-        let lon: Double
-    }
-    
     func savePhotoUriCache(_ cache: [String: String]) {
         defaults.set(cache, forKey: Keys.photoUriCacheKey.rawValue)
     }
@@ -58,4 +52,10 @@ final class UserDeafaultsManager {
         return defaults.object(forKey: Keys.photoUriCacheKey.rawValue) as? [String: String]
     }
 
+}
+
+struct UserLocation: Codable {
+    let address: String
+    let lat: Double
+    let lon: Double
 }

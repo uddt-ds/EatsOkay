@@ -63,11 +63,11 @@ final class LocationSelectReactor: Reactor {
                 let subLocality = decodedData.map { $0.subLocality }
                 
                 // UserDefault에 저장된 위치가 없을 경우에 기본값을 서울 강남으로 작성
-                var savedLocation: UserDeafaultsManager.UserLocation
-                if let location = UserDeafaultsManager.shared.readLocation() {
+                var savedLocation: UserLocation
+                if let location = UserDefaultsManager.shared.readLocation() {
                     savedLocation = location
                 } else {
-                    let location = UserDeafaultsManager.UserLocation(address: "서울 강남구", lat: 37.5177, lon: 127.0473)
+                    let location = UserLocation(address: "서울 강남구", lat: 37.5177, lon: 127.0473)
                     savedLocation = location
                 }
                 
@@ -140,12 +140,12 @@ final class LocationSelectReactor: Reactor {
                         )
                         .asObservable()
                     }
-                    .flatMap { location -> Observable<UserDeafaultsManager.UserLocation> in
+                    .flatMap { location -> Observable<UserLocation> in
                         guard let location else {
                             return .empty()
                         }
                         
-                        return Observable.just(UserDeafaultsManager.UserLocation(
+                        return Observable.just(UserLocation(
                             address: "\(location.0) \(location.1)",
                             lat: lat,
                             lon: lon
@@ -153,7 +153,7 @@ final class LocationSelectReactor: Reactor {
                         
                     }
                     .map { location in
-                        UserDeafaultsManager.shared.saveLocation(location: location)
+                        UserDefaultsManager.shared.saveLocation(location: location)
                         return .setNextView(Void())
                     }
                     .catch({ error in
@@ -199,7 +199,7 @@ final class LocationSelectReactor: Reactor {
                 let subLocality = data[1][selectedItem.secondRow]
                 let filteredData = try AddressManager.shared.getCoordinates(with: subLocality)
                 
-                UserDeafaultsManager.shared.saveLocation(
+                UserDefaultsManager.shared.saveLocation(
                     location: .init(
                         address: "\(filteredData.locality) \(filteredData.subLocality)",
                         lat: filteredData.lat,

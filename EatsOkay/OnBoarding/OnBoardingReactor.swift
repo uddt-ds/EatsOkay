@@ -46,7 +46,7 @@ final class OnboardingReactor: Reactor {
             return .just(.setCurrentPage(page))
             
         case .startButtonTapped:
-            UserDeafaultsManager.shared.saveStatus()
+            UserDefaultsManager.shared.saveStatus()
             return .just(.completeOnboarding)
         }
     }

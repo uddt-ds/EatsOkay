@@ -156,7 +156,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         let defaultLat = 37.5171
         let defaultLon = 127.0412
         
-        let userLocation = UserDeafaultsManager.shared.readLocation()
+        let userLocation = UserDefaultsManager.shared.readLocation()
         let lat = userLocation?.lat ?? defaultLat
         let lon = userLocation?.lon ?? defaultLon
         

@@ -45,7 +45,7 @@ class HomeReactor: Reactor {
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
         case .viewWillAppear:
-            guard let location = UserDeafaultsManager.shared.readLocation() else {
+            guard let location = UserDefaultsManager.shared.readLocation() else {
                 return .empty()
             }
             return .just(.loadCurrentLocation(location.address))

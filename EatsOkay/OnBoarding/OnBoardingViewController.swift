@@ -229,7 +229,6 @@ final class OnboardingViewController: UIViewController, View {
     }
     
     private func navigateToLocationSelectView() {
-        print("온보딩 완료 -> 위치설정 뷰로 이동")
         let reactor = LocationSelectReactor()
         let locationVC = LocationSelectView(reactor: reactor)
         self.navigationController?.pushViewController(locationVC, animated: true)
