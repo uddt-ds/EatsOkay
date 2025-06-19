@@ -196,11 +196,13 @@ final class LocationSelectView: UIViewController, View {
         
         reactor.pulse(\.$error)
             .compactMap { $0 }
-            .bind { error in
-                guard error != nil else { return }
-                guard let errorString = error?.localizedDescription else { return }
-                // TODO: 예외처리 방법 논의 후 구현
-                print(errorString)
+            .withUnretained(self)
+            .bind { vc, error in
+                vc.view.showToast(message: "오류가 발생했습니다.", alpha: 0.4) {
+                    $0.width.lessThanOrEqualTo(vc.view).inset(20)
+                    $0.bottom.equalTo(vc.view.safeAreaLayoutGuide.snp.bottom).inset(80)
+                    $0.centerX.equalToSuperview()
+                }
             }
             .disposed(by: disposeBag)
         
