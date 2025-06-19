@@ -61,5 +61,17 @@ extension Reactive where Base: CLLocationManager {
         }
         .share()
     }
+    
+    var authorizationStatusChanged: Observable<CLAuthorizationStatus> {
+        base.requestWhenInUseAuthorization()
+        return delegate.methodInvoked(
+            #selector(CLLocationManagerDelegate.locationManagerDidChangeAuthorization(_:))
+        )
+        .take(1)
+        .compactMap { params in
+            guard let manager = params[0] as? CLLocationManager else { return nil }
+            return manager.authorizationStatus
+        }
+    }
 }
 
