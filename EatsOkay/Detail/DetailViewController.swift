@@ -88,13 +88,16 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         }
         
         let menuItems = [
-            UIAction(title: "별점순", handler: { _ in
+            UIAction(title: "별점순", handler: { [weak self] _ in
+                guard let self else { return }
                 self.reactor.action.onNext(.sortButtonTapped(sortType: .rating))
                 updateTitle("별점순") }),
-            UIAction(title: "거리순", handler: { _ in
+            UIAction(title: "거리순", handler: { [weak self] _ in
+                guard let self else { return }
                 self.reactor.action.onNext(.sortButtonTapped(sortType: .distance))
                 updateTitle("거리순") }),
-            UIAction(title: "리뷰순", handler: { _ in
+            UIAction(title: "리뷰순", handler: { [weak self] _ in
+                guard let self else { return }
                 self.reactor.action.onNext(.sortButtonTapped(sortType: .reviewCount))
                 updateTitle("리뷰순") })
         ]

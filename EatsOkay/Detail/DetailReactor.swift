@@ -240,7 +240,8 @@ extension DetailReactor {
             centerLon: centerLon)
             .flatMap { places in
                 Observable.from(places)
-                    .flatMap { place -> Observable<StoreInfo?> in
+                    .flatMap { [weak self] place -> Observable<StoreInfo?> in
+                        guard let self else { return .empty() }
                         let placeName = place.photos?.first?.name ?? ""
                         let splitPlaceName = placeName.split(separator: "/")
                         let photoName = place.photos?.first?.name ?? ""
@@ -257,7 +258,8 @@ extension DetailReactor {
                         
                         return self.fetchPhotoUriWithCache(placeName: cacheKey, photoName: photoName)
                             .asObservable()
-                            .map { photoUri in
+                            .map { [weak self] photoUri in
+                                guard let self else { return nil }
                                 return self.convertToStoreInfo(place: place, photoUri: photoUri)
                             }
                         
@@ -279,7 +281,8 @@ extension DetailReactor {
         guard !photoName.isEmpty else { return .just("") }
         // 캐시에 없으면 네트워크 요청
         return NetworkManager.shared.fetchImage(mediaName: photoName)
-            .map { googleUri in
+            .map { [weak self] googleUri in
+                guard let self else { return googleUri.photoUri }
                 let photoUri = googleUri.photoUri
                 self.photoUriCache[cacheKey] = photoUri
                 UserDeafaultsManager.shared.savePhotoUriCache(self.photoUriCache)
