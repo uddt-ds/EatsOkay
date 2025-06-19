@@ -75,13 +75,8 @@ final class LocationSelectReactor: Reactor {
                 let savedlocality = saveLocationArray[0]
                 let savedSublcality = saveLocationArray[1]
                 
-                guard let localityIndex = locality.firstIndex(of: String(savedlocality)) else {
-                    return Observable.just(.setError(AddressManagerError.noMatchingAddressAfterFiltering))
-                }
-                
-                guard let sublocalityIndex = subLocality.firstIndex(of: String(savedSublcality)) else {
-                    return Observable.just(.setError(AddressManagerError.noMatchingAddressAfterFiltering))
-                }
+                let localityIndex = locality.firstIndex(of: String(savedlocality))
+                let sublocalityIndex = subLocality.firstIndex(of: String(savedSublcality))
                 
                 return Observable.concat(
                     Observable.just(.setPickerViewDataList(
@@ -92,14 +87,18 @@ final class LocationSelectReactor: Reactor {
                     )),
                     
                     Observable.just(.setPickerViewInitialRows(
-                        firstRow: localityIndex,
-                        secondRow: sublocalityIndex
+                        firstRow: localityIndex ?? 0,
+                        secondRow: sublocalityIndex ?? 0
                     )),
                     
                     Observable.just(.setPickerViewSelectedItem(
-                        firstRow: localityIndex,
-                        secondRow: sublocalityIndex
-                    ))
+                        firstRow: localityIndex ?? 0,
+                        secondRow: sublocalityIndex ?? 0
+                    )),
+                    
+                    localityIndex == nil || sublocalityIndex == nil
+                    ? Observable.just(.setError(AddressManagerError.noMatchingAddressAfterFiltering))
+                    : Observable.empty()
                 )
                 
             } catch {
