@@ -75,13 +75,8 @@ final class LocationSelectReactor: Reactor {
                 let savedlocality = saveLocationArray[0]
                 let savedSublcality = saveLocationArray[1]
                 
-                guard let localityIndex = locality.firstIndex(of: String(savedlocality)) else {
-                    return Observable.just(.setError(AddressManagerError.noMatchingAddressAfterFiltering))
-                }
-                
-                guard let sublocalityIndex = subLocality.firstIndex(of: String(savedSublcality)) else {
-                    return Observable.just(.setError(AddressManagerError.noMatchingAddressAfterFiltering))
-                }
+                let localityIndex = locality.firstIndex(of: String(savedlocality))
+                let sublocalityIndex = subLocality.firstIndex(of: String(savedSublcality))
                 
                 return Observable.concat(
                     Observable.just(.setPickerViewDataList(
@@ -92,13 +87,13 @@ final class LocationSelectReactor: Reactor {
                     )),
                     
                     Observable.just(.setPickerViewInitialRows(
-                        firstRow: localityIndex,
-                        secondRow: sublocalityIndex
+                        firstRow: localityIndex ?? 0,
+                        secondRow: sublocalityIndex ?? 0
                     )),
                     
                     Observable.just(.setPickerViewSelectedItem(
-                        firstRow: localityIndex,
-                        secondRow: sublocalityIndex
+                        firstRow: localityIndex ?? 0,
+                        secondRow: sublocalityIndex ?? 0
                     ))
                 )
                 
@@ -112,53 +107,17 @@ final class LocationSelectReactor: Reactor {
             let status = locationManager.authorizationStatus
             switch status {
             case .notDetermined:
-                locationManager.requestWhenInUseAuthorization()
-                return .empty()
+                
+                return locationManager.rx.authorizationStatusChanged
+                    .filter { $0 != .denied }
+                    .withUnretained(self)
+                    .flatMap { reactor, status in
+                        return reactor.checkLocation(locationManager: locationManager)
+                    }
                 
             case .restricted, .authorizedWhenInUse, .authorizedAlways:
-                var lat: Double = 0
-                var lon: Double = 0
                 
-                return locationManager.rx.getCurrentLocationOnce
-                    .withUnretained(self)
-                    .flatMap { reactor, locationEvent -> Observable<(String, String)?> in
-                        
-                        lat = locationEvent.lat
-                        lon = locationEvent.lon
-                        
-                        let guardSWcoord = (lat: 34.3607042, lon: 126.0890561)
-                        let guardNEcoord = (lat: 38.6111004, lon: 129.5847337)
-                        
-                        guard (guardSWcoord.lat...guardNEcoord.lat).contains(lat),
-                              (guardSWcoord.lon...guardNEcoord.lon).contains(lon) else {
-                            throw LocationSelectReactorError.locationOutsideKorea
-                        }
-                        
-                        return reactor.networkManger.fetchGeoCoding(
-                            lat: locationEvent.lat,
-                            lon: locationEvent.lon
-                        )
-                        .asObservable()
-                    }
-                    .flatMap { location -> Observable<UserLocation> in
-                        guard let location else {
-                            return .empty()
-                        }
-                        
-                        return Observable.just(UserLocation(
-                            address: "\(location.0) \(location.1)",
-                            lat: lat,
-                            lon: lon
-                        ))
-                        
-                    }
-                    .map { location in
-                        UserDefaultsManager.shared.saveLocation(location: location)
-                        return .setNextView(Void())
-                    }
-                    .catch({ error in
-                        return .just(.setError(error))
-                    })
+                return checkLocation(locationManager: locationManager)
                 
             case .denied:
                 
@@ -243,5 +202,52 @@ final class LocationSelectReactor: Reactor {
         }
         
         return newState
+    }
+    
+    func checkLocation(locationManager: CLLocationManager) -> Observable<Mutation> {
+        
+        var lat: Double = 0
+        var lon: Double = 0
+        
+        return locationManager.rx.getCurrentLocationOnce
+            .withUnretained(self)
+            .flatMap { reactor, locationEvent -> Observable<(String, String)?> in
+                
+                lat = locationEvent.lat
+                lon = locationEvent.lon
+                
+                let guardSWcoord = (lat: 34.3607042, lon: 126.0890561)
+                let guardNEcoord = (lat: 38.6111004, lon: 129.5847337)
+                
+                guard (guardSWcoord.lat...guardNEcoord.lat).contains(lat),
+                      (guardSWcoord.lon...guardNEcoord.lon).contains(lon) else {
+                    throw LocationSelectReactorError.locationOutsideKorea
+                }
+                
+                return reactor.networkManger.fetchGeoCoding(
+                    lat: locationEvent.lat,
+                    lon: locationEvent.lon
+                )
+                .asObservable()
+            }
+            .flatMap { location -> Observable<UserLocation> in
+                guard let location else {
+                    return .empty()
+                }
+                
+                return Observable.just(UserLocation(
+                    address: "\(location.0) \(location.1)",
+                    lat: lat,
+                    lon: lon
+                ))
+                
+            }
+            .map { location in
+                UserDefaultsManager.shared.saveLocation(location: location)
+                return .setNextView(Void())
+            }
+            .catch({ error in
+                return .just(.setError(error))
+            })
     }
 }
