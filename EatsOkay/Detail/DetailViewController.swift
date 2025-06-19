@@ -272,8 +272,8 @@ extension DetailViewController {
         reactor.state
             .map { $0.storeInfo.first?.items ?? [] }
             .distinctUntilChanged()
-            .withUnretained(self)
-            .subscribe(onNext: { owner, stores in
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(with: self, onNext: { owner, stores in
                 guard let mapView = owner.mapView else { return }
                 // 캐시나 재사용된 경우 마커가 겹칠 수 있기 때문에 초기화
                 mapView.clear()
@@ -291,15 +291,15 @@ extension DetailViewController {
             .map { $0.shouldPop }
             .distinctUntilChanged()
             .filter { $0 }
-            .withUnretained(self)
-            .subscribe(onNext: { owner, _ in
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(with: self, onNext: { owner, _ in
                 owner.navigationController?.popViewController(animated: true)
             })
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$showLocationAlert)
-            .withUnretained(self)
-            .subscribe(onNext: { owner, void in
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(with: self, onNext: { owner, void in
                 guard void != nil else { return }
                 let alert = CustomLocationAlert()
                 alert.modalPresentationStyle = .overFullScreen
@@ -314,8 +314,8 @@ extension DetailViewController {
                       let lon = state.currentLongitude else { return nil }
                 return (lat, lon)
             }
-            .withUnretained(self)
-            .subscribe(onNext: { owner, coordinate in
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(with: self, onNext: { owner, coordinate in
                 guard owner.shouldAnimateCamera else { return }
                 let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 13)
                 owner.mapView.animate(to: camera)
