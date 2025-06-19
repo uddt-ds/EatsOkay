@@ -94,11 +94,7 @@ final class LocationSelectReactor: Reactor {
                     Observable.just(.setPickerViewSelectedItem(
                         firstRow: localityIndex ?? 0,
                         secondRow: sublocalityIndex ?? 0
-                    )),
-                    
-                    localityIndex == nil || sublocalityIndex == nil
-                    ? Observable.just(.setError(AddressManagerError.noMatchingAddressAfterFiltering))
-                    : Observable.empty()
+                    ))
                 )
                 
             } catch {
