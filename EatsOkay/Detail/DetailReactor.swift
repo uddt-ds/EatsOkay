@@ -64,7 +64,7 @@ class DetailReactor: Reactor {
             let (centerLat, centerLon) = getCenterLocation()
             
             // userDefault에서 캐시 딕셔너리 불러오기
-            if let savedCache = UserDeafaultsManager.shared.readPhotoUriCache() {
+            if let savedCache = UserDefaultsManager.shared.readPhotoUriCache() {
                 photoUriCache = savedCache
             } else {
                     photoUriCache = [:]
@@ -227,7 +227,7 @@ extension DetailReactor {
     
     // 위도와 경도를 받아오는 함수
     private func getCenterLocation() -> (lat: Double, lon: Double) {
-        let userLocation = UserDeafaultsManager.shared.readLocation()
+        let userLocation = UserDefaultsManager.shared.readLocation()
         let centerLat = userLocation?.lat ?? 37.5177 // 기본값: 강남역
         let centerLon = userLocation?.lon ?? 127.0473
         return (centerLat, centerLon)
@@ -285,7 +285,7 @@ extension DetailReactor {
                 guard let self else { return googleUri.photoUri }
                 let photoUri = googleUri.photoUri
                 self.photoUriCache[cacheKey] = photoUri
-                UserDeafaultsManager.shared.savePhotoUriCache(self.photoUriCache)
+                UserDefaultsManager.shared.savePhotoUriCache(self.photoUriCache)
                 return photoUri
             }
     }
@@ -304,8 +304,8 @@ extension DetailReactor {
                         .asObservable()
                         .map { addressTuple in
                             let address = addressTuple.map { "\($0.0) \($0.1)" } ?? "알 수 없는 위치"
-                            let location = UserDeafaultsManager.UserLocation(address: address, lat: lat, lon: lon)
-                            UserDeafaultsManager.shared.saveLocation(location: location)
+                            let location = UserLocation(address: address, lat: lat, lon: lon)
+                            UserDefaultsManager.shared.saveLocation(location: location)
                             return .setCurrentLocation(lat: lat, lon: lon)
                         }
                 }

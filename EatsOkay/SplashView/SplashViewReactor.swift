@@ -26,8 +26,7 @@ final class SplashViewReactor: Reactor {
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
         case .initialCheck:
-            let isCompleted = UserDeafaultsManager.shared.readStatus()
-            print("온보딩 상태: \(isCompleted)")
+            let isCompleted = UserDefaultsManager.shared.readStatus()
             return .just(.checkCompletion(isCompleted))
                 .delay(.seconds(3), scheduler: MainScheduler.instance)
         }
