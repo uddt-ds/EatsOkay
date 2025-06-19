@@ -8,6 +8,8 @@
 	<string>$(GoogleAPIKey)</string>
 	<key>KakaoAPIKey</key>
 	<string>$(KakaoAPIKey)</string>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Pretendard-Bold.ttf</string>
