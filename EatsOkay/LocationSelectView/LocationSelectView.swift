@@ -188,18 +188,9 @@ final class LocationSelectView: UIViewController, View {
             .compactMap { $0 }
             .withUnretained(self)
             .bind { vc, _ in
-                if let rootVC = vc.navigationController?.viewControllers.first {
-                    switch rootVC {
-                    case is HomeViewController:
-                        vc.navigationController?.popViewController(animated: true)
-                    case is OnboardingViewController:
-                        let reactor = HomeReactor()
-                        let homeVC = HomeViewController(reactor: reactor)
-                        vc.navigationController?.setViewControllers([homeVC], animated: true)
-                    default:
-                        vc.navigationController?.popViewController(animated: true)
-                    }
-                }
+                let reactor = HomeReactor()
+                let homeVC = HomeViewController(reactor: reactor)
+                vc.navigationController?.setViewControllers([homeVC], animated: true)
             }
             .disposed(by: disposeBag)
         
