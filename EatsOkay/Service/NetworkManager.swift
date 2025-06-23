@@ -16,20 +16,12 @@ final class NetworkManager {
     private let provider = MoyaProvider<MultiTarget>()
     
     private init() {}
-    // 원형 구역에서 중심좌표로부터 1키로미터 반경 정보 가져오는 메서드
-    func fetchPlacesWithCircle(textQuery: String, centerLat: Double, centerLon: Double) -> Single<[GoogleMap.Place]> {
-        return provider.rx.request(
-            MultiTarget(GoogleAPI.storeInfoDataCircle(textQuery: textQuery, lat: centerLat, lon: centerLon))
-        )
-        .filterSuccessfulStatusCodes()
-        .map(GoogleMap.self)
-        .map { $0.places }
-    }
+    
     // 사각형 구역(남서쪽 좌표, 북동쪽 좌표 필요함)에서 정보 가져오는 메서드
-    func fetchPlacesWithRectangle(textQuery: String, lowLat: Double, lowLon: Double, highLat: Double, highLon: Double) -> Single<[GoogleMap.Place]> {
+    func fetchPlacesWithRectangle(textQuery: String, locationRestriction: SearchTextBody.LocationRestriction) -> Single<[GoogleMap.Place]> {
         return provider.rx.request(
-            MultiTarget(GoogleAPI.storeInfoDataRectangle(textQuery: textQuery, lowLat: lowLat, lowLon: lowLon, highLat: highLat, highLon: highLon))
-        )
+            MultiTarget(GoogleAPI.storeInfoDataRectangle(textQuery: textQuery, locationRestriction: locationRestriction))
+            )
         .filterSuccessfulStatusCodes()
         .map(GoogleMap.self)
         .map { $0.places }

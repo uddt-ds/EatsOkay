@@ -11,52 +11,27 @@ struct SearchTextBody: Encodable {
     let textQuery: String
     let pageSize: Int = 10
     let languageCode: String = "ko"
-    let locationBias: LocationBias
+    let locationRestriction: LocationRestriction
 }
 
-enum LocationBias: Encodable {
-    case circle(Circle)
-    case rectangle(Rectangle)
-    
-    enum CodingKeys: String, CodingKey {
-        case circle
-        case rectangle
-    }
-    
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        
-        switch self {
-        case .circle(let circle):
-            try container.encode(circle, forKey: .circle)
-        case .rectangle(let rectangle):
-            try container.encode(rectangle, forKey: .rectangle)
-        }
+extension SearchTextBody {
+    struct LocationRestriction: Encodable {
+        let rectangle : Rectangle
     }
 }
 
-struct Circle: Encodable {
-    let center: Center
-    // 미터단위, 1000m = 1km
-    let radius: Int = 1000
+extension SearchTextBody.LocationRestriction {
+    struct Rectangle: Encodable {
+        let low, high: Coordinates
+    }
 }
 
-struct Center: Encodable {
-    let latitude: Double
-    let longitude: Double
+extension SearchTextBody.LocationRestriction.Rectangle {
+    struct Coordinates: Encodable {
+        let latitude: Double
+        let longitude: Double
+    }
+    
 }
 
-struct Rectangle: Encodable {
-    let low: Low
-    let high: High
-}
 
-struct Low: Encodable {
-    let latitude: Double
-    let longitude: Double
-}
-
-struct High: Encodable {
-    let latitude: Double
-    let longitude: Double
-}
