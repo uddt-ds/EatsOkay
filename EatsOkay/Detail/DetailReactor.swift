@@ -9,6 +9,8 @@ class DetailReactor: Reactor {
     var title: String
     private var photoUriCache: [String: String] = [:]
     
+    typealias LocationRestriction = SearchTextBody.LocationRestriction.Rectangle
+    
     let locationManager = CLLocationManager()
     
     var disposeBag = DisposeBag()
@@ -22,7 +24,7 @@ class DetailReactor: Reactor {
     enum Action {
         case viewDidLoad // 뷰가 DidLoad 되었을 때
         case backButtonTapped // 뒤로가기 버튼을 클릭했을 때
-        case currentLocationSearchButtonTapped(centerLat: Double, centerLon: Double) // 현 위치에서 검색 버튼 눌렀을 때
+        case currentLocationSearchButtonTapped(sw: (lat: Double, lon: Double), ne: (lat: Double, lon: Double)) // 현 위치에서 검색 버튼 눌렀을 때
         case currentLocationButtonTapped // 현재 위치 버튼 클릭했을 때
         case tableViewItemTapped(IndexPath: IndexPath) // 테이블 뷰 셀을 클릭했을 때
         case sortButtonTapped(sortType: SortType) // 정렬 버튼을 클릭했을 때
@@ -60,38 +62,27 @@ class DetailReactor: Reactor {
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
         case .viewDidLoad:
-            // 네트워크 통신 하고 zip으로 병합
-            let (centerLat, centerLon) = getCenterLocation()
+            let center = getCenterLocation()
             
             // userDefault에서 캐시 딕셔너리 불러오기
             if let savedCache = UserDefaultsManager.shared.readPhotoUriCache() {
                 photoUriCache = savedCache
             } else {
-                    photoUriCache = [:]
+                photoUriCache = [:]
             }
             
+            let rect = rectBounds(center: CLLocation(latitude: center.lat, longitude: center.lon), zoomLevel: 14.5)
+            
             // 가게 정보와 이미지까지 비동기로 네트워크 통신
-            let firstRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[0], centerLat: centerLat, centerLon: centerLon)
-            let secondRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[1], centerLat: centerLat, centerLon: centerLon)
+            let firstRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[0], lowLat: rect.sw.latitude, lowLon: rect.sw.longitude, highLat: rect.ne.latitude, highLon: rect.ne.longitude)
+            let secondRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[1], lowLat: rect.sw.latitude, lowLon: rect.sw.longitude, highLat: rect.ne.latitude, highLon: rect.ne.longitude)
             
             return Observable.zip(firstRequest, secondRequest)
-                    .map { first, second in
-                        let merged = (first + second).sorted { $0.rating > $1.rating }
-                        return [StoreSection(items: merged)]
-                    }
-                    .map { .setStore($0) }
-        case .backButtonTapped:
-            return .just(.shouldPop(true))
-        case .currentLocationSearchButtonTapped(let centerLat, let centerLon):
-            let firstRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[0], centerLat: centerLat, centerLon: centerLon)
-            let secondRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[1], centerLat: centerLat, centerLon: centerLon)
-            
-            return Observable.zip(firstRequest, secondRequest)
-                    .map { first, second in
-                        let merged = (first + second).sorted { $0.rating > $1.rating }
-                        return [StoreSection(items: merged)]
-                    }
-                    .map { .setStore($0) }
+                .map { first, second in
+                    let merged = (first + second).sorted { $0.rating > $1.rating }
+                    return [StoreSection(items: merged)]
+                }
+                .map { .setStore($0) }
         case .currentLocationButtonTapped:
             return handleLocationAuthorization()
             // 테이블 뷰 셀 클릭시 웹뷰 띄우기
@@ -134,6 +125,18 @@ class DetailReactor: Reactor {
             // 웹뷰를 닫았을 때
         case .webViewDidDismiss:
             return Observable.just(.dismissWebView) // viewDidmiss
+        case .backButtonTapped:
+            return .just(.shouldPop(true))
+        case .currentLocationSearchButtonTapped(sw: let sw, ne: let ne):
+            let firstRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[0], lowLat: sw.lat, lowLon: sw.lon, highLat: ne.lat, highLon: ne.lon)
+            let secondRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[1], lowLat: sw.lat, lowLon: sw.lon, highLat: ne.lat, highLon: ne.lon)
+            
+            return Observable.zip(firstRequest, secondRequest)
+                .map { first, second in
+                    let merged = (first + second).sorted { $0.rating > $1.rating }
+                    return [StoreSection(items: merged)]
+                }
+                .map { .setStore($0) }
         }
     }
     
@@ -166,29 +169,29 @@ extension DetailReactor {
     // Google Place Response를 StoreInfo로 변환
     func convertToStoreInfo(place: GoogleMap.Place, photoUri: String) -> StoreInfo? {
         guard let displayName = place.displayName?.text,
-                  let primaryTypeDisplayName = place.primaryTypeDisplayName?.text,
-                  let googleMapsUri = place.googleMapsUri,
-                  let rating = place.rating,
-                  let userRatingCount = place.userRatingCount,
-                  let currentOpeningHours = place.currentOpeningHours
-            else { return nil }
-            
-            let convertedOpeningHours = convertOpeningHours(currentOpeningHours)
-            
-            return StoreInfo(
-                displayName: displayName,
-                primaryTypeDisplayName: primaryTypeDisplayName,
-                formattedAddress: place.formattedAddress,
-                latitude: place.location.latitude,
-                longitude: place.location.longitude,
-                rating: rating,
-                googleMapsUri: googleMapsUri,
-                userRatingCount: userRatingCount,
-                photosNames: photoUri, // photoUri(이미지 URL)를 여기에 저장
-                currentOpeningHours: convertedOpeningHours
-            )
-
-        }
+              let primaryTypeDisplayName = place.primaryTypeDisplayName?.text,
+              let googleMapsUri = place.googleMapsUri,
+              let rating = place.rating,
+              let userRatingCount = place.userRatingCount,
+              let currentOpeningHours = place.currentOpeningHours
+        else { return nil }
+        
+        let convertedOpeningHours = convertOpeningHours(currentOpeningHours)
+        
+        return StoreInfo(
+            displayName: displayName,
+            primaryTypeDisplayName: primaryTypeDisplayName,
+            formattedAddress: place.formattedAddress,
+            latitude: place.location.latitude,
+            longitude: place.location.longitude,
+            rating: rating,
+            googleMapsUri: googleMapsUri,
+            userRatingCount: userRatingCount,
+            photosNames: photoUri, // photoUri(이미지 URL)를 여기에 저장
+            currentOpeningHours: convertedOpeningHours
+        )
+        
+    }
     
     // googleMap.Place.OpeningHours를 DetailModel의 OpeningHours에 맞춰서 변경
     func convertOpeningHours(_ openingHours: GoogleMap.Place.OpeningHours) -> OpeningHours {
@@ -225,6 +228,27 @@ extension DetailReactor {
         return location1.distance(from: location2)
     }
     
+    func rectBounds(center: CLLocation, zoomLevel: Float) -> (sw: CLLocationCoordinate2D, ne: CLLocationCoordinate2D) {
+        let zoomDiff = zoomLevel - 14
+        let verticalMeters = 900.0 / pow(2.0, Double(zoomDiff))
+        let horizontalMeters = 1400.0 / pow(2.0, Double(zoomDiff))
+        
+        let latitudeDelta = verticalMeters / 111_000.0
+        let longitudeDelta = horizontalMeters / 88_000.0
+        
+        let sw = CLLocationCoordinate2D(
+            latitude: center.coordinate.latitude - latitudeDelta,
+            longitude: center.coordinate.longitude - longitudeDelta
+        )
+        
+        let ne = CLLocationCoordinate2D(
+            latitude: center.coordinate.latitude + latitudeDelta,
+            longitude: center.coordinate.longitude + longitudeDelta
+        )
+        
+        return (sw, ne)
+    }
+    
     // 위도와 경도를 받아오는 함수
     private func getCenterLocation() -> (lat: Double, lon: Double) {
         let userLocation = UserDefaultsManager.shared.readLocation()
@@ -233,41 +257,44 @@ extension DetailReactor {
         return (centerLat, centerLon)
     }
     
-    func fetchStoreInfosWithImages(textQuery: String, centerLat: Double, centerLon: Double) -> Observable<[StoreInfo]> {
-        return NetworkManager.shared.fetchPlacesWithCircle(
-            textQuery: textQuery,
-            centerLat: centerLat,
-            centerLon: centerLon)
-            .flatMap { places in
-                Observable.from(places)
-                    .flatMap { [weak self] place -> Observable<StoreInfo?> in
-                        guard let self else { return .empty() }
-                        let placeName = place.photos?.first?.name ?? ""
-                        let splitPlaceName = placeName.split(separator: "/")
-                        let photoName = place.photos?.first?.name ?? ""
-                        
-                        // Index out of range error 방지
-                        let cacheKey: String
-                        if splitPlaceName.count >= 2 {
-                            cacheKey = "\(splitPlaceName[0])/\(splitPlaceName[1])"
-                        } else if splitPlaceName.count == 1 {
-                            cacheKey = String(splitPlaceName[0])
-                        } else {
-                            cacheKey = ""
-                        }
-                        
-                        return self.fetchPhotoUriWithCache(placeName: cacheKey, photoName: photoName)
-                            .asObservable()
-                            .map { [weak self] photoUri in
-                                guard let self else { return nil }
-                                return self.convertToStoreInfo(place: place, photoUri: photoUri)
-                            }
-                        
+    func fetchStoreInfosWithImages(textQuery: String, lowLat: Double, lowLon: Double, highLat: Double, highLon: Double) -> Observable<[StoreInfo]> {
+        return NetworkManager.shared.fetchPlacesWithRectangle(textQuery: textQuery, locationRestriction: SearchTextBody.LocationRestriction(rectangle: LocationRestriction(
+            low: LocationRestriction.Coordinates(
+                latitude: lowLat,
+                longitude: lowLon),
+            high: LocationRestriction.Coordinates(
+                latitude: highLat,
+                longitude: highLon))))
+        .flatMap { places in
+            Observable.from(places)
+                .flatMap { [weak self] place -> Observable<StoreInfo?> in
+                    guard let self else { return .empty() }
+                    let placeName = place.photos?.first?.name ?? ""
+                    let splitPlaceName = placeName.split(separator: "/")
+                    let photoName = place.photos?.first?.name ?? ""
+                    
+                    // Index out of range error 방지
+                    let cacheKey: String
+                    if splitPlaceName.count >= 2 {
+                        cacheKey = "\(splitPlaceName[0])/\(splitPlaceName[1])"
+                    } else if splitPlaceName.count == 1 {
+                        cacheKey = String(splitPlaceName[0])
+                    } else {
+                        cacheKey = ""
                     }
-                    .toArray()
-                    .map { $0.compactMap { $0 } }
-            }
-            .asObservable()
+                    
+                    return self.fetchPhotoUriWithCache(placeName: cacheKey, photoName: photoName)
+                        .asObservable()
+                        .map { [weak self] photoUri in
+                            guard let self else { return nil }
+                            return self.convertToStoreInfo(place: place, photoUri: photoUri)
+                        }
+                    
+                }
+                .toArray()
+                .map { $0.compactMap { $0 } }
+        }
+        .asObservable()
         
     }
     
@@ -315,6 +342,6 @@ extension DetailReactor {
             return .empty()
         }
     }
-
+    
 }
 
