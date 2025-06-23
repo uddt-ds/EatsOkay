@@ -165,7 +165,8 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         let lat = userLocation?.lat ?? defaultLat
         let lon = userLocation?.lon ?? defaultLon
         
-        let camera = GMSCameraPosition.camera(withLatitude: lat, longitude: lon, zoom: 14)
+        // 초기 줌 레벨을 14.5로 설정
+        let camera = GMSCameraPosition.camera(withLatitude: lat, longitude: lon, zoom: 14.5)
         
         // GMSMapViewOptions는 지도를 생성할 때 적용할 다양한 설정 값들을 담는 클래스
         let options = GMSMapViewOptions()
@@ -266,8 +267,15 @@ extension DetailViewController {
                 owner.shouldAnimateCamera = false
             })
             .map { owner, _ in
-                let center = owner.mapView.camera.target
-                return Reactor.Action.currentLocationSearchButtonTapped(centerLat: center.latitude, centerLon: center.longitude)
+                let visibleRegion = owner.mapView.projection.visibleRegion()
+                let bounds = GMSCoordinateBounds(region: visibleRegion)
+                let sw = bounds.southWest
+                let ne = bounds.northEast
+                
+                return Reactor.Action.currentLocationSearchButtonTapped(
+                    sw: (lat: sw.latitude, lon: sw.longitude),
+                    ne: (lat: ne.latitude, lon: ne.longitude)
+                )
             }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
@@ -332,7 +340,8 @@ extension DetailViewController {
             .asDriver(onErrorDriveWith: .empty())
             .drive(with: self, onNext: { owner, coordinate in
                 guard owner.shouldAnimateCamera else { return }
-                let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 14)
+                // 줌 레벨 14.5로 설정
+                let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 14.5)
                 owner.mapView.animate(to: camera)
             })
             .disposed(by: disposeBag)
