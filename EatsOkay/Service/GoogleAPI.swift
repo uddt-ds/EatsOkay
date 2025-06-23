@@ -47,7 +47,6 @@ extension GoogleAPI: TargetType {
         case .storeInfoDataRectangle(textQuery: let textQuery, locationRestriction: let locationRestriction):
             
             let body = SearchTextBody(textQuery: textQuery, locationRestriction: locationRestriction)
-            dump(body)
             return .requestJSONEncodable(body)
             
         case .storeImageData:
