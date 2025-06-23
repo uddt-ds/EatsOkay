@@ -17,6 +17,8 @@ enum AddressManagerError: Error {
 
 extension AddressManagerError: LocalizedError {
     var errorDescription: String? {
+        
+        #if DEBUG
         switch self {
         case .failedToGetAddressJSONFilePath:
             return "주소 JSON 파일 경로를 가져오는 데 실패했습니다."
@@ -29,5 +31,12 @@ extension AddressManagerError: LocalizedError {
         case .noMatchingAddressAfterFiltering:
             return "필터링 결과에 해당하는 주소가 없습니다."
         }
+        
+        #else
+        switch self {
+        default:
+            return "데이터를 불러올 수 없습니다."
+        }
+        #endif
     }
 }

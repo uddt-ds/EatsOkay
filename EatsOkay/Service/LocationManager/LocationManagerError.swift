@@ -14,11 +14,17 @@ enum LocationManagerError: Error {
 
 extension LocationManagerError: LocalizedError {
     var errorDescription: String? {
+        
+        #if DEBUG
         switch self {
         case .noLocationFound:
             return "위치를 찾을 수 없습니다"
         case .noLastestLocationFound:
             return "최근 위치 정보를 찾을 수 없습니다."
         }
+        
+        #else
+        return "위치 정보를 찾을 수 없습니다."
+        #endif
     }
 }

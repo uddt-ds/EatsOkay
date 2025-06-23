@@ -13,9 +13,18 @@ enum LocationSelectReactorError: Error {
 
 extension LocationSelectReactorError: LocalizedError {
     var errorDescription: String? {
+        
+        #if DEBUG
         switch self {
         case .locationOutsideKorea:
-            return "현재 위치는 대한민국이 아닙니다."
+            return "Kakao Geocoding API Response를 받을수 있는 지역이 아닙니다."
         }
+        
+        #else
+        switch self {
+        case .locationOutsideKorea:
+            return "서비스 제공 지역이 아닙니다."
+        }
+        #endif
     }
 }
