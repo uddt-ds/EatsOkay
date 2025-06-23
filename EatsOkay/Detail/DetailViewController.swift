@@ -309,9 +309,10 @@ extension DetailViewController {
             .asDriver(onErrorDriveWith: .empty())
             .drive(with: self, onNext: { owner, void in
                 guard void != nil else { return }
-                let alert = CustomLocationAlert()
-                alert.modalPresentationStyle = .overFullScreen
-                owner.present(alert, animated: true)
+                let locationAlert = CustomLocationAlert()
+                locationAlert.modalPresentationStyle = .overFullScreen
+                locationAlert.modalTransitionStyle = .crossDissolve
+                owner.present(locationAlert, animated: true)
             })
             .disposed(by: disposeBag)
         
