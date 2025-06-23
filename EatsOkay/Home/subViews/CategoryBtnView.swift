@@ -32,21 +32,6 @@ final class CategoryBtnView: UIView {
         scrollView.addSubview(btnStackView)
 
         scrollView.isPagingEnabled = true
-
-        let shadowLayer = CALayer()
-        shadowLayer.frame = CGRect(
-            x: 0,
-            y: 72,
-            width: UIScreen.main.bounds.width,
-            height: 2
-        )
-        shadowLayer.shadowColor = UIColor.black.cgColor
-        shadowLayer.shadowOpacity = 0.08
-        shadowLayer.shadowOffset = CGSize(width: 0, height: 2)
-        shadowLayer.shadowRadius = 20
-        shadowLayer.shadowPath = UIBezierPath(rect: shadowLayer.bounds).cgPath
-        scrollView.layer.addSublayer(shadowLayer)
-
         return scrollView
     }()
 
