@@ -255,6 +255,7 @@ extension DetailViewController {
             .disposed(by: disposeBag)
         
         currentLocationSearchButton.rx.tap
+            .throttle(.seconds(2), scheduler: MainScheduler.instance)
             .withUnretained(self)
             .do(onNext: { owner, _ in
                 owner.shouldAnimateCamera = false
