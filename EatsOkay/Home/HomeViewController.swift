@@ -22,6 +22,15 @@ final class HomeViewController: UIViewController, View {
     init(reactor: HomeReactor) {
         self.reactor = reactor
         super.init(nibName: nil, bundle: nil)
+
+        let width = UIScreen.main.bounds.width
+        let height: CGFloat = 4
+        let cgRect = CGRect(x: 0, y: 0, width: width, height: height)
+
+        categoryBtnShadowView.layer.shadowPath = UIBezierPath(
+            roundedRect: cgRect,
+            cornerRadius: 0
+        ).cgPath
     }
 
     required init?(coder: NSCoder) {
@@ -29,9 +38,19 @@ final class HomeViewController: UIViewController, View {
     }
     
     private let locationHeaderView = LocationHeaderView()
-    private let categoryBtnShadowView = UIView()
     private let categoryButtonView = CategoryBtnView()
     private let tableView = UITableView()
+
+    private lazy var categoryBtnShadowView: UIView = {
+        let shadowView = UIView()
+        shadowView.backgroundColor = .white
+        shadowView.layer.shadowColor = UIColor.customColor(hexCode: .neutral950).cgColor
+        shadowView.layer.shadowOpacity = 0.3
+        shadowView.layer.shadowOffset = CGSize(width: 0, height: 2)
+        shadowView.layer.shadowRadius = 20
+        shadowView.layer.masksToBounds = false
+        return shadowView
+    }()
 
 
     typealias DataSource = RxTableViewSectionedAnimatedDataSource<HomeSectionOfCellModel>
@@ -53,11 +72,13 @@ final class HomeViewController: UIViewController, View {
     private func configureUI() {
         view.backgroundColor = .white
 
-        [locationHeaderView, tableView, categoryButtonView]
+        [locationHeaderView, tableView, categoryButtonView, categoryBtnShadowView]
             .forEach { view.addSubview($0) }
 
         tableView.rowHeight = 260
         tableView.separatorStyle = .none
+
+        view.bringSubviewToFront(categoryButtonView)
     }
 
     private func setConstraints() {
@@ -66,15 +87,21 @@ final class HomeViewController: UIViewController, View {
             make.height.equalTo(92)
         }
 
+        tableView.snp.makeConstraints { make in
+            make.top.equalTo(categoryButtonView.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+
         categoryButtonView.snp.makeConstraints { make in
             make.top.equalTo(locationHeaderView.snp.bottom)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(72)
         }
 
-        tableView.snp.makeConstraints { make in
-            make.top.equalTo(categoryButtonView.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
+        categoryBtnShadowView.snp.makeConstraints { make in
+            make.top.equalTo(categoryButtonView.snp.bottom).offset(-4)
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(4)
         }
     }
 
