@@ -39,10 +39,14 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
     }()
     
     private let currentLocationSearchButton: UIButton = {
-        let button = UIButton()
-        let text: NSMutableAttributedString = AttributedStringManager.configureString(text: "현 위치에서 검색", font: .customFontForBody(weight: .w400), color: .bgColor)
+        let title = "현 위치에서 검색"
+        let button = CustomButton(title: title)
+        let text: NSMutableAttributedString = AttributedStringManager.configureString(
+            text: title,
+            font: .customFontForBody(weight: .w400),
+            color: .bgColor
+        )
         button.setAttributedTitle(text, for: .normal)
-        button.backgroundColor = .customColor(hexCode: .primary400)
         button.setImage(UIImage(named: "reloadButton"), for: .normal)
         button.imageView?.contentMode = .scaleAspectFill
         button.layer.cornerRadius = 16
@@ -52,6 +56,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
     private let currentLocationButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "currentLocationButton"), for: .normal)
+        button.setImage(UIImage(named: "currentLocationButtonPressed"), for: .highlighted)
         button.imageView?.contentMode = .scaleAspectFill
         return button
     }()
