@@ -48,6 +48,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         )
         button.setAttributedTitle(text, for: .normal)
         button.setImage(UIImage(named: "reloadButton"), for: .normal)
+        button.setImage(UIImage(named: "reloadButton"), for: .highlighted)
         button.imageView?.contentMode = .scaleAspectFill
         button.layer.cornerRadius = 16
         return button
