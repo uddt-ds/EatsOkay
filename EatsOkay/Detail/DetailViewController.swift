@@ -140,8 +140,11 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         bind(reactor: reactor)
         
         self.title = reactor.title
-        // 네비게이션 바 타이틀 색상 설정
-        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.customColor(hexCode: .neutral950)]
+        // 네비게이션 바 타이틀 색상, 폰트 설정
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: UIColor.customColor(hexCode: .neutral950),
+            .font: UIFont.customFontForHeader(weight: .w800)
+        ]
         
         navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .customColor(hexCode: .neutral950)
