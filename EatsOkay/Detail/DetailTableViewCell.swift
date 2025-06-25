@@ -89,10 +89,7 @@ class DetailTableViewCell: UITableViewCell {
         return imageView
     }()
     
-    private let separatorView: UIView = {
-        let view = CustomSeparator(color: .neutral50)
-        return view
-    }()
+    private let separatorView = CustomSeparator(color: .neutral50)
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
