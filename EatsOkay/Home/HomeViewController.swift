@@ -170,7 +170,7 @@ final class HomeViewController: UIViewController, View {
             .bind(onNext: { vc, _ in
                 let reactor = LocationSelectReactor()
                 let locationVC = LocationSelectView(reactor: reactor)
-                vc.navigationController?.setViewControllers([locationVC], animated: true)
+                vc.navigationController?.pushViewController(locationVC, animated: true)
             })
             .disposed(by: disposeBag)
 
