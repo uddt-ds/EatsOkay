@@ -64,8 +64,8 @@ final class SplashViewController: UIViewController, View {
                           options: .transitionCrossDissolve,
                           animations: {
                               nav.setViewControllers([homeVC], animated: false)
-                          })    }
-    // 온보딩 페이지 완료 시 수정
+                          })
+    }
     private func goToOnboarding() {
         guard let nav = self.navigationController else { return }
 
