@@ -187,7 +187,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
             // 기기별 safeAreaHeight를 구하기
             let safeAreaHeight = self.view.safeAreaLayoutGuide.layoutFrame.height
             
-            $0.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.top).offset(safeAreaHeight * 0.307)
+            $0.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.top).offset(safeAreaHeight * 0.3226) // 높이 262
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             $0.horizontalEdges.equalToSuperview()
         }
