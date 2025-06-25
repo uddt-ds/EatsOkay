@@ -90,8 +90,7 @@ class DetailTableViewCell: UITableViewCell {
     }()
     
     private let separatorView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .customColor(hexCode: .neutral50)
+        let view = CustomSeparator(color: .neutral50)
         return view
     }()
     
