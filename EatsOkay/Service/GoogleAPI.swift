@@ -9,7 +9,7 @@ import Foundation
 import Moya
 
 enum GoogleAPI {
-    // 원형으로 데이터 불러오기, 사각형으로 데이터 불러오기, 이미지 불러오기
+    // 사각형으로 데이터 불러오기, 이미지 불러오기
     case storeInfoDataRectangle(textQuery: String, locationRestriction: SearchTextBody.LocationRestriction)
     case storeImageData(mediaName: String)
 }
