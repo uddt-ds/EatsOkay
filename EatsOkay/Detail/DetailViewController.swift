@@ -264,6 +264,7 @@ extension DetailViewController {
             .throttle(.seconds(2), scheduler: MainScheduler.instance)
             .withUnretained(self)
             .do(onNext: { owner, _ in
+                owner.currentLocationSearchButton.isHidden = true
                 owner.shouldAnimateCamera = false
             })
             .map { owner, _ in
@@ -387,6 +388,13 @@ extension DetailViewController {
             .asDriver(onErrorJustReturn: "0개의 매장") // 에러시 출력
             .drive(storeCountLabel.rx.text)
             .disposed(by: disposeBag)
+    }
+}
+
+// 지도 이동이 끝났을 때 호출
+extension DetailViewController {
+    func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
+        currentLocationSearchButton.isHidden = false
     }
 }
 
