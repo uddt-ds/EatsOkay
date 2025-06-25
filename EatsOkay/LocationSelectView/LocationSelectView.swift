@@ -192,14 +192,10 @@ final class LocationSelectView: UIViewController, View {
                     switch rootVC {
                     case is HomeViewController:
                         vc.navigationController?.popViewController(animated: true)
-                    case is OnboardingViewController:
-                        let reactor = HomeReactor()
-                        let homeVC = HomeViewController(reactor: reactor)
-                        vc.navigationController?.setViewControllers([homeVC], animated: true)
                     default:
                         let reactor = HomeReactor()
                         let homeVC = HomeViewController(reactor: reactor)
-                        vc.navigationController?.pushViewController(homeVC, animated: true)
+                        vc.navigationController?.setViewControllers([homeVC], animated: true)
                     }
                 }
             }
