@@ -24,7 +24,7 @@ extension GoogleMap {
         let formattedAddress: String // 전체 주소
         let location: Location // 위경도
         let rating: Double? // 별점
-        let googleMapsUri: String? // 웹뷰 주소  // googleMapsURI -> googleMapsUri로 수정
+        let googleMapsUri: String? // 웹뷰 주소 
         let userRatingCount: Int? // 리뷰 수
         let photos: [Photo]? // 사진요청 쿼리
         let currentOpeningHours: OpeningHours? // 오픈 시간 일->토 순서

@@ -10,8 +10,7 @@ import Moya
 
 enum GoogleAPI {
     // 원형으로 데이터 불러오기, 사각형으로 데이터 불러오기, 이미지 불러오기
-    case storeInfoDataCircle(textQuery: String, lat: Double, lon: Double)
-    case storeInfoDataRectangle(textQuery: String, lowLat: Double, lowLon: Double, highLat: Double, highLon: Double)
+    case storeInfoDataRectangle(textQuery: String, locationRestriction: SearchTextBody.LocationRestriction)
     case storeImageData(mediaName: String)
 }
 
@@ -22,7 +21,7 @@ extension GoogleAPI: TargetType {
     
     var path: String {
         switch self {
-        case .storeInfoDataCircle, .storeInfoDataRectangle:
+        case .storeInfoDataRectangle:
             return "/v1/places:searchText"
            
         
@@ -33,7 +32,7 @@ extension GoogleAPI: TargetType {
     
     var method: Moya.Method {
         switch self {
-        case .storeInfoDataCircle, .storeInfoDataRectangle:
+        case .storeInfoDataRectangle:
             return .post
             
         case .storeImageData:
@@ -44,24 +43,10 @@ extension GoogleAPI: TargetType {
     
     var task: Moya.Task {
         switch self {
-        // body를 SearchTextBody로 모델링(circle, rectangle 모두 body가 들어가지만 bias가 달라서 enum case로 정리)
-        case .storeInfoDataCircle(textQuery: let textQuery, lat: let lat, lon: let lon):
-            let bias = LocationBias.circle(
-                Circle(
-                    center: Center(latitude: lat, longitude: lon)
-                )
-            )
-            let body = SearchTextBody(textQuery: textQuery, locationBias: bias)
-            return .requestJSONEncodable(body)
             
-        case .storeInfoDataRectangle(textQuery: let textQuery, lowLat: let lowLat, lowLon: let lowLon, highLat: let highLat, highLon: let highLon):
-            let bias = LocationBias.rectangle(
-                Rectangle(
-                    low: Low(latitude: lowLat, longitude: lowLon),
-                    high: High(latitude: highLat, longitude: highLon)
-                )
-            )
-            let body = SearchTextBody(textQuery: textQuery, locationBias: bias)
+        case .storeInfoDataRectangle(textQuery: let textQuery, locationRestriction: let locationRestriction):
+            
+            let body = SearchTextBody(textQuery: textQuery, locationRestriction: locationRestriction)
             return .requestJSONEncodable(body)
             
         case .storeImageData:
@@ -82,7 +67,7 @@ extension GoogleAPI: TargetType {
         let fieldMask = "places.displayName,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.formattedAddress,places.currentOpeningHours,places.postalAddress,places.location,places.photos,places.googleMapsUri"
         
         switch self {
-        case .storeInfoDataCircle, .storeInfoDataRectangle:
+        case .storeInfoDataRectangle:
             return [
                 "Content-Type": "application/json",
                 "X-Goog-Api-Key": apiKey,

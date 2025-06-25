@@ -53,11 +53,7 @@ extension Reactive where Base: CLLocationManager {
                 throw LocationManagerError.noLocationFound
             }
             
-            if coord.timestamp.timeIntervalSinceNow > -5 && coord.timestamp.timeIntervalSinceNow < 0  {
-                return (lat: coord.coordinate.latitude, lon: coord.coordinate.longitude)
-            } else {
-                throw LocationManagerError.noLastestLocationFound
-            }
+            return (lat: coord.coordinate.latitude, lon: coord.coordinate.longitude)
         }
         .share()
     }
