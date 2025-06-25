@@ -140,8 +140,11 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         bind(reactor: reactor)
         
         self.title = reactor.title
-        // 네비게이션 바 타이틀 색상 설정
-        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.customColor(hexCode: .neutral950)]
+        // 네비게이션 바 타이틀 색상, 폰트 설정
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: UIColor.customColor(hexCode: .neutral950),
+            .font: UIFont.customFontForHeader(weight: .w800)
+        ]
         
         navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .customColor(hexCode: .neutral950)
@@ -187,7 +190,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
             // 기기별 safeAreaHeight를 구하기
             let safeAreaHeight = self.view.safeAreaLayoutGuide.layoutFrame.height
             
-            $0.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.top).offset(safeAreaHeight * 0.307)
+            $0.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.top).offset(safeAreaHeight * 0.3226) // 높이 262
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             $0.horizontalEdges.equalToSuperview()
         }
