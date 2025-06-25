@@ -113,11 +113,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         return button
     }()
     
-    private let separatorView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .customColor(hexCode: .neutral50)
-        return view
-    }()
+    private let separatorView = CustomSeparator(color: .neutral50)
     
     
     private let tableView: UITableView = {
