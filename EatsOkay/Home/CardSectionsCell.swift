@@ -128,7 +128,7 @@ final class CardSectionsCell: UITableViewCell {
 
         let hashLabel: NSAttributedString = AttributedStringManager
             .configureString(
-                text: "\(data.hashTags[0]) \(data.hashTags[1])",
+                text: data.hashTags.joined(separator: " "),
                 font: .customFontForBody(weight: .w600),
                 color: .neutral700
             )
