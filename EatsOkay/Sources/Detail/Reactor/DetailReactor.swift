@@ -80,7 +80,7 @@ class DetailReactor: Reactor {
             
             return Observable.zip(firstRequest, secondRequest)
                 .map { first, second in
-                    let merged = (first + second).sorted { $0.rating > $1.rating }
+                    let merged = Array(Set((first + second).sorted { $0.rating > $1.rating }))
                     return [StoreSection(items: merged)]
                 }
                 .map { .setStore($0) }
@@ -131,7 +131,7 @@ class DetailReactor: Reactor {
             return Observable.zip(firstRequest, secondRequest)
                 .map { [weak self] first, second in
                     guard let self else { return [] }
-                    let merged = first + second
+                    let merged = Array(Set(first + second))
                     let sorted = self.sortStoreItems(
                                     merged,
                                     sortType: currentSortType,
