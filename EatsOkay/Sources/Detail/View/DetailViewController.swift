@@ -304,7 +304,10 @@ extension DetailViewController {
                     let marker = GMSMarker()
                     marker.position = CLLocationCoordinate2D(latitude: store.latitude, longitude: store.longitude)
                     marker.title = store.displayName
-                    marker.icon = UIImage(named: "customMarker")
+                    if let image = UIImage(named: "customMarkerShadow") {
+                        let resizedImage = image.resize(to: CGSize(width: 28, height: 32))
+                        marker.icon = resizedImage
+                    }
                     marker.map = mapView
                 }
             })
@@ -410,5 +413,15 @@ extension DetailViewController: SFSafariViewControllerDelegate {
 extension DetailViewController: UIAdaptivePresentationControllerDelegate {
     func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
         reactor.action.onNext(.webViewDidDismiss)
+    }
+}
+
+extension UIImage {
+    func resize(to size: CGSize) -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        draw(in: CGRect(origin: .zero, size: size))
+        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return resizedImage ?? self
     }
 }
