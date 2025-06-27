@@ -173,6 +173,7 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         options.camera = camera
         mapView = GMSMapView(options: options)
         mapView.delegate = self
+        mapView.isMyLocationEnabled = true
     }
     
     private func configureUI() {
