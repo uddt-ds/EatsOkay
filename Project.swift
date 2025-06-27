@@ -1,7 +1,7 @@
 import ProjectDescription
 
 let marketingVersion = SettingValue(stringLiteral: "1.2.0")
-let buildNumber = SettingValue(stringLiteral: "3")
+let buildNumber = SettingValue(stringLiteral: "1")
 
 let project = Project(
     name: "EatsOkay",
