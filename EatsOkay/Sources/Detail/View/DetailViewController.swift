@@ -302,9 +302,11 @@ extension DetailViewController {
                 mapView.clear()
                 for store in stores {
                     let marker = GMSMarker()
+                    let markerView = UIImageView(image: UIImage(named: "customMarkerShadow"))
+                    markerView.frame = CGRect(x: 0, y: 0, width: 28, height: 32)
                     marker.position = CLLocationCoordinate2D(latitude: store.latitude, longitude: store.longitude)
                     marker.title = store.displayName
-                    marker.icon = UIImage(named: "customMarker")
+                    marker.iconView = markerView
                     marker.map = mapView
                 }
             })
@@ -344,6 +346,7 @@ extension DetailViewController {
                 // 줌 레벨 14.5로 설정
                 let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 14.5)
                 owner.mapView.animate(to: camera)
+                owner.mapView.isMyLocationEnabled = true
             })
             .disposed(by: disposeBag)
         
