@@ -45,6 +45,7 @@ class DetailReactor: Reactor {
         case setWebViewUrl(String)
         case sortStore([StoreSection]) // 데이터 정렬
         case dismissWebView // 웹뷰가 닫혔을 때
+        case setSortType(SortType)
     }
     
     struct State {
@@ -79,7 +80,7 @@ class DetailReactor: Reactor {
             
             return Observable.zip(firstRequest, secondRequest)
                 .map { first, second in
-                    let merged = (first + second).sorted { $0.rating > $1.rating }
+                    let merged = Array(Set((first + second).sorted { $0.rating > $1.rating }))
                     return [StoreSection(items: merged)]
                 }
                 .map { .setStore($0) }
@@ -101,40 +102,43 @@ class DetailReactor: Reactor {
             // userDefault 사용해서 위치 가져오기
             let (centerLat, centerLon) = getCenterLocation()
             
-            let sortedItems = currentStoreInfo.flatMap { $0.items }
-                .sorted { item1, item2 in
-                    switch sortType {
-                    case .rating:
-                        return item1.rating > item2.rating
-                    case .distance:
-                        let distance1 = self.calculateDistance(
-                            from: centerLat, lon1: centerLon,
-                            to: item1.latitude, lon2: item1.longitude
-                        )
-                        let distance2 = self.calculateDistance(
-                            from: centerLat, lon1: centerLon,
-                            to: item2.latitude, lon2: item2.longitude
-                        )
-                        return distance1 < distance2
-                    case .reviewCount:
-                        return item1.userRatingCount > item2.userRatingCount
-                    }
-                }
+            let allItems = currentStoreInfo.flatMap { $0.items }
+            
+            let sortedItems = sortStoreItems(allItems,
+                                             sortType: sortType,
+                                             centerLat: centerLat,
+                                             centerLon: centerLon)
+            
             let sortedStoreInfo = [StoreSection(items: sortedItems)]
-            return Observable.just(.sortStore(sortedStoreInfo)) // storeInfo 정렬
+            return Observable.concat([
+                Observable.just(.sortStore(sortedStoreInfo)), // storeInfo 정렬
+                Observable.just(.setSortType(sortType))
+            ])
             // 웹뷰를 닫았을 때
         case .webViewDidDismiss:
             return Observable.just(.dismissWebView) // viewDidmiss
         case .backButtonTapped:
             return .just(.shouldPop(true))
         case .currentLocationSearchButtonTapped(sw: let sw, ne: let ne):
+            let currentSortType = currentState.sortType
+
+            let centerLat = (sw.lat + ne.lat) / 2
+            let centerLon = (sw.lon + ne.lon) / 2
+            
             let firstRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[0], lowLat: sw.lat, lowLon: sw.lon, highLat: ne.lat, highLon: ne.lon)
             let secondRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[1], lowLat: sw.lat, lowLon: sw.lon, highLat: ne.lat, highLon: ne.lon)
             
             return Observable.zip(firstRequest, secondRequest)
-                .map { first, second in
-                    let merged = (first + second).sorted { $0.rating > $1.rating }
-                    return [StoreSection(items: merged)]
+                .map { [weak self] first, second in
+                    guard let self else { return [] }
+                    let merged = Array(Set(first + second))
+                    let sorted = self.sortStoreItems(
+                                    merged,
+                                    sortType: currentSortType,
+                                    centerLat: centerLat,
+                                    centerLon: centerLon
+                                )
+                    return [StoreSection(items: sorted)]
                 }
                 .map { .setStore($0) }
         }
@@ -160,6 +164,8 @@ class DetailReactor: Reactor {
             newState.storeInfo = storeInfo
         case .dismissWebView:
             newState.shouldPresentWebView = false
+        case .setSortType(let sortType):
+            newState.sortType = sortType
         }
         return newState
     }
@@ -219,6 +225,33 @@ extension DetailReactor {
             return OpeningHours.Periods(open: open, close: close)
         }
         return OpeningHours(openNow: openingHours.openNow, periods: periods, weekdayDescriptions: openingHours.weekdayDescriptions)
+    }
+    
+    // 가게 정보 정렬 함수
+    func sortStoreItems(
+        _ items: [StoreInfo],
+        sortType: SortType,
+        centerLat: Double,
+        centerLon: Double
+    ) -> [StoreInfo] {
+        return items.sorted { item1, item2 in
+            switch sortType {
+            case .rating:
+                return item1.rating > item2.rating
+            case .distance:
+                let distance1 = calculateDistance(
+                    from: centerLat, lon1: centerLon,
+                    to: item1.latitude, lon2: item1.longitude
+                )
+                let distance2 = calculateDistance(
+                    from: centerLat, lon1: centerLon,
+                    to: item2.latitude, lon2: item2.longitude
+                )
+                return distance1 < distance2
+            case .reviewCount:
+                return item1.userRatingCount > item2.userRatingCount
+            }
+        }
     }
     
     // 현재 위치와 가게의 거리를 구하는 함수
