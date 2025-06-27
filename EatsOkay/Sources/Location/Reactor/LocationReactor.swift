@@ -1,5 +1,5 @@
 //
-//  LocationSelectReactor.swift
+//  LocationReactor.swift
 //  EatsOkay
 //
 //  Created by LCH on 6/6/25.
@@ -10,7 +10,7 @@ import RxSwift
 import ReactorKit
 import CoreLocation
 
-final class LocationSelectReactor: Reactor {
+final class LocationReactor: Reactor {
     
     var disposeBag = DisposeBag()
     private let networkManger = NetworkManager.shared
@@ -221,7 +221,7 @@ final class LocationSelectReactor: Reactor {
                 
                 guard (guardSWcoord.lat...guardNEcoord.lat).contains(lat),
                       (guardSWcoord.lon...guardNEcoord.lon).contains(lon) else {
-                    throw LocationSelectReactorError.locationOutsideKorea
+                    throw LocationReactorError.locationOutsideKorea
                 }
                 
                 return reactor.networkManger.fetchGeoCoding(

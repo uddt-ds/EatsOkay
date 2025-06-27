@@ -361,7 +361,7 @@ extension DetailReactor {
                 
                 guard (guardSWcoord.lat...guardNEcoord.lat).contains(lat),
                       (guardSWcoord.lon...guardNEcoord.lon).contains(lon) else {
-                    throw LocationSelectReactorError.locationOutsideKorea
+                    throw LocationReactorError.locationOutsideKorea
                 }
                 
                 return reactor.networkManger.fetchGeoCoding(

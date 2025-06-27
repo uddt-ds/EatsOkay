@@ -168,8 +168,8 @@ final class HomeViewController: UIViewController, View {
             .compactMap { $0 }
             .withUnretained(self)
             .bind(onNext: { vc, _ in
-                let reactor = LocationSelectReactor()
-                let locationVC = LocationSelectView(reactor: reactor)
+                let reactor = LocationReactor()
+                let locationVC = LocationViewController(reactor: reactor)
                 vc.navigationController?.pushViewController(locationVC, animated: true)
             })
             .disposed(by: disposeBag)

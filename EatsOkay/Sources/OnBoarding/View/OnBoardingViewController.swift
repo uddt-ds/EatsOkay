@@ -229,8 +229,8 @@ final class OnboardingViewController: UIViewController, View {
     }
     
     private func navigateToLocationSelectView() {
-        let reactor = LocationSelectReactor()
-        let locationVC = LocationSelectView(reactor: reactor)
+        let reactor = LocationReactor()
+        let locationVC = LocationViewController(reactor: reactor)
         self.navigationController?.setViewControllers([locationVC], animated: true)
     }
 }

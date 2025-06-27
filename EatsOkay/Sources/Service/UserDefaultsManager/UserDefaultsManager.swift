@@ -53,9 +53,3 @@ final class UserDefaultsManager {
     }
 
 }
-
-struct UserLocation: Codable {
-    let address: String
-    let lat: Double
-    let lon: Double
-}

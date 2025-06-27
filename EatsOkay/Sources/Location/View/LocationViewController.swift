@@ -1,5 +1,5 @@
 //
-//  LocationSelectView.swift
+//  LocationViewController.swift
 //  EatsOkay
 //
 //  Created by LCH on 6/6/25.
@@ -11,10 +11,10 @@ import RxSwift
 import RxCocoa
 import ReactorKit
 
-final class LocationSelectView: UIViewController, View {
+final class LocationViewController: UIViewController, View {
     
     var disposeBag: DisposeBag = DisposeBag()
-    private let reactor: LocationSelectReactor
+    private let reactor: LocationReactor
     private let panGesture = UIPanGestureRecognizer()
     
     private let guideLabel: UILabel = {
@@ -68,7 +68,7 @@ final class LocationSelectView: UIViewController, View {
     
     private let startButton = CustomButton(title: "설정하기")
     
-    init(reactor: LocationSelectReactor) {
+    init(reactor: LocationReactor) {
         self.reactor = reactor
         super.init(nibName: nil, bundle: nil)
     }
@@ -124,12 +124,12 @@ final class LocationSelectView: UIViewController, View {
         pickerView.addGestureRecognizer(panGesture)
     }
     
-    func bind(reactor: LocationSelectReactor) {
+    func bind(reactor: LocationReactor) {
         bindAction(reactor: reactor)
         bindState(reactor: reactor)
     }
     
-    private func bindAction(reactor: LocationSelectReactor) {
+    private func bindAction(reactor: LocationReactor) {
         Observable.just(Void())
             .map { Reactor.Action.initialFetch }
             .bind(to: reactor.action)
@@ -158,7 +158,7 @@ final class LocationSelectView: UIViewController, View {
 
     }
     
-    private func bindState(reactor: LocationSelectReactor) {
+    private func bindState(reactor: LocationReactor) {
         reactor.pulse(\.$pickerViewData)
             .map { $0 as PickerViewAdapter.Element }
             .bind(to: pickerView.rx.items(adapter: PickerViewAdapter()))

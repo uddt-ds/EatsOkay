@@ -1,5 +1,5 @@
 //
-//  LocationSelectReactorError.swift
+//  LocationReactorError.swift
 //  EatsOkay
 //
 //  Created by LCH on 6/13/25.
@@ -7,11 +7,11 @@
 
 import Foundation
 
-enum LocationSelectReactorError: Error {
+enum LocationReactorError: Error {
     case locationOutsideKorea
 }
 
-extension LocationSelectReactorError: LocalizedError {
+extension LocationReactorError: LocalizedError {
     var errorDescription: String? {
         
         #if DEBUG
