@@ -1,7 +1,7 @@
 import ProjectDescription
 
-let marketingVersion = SettingValue(stringLiteral: "1.2.0")
-let buildNumber = SettingValue(stringLiteral: "1")
+let marketingVersion = "1.2.0"
+let buildNumber = "1"
 
 let project = Project(
     name: "EatsOkay",
@@ -14,6 +14,8 @@ let project = Project(
             deploymentTargets: .iOS("16.6"),
             infoPlist: .extendingDefault(
                 with: [
+                    "CFBundleShortVersionString": .string(marketingVersion),
+                    "CFBundleVersion": .string(buildNumber),
                     "UIApplicationSceneManifest": [
                         "UIApplicationSupportsMultipleScenes": true,
                         "UISceneConfigurations": [
@@ -61,8 +63,8 @@ let project = Project(
                     "SWIFT_VERSION": "5.0",
                     "SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD": "NO",
                     "TARGETED_DEVICE_FAMILY": "1",
-                    "MARKETING_VERSION": marketingVersion,
-                    "CURRENT_PROJECT_VERSION": buildNumber
+                    "MARKETING_VERSION": .string(marketingVersion),
+                    "CURRENT_PROJECT_VERSION": .string(buildNumber)
                 ],
                 configurations: [
                     .debug(
