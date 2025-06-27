@@ -173,7 +173,6 @@ class DetailViewController: UIViewController, GMSMapViewDelegate, View {
         options.camera = camera
         mapView = GMSMapView(options: options)
         mapView.delegate = self
-        mapView.isMyLocationEnabled = true
     }
     
     private func configureUI() {
@@ -345,6 +344,7 @@ extension DetailViewController {
                 // 줌 레벨 14.5로 설정
                 let camera = GMSCameraPosition.camera(withLatitude: coordinate.0, longitude: coordinate.1, zoom: 14.5)
                 owner.mapView.animate(to: camera)
+                owner.mapView.isMyLocationEnabled = true
             })
             .disposed(by: disposeBag)
         
