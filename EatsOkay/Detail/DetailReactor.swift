@@ -11,7 +11,7 @@ class DetailReactor: Reactor {
     
     typealias LocationRestriction = SearchTextBody.LocationRestriction.Rectangle
     
-    let locationManager = CLLocationManager()
+    private let networkManger = NetworkManager.shared
     
     var disposeBag = DisposeBag()
     
@@ -41,7 +41,7 @@ class DetailReactor: Reactor {
         case setStore([StoreSection])
         case shouldPop(Bool)
         case setCurrentLocation(lat: Double, lon: Double)
-        case showLocationAlert
+        case showLocationAlert(Void?)
         case setWebViewUrl(String)
         case sortStore([StoreSection]) // 데이터 정렬
         case dismissWebView // 웹뷰가 닫혔을 때
@@ -319,28 +319,73 @@ extension DetailReactor {
     
     // 권한 설정에 따른 동작을 설정하는 함수
     private func handleLocationAuthorization() -> Observable<Mutation> {
+        let locationManager = CLLocationManager()
         let status = locationManager.authorizationStatus
         switch status {
         case .notDetermined:
-            locationManager.requestWhenInUseAuthorization()
-            return .empty()
-        case .restricted, .authorizedWhenInUse, .authorizedAlways:
-            return locationManager.rx.getCurrentLocationOnce
-                .flatMap { lat, lon -> Observable<Mutation> in
-                    return NetworkManager.shared.fetchGeoCoding(lat: lat, lon: lon)
-                        .asObservable()
-                        .map { addressTuple in
-                            let address = addressTuple.map { "\($0.0) \($0.1)" } ?? "알 수 없는 위치"
-                            let location = UserLocation(address: address, lat: lat, lon: lon)
-                            UserDefaultsManager.shared.saveLocation(location: location)
-                            return .setCurrentLocation(lat: lat, lon: lon)
-                        }
+            
+            return locationManager.rx.authorizationStatusChanged
+                .filter { $0 != .denied }
+                .withUnretained(self)
+                .flatMap { reactor, status in
+                    return reactor.checkLocation(locationManager: locationManager)
                 }
+            
+        case .restricted, .authorizedWhenInUse, .authorizedAlways:
+            
+            return checkLocation(locationManager: locationManager)
+            
         case .denied:
-            return .just(.showLocationAlert)
+            
+            return Observable.just(.showLocationAlert(Void()))
+            
         @unknown default:
             return .empty()
         }
+    }
+    
+    private func checkLocation(locationManager: CLLocationManager) -> Observable<Mutation> {
+        
+        var lat: Double = 0
+        var lon: Double = 0
+        
+        return locationManager.rx.getCurrentLocationOnce
+            .withUnretained(self)
+            .flatMap { reactor, locationEvent -> Observable<(String, String)?> in
+                
+                lat = locationEvent.lat
+                lon = locationEvent.lon
+                
+                let guardSWcoord = (lat: 34.3607042, lon: 126.0890561)
+                let guardNEcoord = (lat: 38.6111004, lon: 129.5847337)
+                
+                guard (guardSWcoord.lat...guardNEcoord.lat).contains(lat),
+                      (guardSWcoord.lon...guardNEcoord.lon).contains(lon) else {
+                    throw LocationSelectReactorError.locationOutsideKorea
+                }
+                
+                return reactor.networkManger.fetchGeoCoding(
+                    lat: locationEvent.lat,
+                    lon: locationEvent.lon
+                )
+                .asObservable()
+            }
+            .flatMap { location -> Observable<UserLocation> in
+                guard let location else {
+                    return .empty()
+                }
+                
+                return Observable.just(UserLocation(
+                    address: "\(location.0) \(location.1)",
+                    lat: lat,
+                    lon: lon
+                ))
+                
+            }
+            .map { location in
+                UserDefaultsManager.shared.saveLocation(location: location)
+                return .setCurrentLocation(lat: location.lat, lon: location.lon)
+            }
     }
     
 }
