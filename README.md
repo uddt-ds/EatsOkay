@@ -8,7 +8,7 @@
   EatsOkay
   <p align="center">
   <img src="https://img.shields.io/badge/프로젝트 기간-2025.05.29 ~ -fab2ac?style=flat&logo=&logoColor=white" alt="프로젝트 기간" />
-  <img src="https://img.shields.io/badge/release-v1.1-4fc08d?style=flat&logo=google-chrome&logoColor=white" alt="릴리즈 버전" />
+  <img src="https://img.shields.io/badge/release-v1.1.0-4fc08d?style=flat&logo=google-chrome&logoColor=white" alt="릴리즈 버전" />
 </p>
 </h1>
 
@@ -39,7 +39,7 @@
 | 이찬호 | 부리더 | • 지역선택 화면 구현 <br>• AddressManager 구현 <br>• LocationManager 구현 <br>• 공통 UIComponent 구현 |
 | 김기태 | 팀원 | • 스플래시 화면 구현 <br>• 온보딩 화면 구현 <br>• NetworkManager 구현 <br>• UserDefaultsManager 구현 |
 | 박혜민 | 팀원 | • 상세화면 지도 구현(Google Maps iOS SDK 활용) <br> • 와이어프레임, 유저플로우 작성 |
-| 허성필 | 팀원 | • 상세화면 리스트 구현(NetworkManger 활용) <br>• 외부 웹페이지 표시 기능 구현 |
+| 허성필 | 팀원 | • 상세화면 리스트 구현(NetworkManger 활용) <br> • Google Place API 호출 캐싱 기능 구현 <br>• 외부 웹페이지 표시 기능 구현 |
 
 ### 🧑🏻‍🎨 디자이너
 
@@ -69,13 +69,10 @@
 
 <a id="duration"></a>
 ## 📅 개발기간
-> release V1.0 ~ V1.1
-  - 2025.05.29(목) ~ 2025.06.19(목)
-
-<br>
-
-> release V1.2
-  - 2025.06.20(금) ~ 진행중
+| 버전 | 기간 | 주요 변경 내용 |
+| --- | --- | --- |
+| V1.0 | 2025.05.29(목) ~ 06.19(목) | MVP 기능 구현 |
+| V1.1.0 | 2025.06.20(금) ~ 06.25(수) | [버그수정] <br> • DetailView Map 버튼 색상,Throttle, Alert 수정 <br> • NetworkManger LocationRestriction 적용 <br> • LocationView 전처리문을 이용한 Error 분기처리 <br> • HomeView 그림자 수정 <br> • DetailView List LocationRestriction 적용 <br> • HomeView 사진 여백 수정 <br> • LocationManager 캐시문제 |
 
 <a id="tech-stack"></a>
 ## ⚙️ 기술스택
@@ -107,14 +104,14 @@
 
 | 구분 | 비고 |
 |--------|-------------------------------------|
-| [Moya 15.0.3](https://github.com/Moya/Moya) | Alamofire 기반의 네트워킹 추상화 레이어로, API 요청을 열거형 기반으로 관리 |
+| [Moya 15.0.3](https://github.com/Moya/Moya) | Alamofire 기반의 네트워킹 추상화 레이어로, API 요청을 열거형 기반으로 관리가능한 라이브러리 |
 
 ### 기타 라이브러리
 
 | 구분 | 비고 |
 |--------------------------------|---------------------------------------------------------------------|
 | [RxSwift 6.9.0](https://github.com/ReactiveX/RxSwift) | 반응형 프로그래밍을 위한 라이브러리 |
-| [RxDataSources 5.0.2](https://github.com/RxSwiftCommunity/RxDataSources) | 테이블·컬렉션 뷰를 Rx로 구성할 수 있도록 돕는 라이브러리로 섹션, 애니메이션 바인딩 등을 지원 |
+| [RxDataSources 5.0.2](https://github.com/RxSwiftCommunity/RxDataSources) | 테이블·컬렉션 뷰를 Rx로 구성할 수 있도록 돕는 라이브러리로 섹션, 애니메이션 바인딩 등을 지원하는 라이브러리 |
 | [Kingfisher 8.3.2](https://github.com/onevcat/Kingfisher) | 이미지를 다운로드하고 캐싱하는 데 사용되는 라이브러리 |
 
 <a id="sample-images"></a>
