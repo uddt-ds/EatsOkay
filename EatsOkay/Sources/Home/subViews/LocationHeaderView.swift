@@ -14,7 +14,7 @@ final class LocationHeaderView: UIView {
 
     private let iconImage: UIImageView = {
         let iconImage = UIImageView()
-        iconImage.image = .headerLocation
+        iconImage.image = UIImage(named: "HeaderLocation")
         iconImage.tintColor = .white
         return iconImage
     }()
@@ -58,7 +58,7 @@ final class LocationHeaderView: UIView {
 
     fileprivate let editIconButton: UIButton = {
         let button = UIButton()
-        button.setImage(.headerEdit, for: .normal)
+        button.setImage(UIImage(named: "HeaderEdit"), for: .normal)
         button.tintColor = .white
         return button
     }()

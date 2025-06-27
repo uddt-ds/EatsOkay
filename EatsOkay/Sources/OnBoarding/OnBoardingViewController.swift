@@ -16,7 +16,7 @@ final class OnboardingViewController: UIViewController, View {
     
     private let backgroundImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = .background
+        imageView.image = UIImage(named: "background")
         imageView.contentMode = .scaleAspectFill
         return imageView
     }()

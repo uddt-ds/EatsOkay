@@ -12,7 +12,7 @@ extension UIView {
     
     func showToast(message: String, alpha: CGFloat, constraints: @escaping (_ make: ConstraintMaker) -> Void) {
         
-        let imageView = UIImageView(image: .alertCircle)
+        let imageView = UIImageView(image: UIImage(named: "AlertCircle"))
         imageView.contentMode = .scaleAspectFit
         
         let label = UILabel()

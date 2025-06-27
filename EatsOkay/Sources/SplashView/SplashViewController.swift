@@ -83,11 +83,11 @@ final class SplashViewController: UIViewController, View {
         [backgroundImageView, logoImageView]
             .forEach { view.addSubview($0) }
         
-        backgroundImageView.image = .splashBackground
+        backgroundImageView.image = UIImage(named: "splashBackground")
         backgroundImageView.contentMode = .scaleAspectFill
         backgroundImageView.clipsToBounds = true
         
-        logoImageView.image = .splashLogo
+        logoImageView.image = UIImage(named: "splashLogo")
         logoImageView.contentMode = .scaleAspectFit
     }
     
