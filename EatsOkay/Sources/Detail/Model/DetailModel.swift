@@ -2,7 +2,7 @@
 import Foundation
 import RxDataSources
 
-struct StoreInfo: Equatable {
+struct StoreInfo: Hashable {
     let displayName: String
     let primaryTypeDisplayName: String
     let formattedAddress: String
@@ -15,23 +15,23 @@ struct StoreInfo: Equatable {
     let currentOpeningHours: OpeningHours
 }
 
-struct OpeningHours: Decodable, Equatable {
+struct OpeningHours: Decodable, Hashable {
     let openNow: Bool
     let periods: [Periods]
     let weekdayDescriptions: [String]?
 }
 
 extension OpeningHours {
-    struct Periods: Decodable, Equatable {
+    struct Periods: Decodable, Hashable {
         let open, close: Close
     }
 
-    struct Close: Decodable, Equatable {
+    struct Close: Decodable, Hashable {
         let day, hour, minute: Int
         let date: DateClass
     }
 
-    struct DateClass: Decodable, Equatable {
+    struct DateClass: Decodable, Hashable {
         let year, month, day: Int
     }
 }
