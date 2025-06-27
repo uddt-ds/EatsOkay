@@ -302,12 +302,11 @@ extension DetailViewController {
                 mapView.clear()
                 for store in stores {
                     let marker = GMSMarker()
+                    let markerView = UIImageView(image: UIImage(named: "customMarkerShadow"))
+                    markerView.frame = CGRect(x: 0, y: 0, width: 28, height: 32)
                     marker.position = CLLocationCoordinate2D(latitude: store.latitude, longitude: store.longitude)
                     marker.title = store.displayName
-                    if let image = UIImage(named: "customMarkerShadow") {
-                        let resizedImage = image.resize(to: CGSize(width: 28, height: 32))
-                        marker.icon = resizedImage
-                    }
+                    marker.iconView = markerView
                     marker.map = mapView
                 }
             })
@@ -413,15 +412,5 @@ extension DetailViewController: SFSafariViewControllerDelegate {
 extension DetailViewController: UIAdaptivePresentationControllerDelegate {
     func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
         reactor.action.onNext(.webViewDidDismiss)
-    }
-}
-
-extension UIImage {
-    func resize(to size: CGSize) -> UIImage {
-        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
-        draw(in: CGRect(origin: .zero, size: size))
-        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return resizedImage ?? self
     }
 }
