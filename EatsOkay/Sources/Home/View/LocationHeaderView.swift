@@ -59,6 +59,7 @@ final class LocationHeaderView: UIView {
     fileprivate let editIconButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "HeaderEdit"), for: .normal)
+        button.setImage(UIImage(named: "HeaderEdit"), for: .highlighted)
         button.tintColor = .white
         return button
     }()
