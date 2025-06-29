@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-class DetailPhotosViewController: UIViewController {
+final class DetailPhotosViewController: UIViewController {
 
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(
@@ -26,19 +26,49 @@ class DetailPhotosViewController: UIViewController {
         return collectionView
     }()
 
+    // 임시 Relay
+    private let sections = BehaviorRelay<[DetailPhotosSectionOfCellModel]>(value: [])
+
+    private var disposeBag = DisposeBag()
+    private lazy var dataSource = makeDataSource()
+
+    // 임시 데이터
+    private func setMokeData() {
+        let sectionData: [DetailPhotosSectionOfCellModel] = [
+            .init(section: .mainPhotosSection, items: [
+                .mainPhotosSection(imageName: "company1"),
+                .mainPhotosSection(imageName: "company2"),
+                .mainPhotosSection(imageName: "company3")
+            ]),
+            .init(section: .totalPhotosSection, items: [
+                .totalPhotosSection(imageName: "company1"),
+                .totalPhotosSection(imageName: "company2"),
+                .totalPhotosSection(imageName: "company3")
+            ])
+        ]
+
+        sections.accept(sectionData)
+    }
+
+    private func bindCollectionView() {
+        sections
+            .bind(to: collectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
         setConstraints()
-        collectionView.delegate = self
-        collectionView.dataSource = self
-        collectionView.alwaysBounceVertical = false
-        collectionView.showsHorizontalScrollIndicator = false
+        setMokeData()
+        bindCollectionView()
     }
 
     private func configureUI() {
         [collectionView].forEach { view.addSubview($0) }
         collectionView.isScrollEnabled = false
+        collectionView.alwaysBounceVertical = false
+        collectionView.showsHorizontalScrollIndicator = false
     }
 
     private func setConstraints() {
@@ -67,7 +97,7 @@ class DetailPhotosViewController: UIViewController {
                 return self.createDefaultSectionLayout()
             }
         }
-
+        
         layout.register(BlackBackgroundView.self,
                         forDecorationViewOfKind: String(describing: BlackBackgroundView.self))
 
@@ -123,8 +153,8 @@ class DetailPhotosViewController: UIViewController {
 
         section.contentInsets = .init(top: 10, leading: 27.5, bottom: 10, trailing: 27.5)
 
-        let sectionDecoration = NSCollectionLayoutDecorationItem.background(elementKind: String(describing: BlackBackgroundView.self))
-        section.decorationItems = [sectionDecoration]
+        let sectionBgDecoration = NSCollectionLayoutDecorationItem.background(elementKind: String(describing: BlackBackgroundView.self))
+        section.decorationItems = [sectionBgDecoration]
 
         return section
     }
@@ -150,34 +180,26 @@ class DetailPhotosViewController: UIViewController {
     }
 }
 
-extension DetailPhotosViewController: UICollectionViewDelegate, UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        3
-    }
-
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 2
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        switch indexPath.section {
-        case 0:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: String(describing: MainPhotosCell.self),
-                for: indexPath
-            ) as? MainPhotosCell else { return .init() }
-            return cell
-
-        case 1:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: String(describing: TotalPhotosCell.self),
-                for: indexPath
-            ) as? TotalPhotosCell else { return .init() }
-            cell.configureImage(imageName: "company1")
-            return cell
-
-        default:
-            return .init()
+extension DetailPhotosViewController {
+    typealias DataSource = RxCollectionViewSectionedReloadDataSource<DetailPhotosSectionOfCellModel>
+    private func makeDataSource() -> DataSource {
+        return DataSource { dataSource, collectionView, indexPath, item in
+            switch item {
+            case .mainPhotosSection(let imageName):
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: String(describing: MainPhotosCell.self),
+                    for: indexPath
+                ) as? MainPhotosCell else { return .init() }
+                cell.configureImage(imageName: imageName)
+                return cell
+            case .totalPhotosSection(let imageName):
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: String(describing: TotalPhotosCell.self),
+                    for: indexPath
+                ) as? TotalPhotosCell else { return .init() }
+                cell.configureImage(imageName: imageName)
+                return cell
+            }
         }
     }
 }
