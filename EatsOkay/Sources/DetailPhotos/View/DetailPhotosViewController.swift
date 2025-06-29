@@ -68,6 +68,9 @@ class DetailPhotosViewController: UIViewController {
             }
         }
 
+        layout.register(BlackBackgroundView.self,
+                        forDecorationViewOfKind: String(describing: BlackBackgroundView.self))
+
         return layout
     }
 
@@ -119,6 +122,9 @@ class DetailPhotosViewController: UIViewController {
         section.orthogonalScrollingBehavior = .none
 
         section.contentInsets = .init(top: 10, leading: 27.5, bottom: 10, trailing: 27.5)
+
+        let sectionDecoration = NSCollectionLayoutDecorationItem.background(elementKind: String(describing: BlackBackgroundView.self))
+        section.decorationItems = [sectionDecoration]
 
         return section
     }

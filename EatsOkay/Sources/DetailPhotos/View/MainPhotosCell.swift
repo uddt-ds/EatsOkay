@@ -38,7 +38,7 @@ class MainPhotosCell: UICollectionViewCell {
     }
 
     // 여기서 데이터 가져와서 처리해야함
-    private func setImage(string: String) {
-        imageView.image = UIImage(named: string)
+    func configureImage(imageName: String) {
+        imageView.image = UIImage(named: imageName)
     }
 }
