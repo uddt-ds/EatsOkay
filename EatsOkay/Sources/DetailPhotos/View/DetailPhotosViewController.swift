@@ -26,13 +26,15 @@ final class DetailPhotosViewController: UIViewController {
         return collectionView
     }()
 
-    // 임시 Relay
+    private let label = UILabel()
+
+    // TODO : 임시 섹션(삭제 예정, 데이터 바인딩 후에는 필요없는 Relay)
     private let sections = BehaviorRelay<[DetailPhotosSectionOfCellModel]>(value: [])
 
     private var disposeBag = DisposeBag()
     private lazy var dataSource = makeDataSource()
 
-    // 임시 데이터
+    // TODO : DetailVC로부터 데이터 바인딩 필요
     private func setMokeData() {
         let sectionData: [DetailPhotosSectionOfCellModel] = [
             .init(section: .mainPhotosSection, items: [
@@ -56,12 +58,23 @@ final class DetailPhotosViewController: UIViewController {
             .disposed(by: disposeBag)
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
         setConstraints()
         setMokeData()
         bindCollectionView()
+        setNavigation()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
     }
 
     private func configureUI() {
@@ -79,8 +92,35 @@ final class DetailPhotosViewController: UIViewController {
         }
     }
 
-    override func viewDidLayoutSubviews() {
-        print(collectionView.contentSize)
+    private func setNavigation() {
+        self.title = "가게 라벨"
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: UIColor.white,
+            .font: UIFont.customFontForHeader(weight: .w800)
+        ]
+
+        // TODO : back버튼 누르면 이전 View로 돌아가게 바인딩 필요
+        let backButtonItem = UIBarButtonItem(image: UIImage(named: "closeIcon"),
+                                             style: .done,
+                                             target: nil,
+                                             action: nil)
+        backButtonItem.tintColor = .white
+        navigationItem.leftBarButtonItem = backButtonItem
+
+        /* TODO :
+         title에 사진 총 개수, 현재 선택된 사진 바인딩 필요 / 터치 이벤트 삭제 필요
+         버튼 외 Label을 얹을지 고민 중
+         */
+        let rightButtonItem = UIBarButtonItem(title: "1 / 3",
+                                              style: .plain,
+                                              target: nil,
+                                              action: nil)
+
+        rightButtonItem.setTitleTextAttributes([
+            .foregroundColor: UIColor.white,
+            .font: UIFont.customFontForBody(weight: .w500)
+        ], for: .normal)
+        navigationItem.rightBarButtonItem = rightButtonItem
     }
 
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
