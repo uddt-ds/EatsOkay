@@ -107,7 +107,7 @@ class SummaryViewController: UIViewController {
     }
     
     // 세번째 섹션 - 혜민
-    private func createThreeSection() ->NSCollectionLayoutSection {
+    private func createThreeSection() -> NSCollectionLayoutSection {
         
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
         
@@ -129,7 +129,7 @@ class SummaryViewController: UIViewController {
     }
     
     // 네번째 섹션 - 기태
-    private func createFourSection() ->NSCollectionLayoutSection {
+    private func createFourSection() -> NSCollectionLayoutSection {
         
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
         
