@@ -35,7 +35,7 @@ extension GoogleAPI: TargetType {
             return "/v1/\(mediaName)/media"
             
         case .staticMapImage:
-            return "maps/api/staticmap"
+            return "/maps/api/staticmap"
 
         }
     }
