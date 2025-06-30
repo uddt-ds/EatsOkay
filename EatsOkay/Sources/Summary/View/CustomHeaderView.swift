@@ -1,11 +1,12 @@
 //
-//  HeaderCollectionReusableView.swift
+//  CustomHeaderView.swift
 //  EatsOkay
 //
 //  Created by 허성필 on 6/30/25.
 //
 
 import UIKit
+import SnapKit
 
 class CustomHeaderView: UICollectionReusableView {
     static let identifier = "HeaderCollectionReusableView"
