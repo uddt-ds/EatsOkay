@@ -12,11 +12,17 @@ enum GoogleAPI {
     // 사각형으로 데이터 불러오기, 이미지 불러오기
     case storeInfoDataRectangle(textQuery: String, locationRestriction: SearchTextBody.LocationRestriction)
     case storeImageData(mediaName: String)
+    case staticMapImage(center: String, zoom: Int, size: String)
 }
 
 extension GoogleAPI: TargetType {
     var baseURL: URL {
-        return URL(string: "https://places.googleapis.com")!
+        switch self {
+        case .storeInfoDataRectangle, .storeImageData:
+            return URL(string: "https://places.googleapis.com")!
+        case .staticMapImage:
+            return URL(string: "https://maps.googleapis.com")!
+        }
     }
     
     var path: String {
@@ -27,6 +33,10 @@ extension GoogleAPI: TargetType {
         
         case .storeImageData(mediaName: let mediaName):
             return "/v1/\(mediaName)/media"
+            
+        case .staticMapImage:
+            return "maps/api/staticmap"
+
         }
     }
     
@@ -38,6 +48,8 @@ extension GoogleAPI: TargetType {
         case .storeImageData:
             return .get
         
+        case .staticMapImage:
+            return .get
         }
     }
     
@@ -59,12 +71,24 @@ extension GoogleAPI: TargetType {
                 "skipHttpRedirect": true
             ]
             return .requestParameters(parameters: param, encoding: URLEncoding.queryString)
+            
+        case .staticMapImage(center: let center, zoom: let zoom, size: let size):
+            guard let apiKey = Bundle.main.infoDictionary?["GoogleAPIKey"] as? String else { return .requestPlain }
+            
+            let params: [String: Any] = [
+                "center": center,
+                "zoom": zoom,
+                "size": size,
+                "key": apiKey
+            ]
+            
+            return .requestParameters(parameters: params, encoding: URLEncoding.queryString)
         }
     }
     
     var headers: [String : String]? {
         guard let apiKey = Bundle.main.infoDictionary?["GoogleAPIKey"] as? String else { return nil }
-        let fieldMask = "places.displayName,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.formattedAddress,places.currentOpeningHours,places.postalAddress,places.location,places.photos,places.googleMapsUri"
+        let fieldMask = "places.displayName,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.formattedAddress,places.currentOpeningHours,places.postalAddress,places.location,places.photos,places.googleMapsUri,places.goodForGroups,places.reservable,places.takeout,places.parkingOptions"
         
         switch self {
         case .storeInfoDataRectangle:
@@ -75,6 +99,9 @@ extension GoogleAPI: TargetType {
             ]
             
         case .storeImageData:
+            return nil
+            
+        case .staticMapImage:
             return nil
         }
     }
