@@ -9,6 +9,7 @@ import Foundation
 import Moya
 import RxMoya
 import RxSwift
+import UIKit
 
 final class NetworkManager {
     static let shared = NetworkManager()
@@ -44,6 +45,15 @@ final class NetworkManager {
         .map { response in
             guard let address = response.documents.first?.address else { return nil }
             return (address.region1DepthName, address.region2DepthName)
+        }
+    }
+    func fetchStaticMap(center: String, zoom: Int, size: String) -> Single<UIImage?> {
+        return provider.rx.request(
+            MultiTarget(GoogleAPI.staticMapImage(center: center, zoom: zoom, size: size))
+        )
+        .filterSuccessfulStatusCodes()
+        .map { response in
+            UIImage(data: response.data)
         }
     }
 }
