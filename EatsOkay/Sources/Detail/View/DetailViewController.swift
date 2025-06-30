@@ -391,6 +391,18 @@ extension DetailViewController {
             .asDriver(onErrorJustReturn: "0개의 매장") // 에러시 출력
             .drive(storeCountLabel.rx.text)
             .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$error)
+            .compactMap { $0 }
+            .withUnretained(self)
+            .bind { vc, error in
+                vc.view.showToast(message: error.localizedDescription, alpha: 0.7) {
+                    $0.width.lessThanOrEqualTo(vc.view).inset(20)
+                    $0.centerY.equalTo(vc.mapView.snp.centerY)
+                    $0.centerX.equalToSuperview()
+                }
+            }
+            .disposed(by: disposeBag)
     }
 }
 
