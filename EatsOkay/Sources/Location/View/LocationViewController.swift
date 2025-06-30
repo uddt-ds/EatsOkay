@@ -159,9 +159,18 @@ final class LocationViewController: UIViewController, View {
     }
     
     private func bindState(reactor: LocationReactor) {
-        reactor.pulse(\.$pickerViewData)
+        
+        reactor.state.map { $0.pickerViewFilteredData }
             .map { $0 as PickerViewAdapter.Element }
             .bind(to: pickerView.rx.items(adapter: PickerViewAdapter()))
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$selectedItem)
+            .withUnretained(self)
+            .bind { vc, rows in
+                vc.pickerView.selectRow(rows.firstRow, inComponent: 0, animated: true)
+                vc.pickerView.selectRow(rows.secondRow, inComponent: 1, animated: true)
+            }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$pickerViewinitialRows)
