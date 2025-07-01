@@ -20,7 +20,6 @@ final class LocationViewController: UIViewController, View {
     private let backButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(resource: .chevronLeft), for: .normal)
-        button.setImage(UIImage(resource: .chevronLeft), for: .highlighted)
         return button
     }()
     
