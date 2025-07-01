@@ -13,8 +13,6 @@ class DetailPhotosReactor: Reactor {
     
     var initialState: State
     
-    let networkManager = NetworkManager.shared
-    
     init(with data: DetailPhotos) {
         self.initialState = State(
             photosUri: data.photosUri,
