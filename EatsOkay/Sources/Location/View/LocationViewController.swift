@@ -17,6 +17,12 @@ final class LocationViewController: UIViewController, View {
     private let reactor: LocationReactor
     private let panGesture = UIPanGestureRecognizer()
     
+    private let backButton: UIButton = {
+        let button = UIButton()
+        button.setImage(UIImage(resource: .chevronLeft), for: .normal)
+        return button
+    }()
+    
     private let guideLabel: UILabel = {
         
         let label = UILabel()
@@ -90,6 +96,7 @@ final class LocationViewController: UIViewController, View {
         view.backgroundColor = .customColor(hexCode: .bgColor)
         
         [
+            backButton,
             pickerView,
             textStackView,
             startButton
@@ -98,12 +105,18 @@ final class LocationViewController: UIViewController, View {
     
     private func setConstraints() {
         
+        backButton.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            $0.leading.equalTo(view.safeAreaLayoutGuide.snp.leading).inset(10)
+            $0.size.equalTo(44)
+        }
+        
         guideLabel.snp.makeConstraints {
             $0.leading.equalTo(view.snp.leading).inset(20)
         }
         
         textStackView.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(30)
+            $0.top.equalTo(backButton.snp.bottom)
             $0.horizontalEdges.equalTo(view.snp.horizontalEdges).inset(20)
         }
         
@@ -155,13 +168,26 @@ final class LocationViewController: UIViewController, View {
             .map { _ in Reactor.Action.panGestureBegan }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
-
+        
+        backButton.rx.tap
+            .map { Reactor.Action.backButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
     }
     
     private func bindState(reactor: LocationReactor) {
-        reactor.pulse(\.$pickerViewData)
+        
+        reactor.state.map { $0.pickerViewFilteredData }
             .map { $0 as PickerViewAdapter.Element }
             .bind(to: pickerView.rx.items(adapter: PickerViewAdapter()))
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$selectedItem)
+            .withUnretained(self)
+            .bind { vc, rows in
+                vc.pickerView.selectRow(rows.firstRow, inComponent: 0, animated: true)
+                vc.pickerView.selectRow(rows.secondRow, inComponent: 1, animated: true)
+            }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$pickerViewinitialRows)
@@ -185,6 +211,23 @@ final class LocationViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$nextViewState)
+            .compactMap { $0 }
+            .withUnretained(self)
+            .bind { vc, _ in
+                if let rootVC = vc.navigationController?.viewControllers.first {
+                    switch rootVC {
+                    case is HomeViewController:
+                        vc.navigationController?.popViewController(animated: true)
+                    default:
+                        let reactor = HomeReactor()
+                        let homeVC = HomeViewController(reactor: reactor)
+                        vc.navigationController?.setViewControllers([homeVC], animated: true)
+                    }
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$backViewState)
             .compactMap { $0 }
             .withUnretained(self)
             .bind { vc, _ in

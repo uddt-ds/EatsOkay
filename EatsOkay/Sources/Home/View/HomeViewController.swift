@@ -110,7 +110,7 @@ final class HomeViewController: UIViewController, View {
         bindState(reactor: reactor)
     }
 
-    func bindAction(reactor: HomeReactor) {
+    private func bindAction(reactor: HomeReactor) {
         self.rx.viewWillAppear
             .map { _ in
                 Reactor.Action.viewWillAppear
@@ -152,7 +152,7 @@ final class HomeViewController: UIViewController, View {
             .disposed(by: disposeBag)
     }
 
-    func bindState(reactor: HomeReactor) {
+    private func bindState(reactor: HomeReactor) {
         reactor.state
             .map { $0.currentLocation }
             .distinctUntilChanged()

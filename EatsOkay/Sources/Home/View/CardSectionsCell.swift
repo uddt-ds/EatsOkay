@@ -11,7 +11,7 @@ import RxSwift
 final class CardSectionsCell: UITableViewCell {
     private let tagLabel: UILabel = {
         let label = UILabel()
-        label.backgroundColor = .customColor(hexCode: .neutral950).withAlphaComponent(0.4)
+        label.backgroundColor = .customColor(hexCode: .primary400).withAlphaComponent(0.5)
         label.layer.cornerRadius = 8
         label.clipsToBounds = true
         return label
@@ -136,7 +136,7 @@ final class CardSectionsCell: UITableViewCell {
         let taggingLabel: NSAttributedString = AttributedStringManager
             .configureString(
                 text: data.category.title,
-                font: .customFontForBody(weight: .w400),
+                font: .customFontForHeader(weight: .w400),
                 color: .bgColor,
                 alignment: .center
             )

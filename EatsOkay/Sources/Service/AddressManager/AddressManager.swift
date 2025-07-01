@@ -43,10 +43,9 @@ class AddressManager {
         return addressList
     }
     
-    func getCoordinates(with subLocality: String) throws -> LocationListData {
+    func getCoordinates(locality: String, subLocality: String) throws -> LocationListData {
         
-        // TODO: 시간복잡도 최적화 필요
-        guard let totaldata = addressList.filter({ $0.subLocality == subLocality }).first else {
+        guard let totaldata = addressList.filter({ $0.locality == locality && $0.subLocality == subLocality }).first else {
             throw AddressManagerError.noMatchingAddressAfterFiltering
         }
         return totaldata

@@ -17,18 +17,11 @@ extension DetailPhotosSectionOfCellModel {
     enum Section {
         case mainPhotosSection
         case totalPhotosSection
-
-        var headerTitle: String {
-            switch self {
-            case .mainPhotosSection: return "메인"
-            case .totalPhotosSection: return "전체"
-            }
-        }
     }
 
     enum CellModel {
         case mainPhotosSection(imageName: String)
-        case totalPhotosSection(imageName: String)
+        case totalPhotosSection(imageName: String, isSelected: Bool)
     }
 }
 
