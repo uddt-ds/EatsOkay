@@ -182,5 +182,40 @@ class SectionTwoViewCell: UICollectionViewCell {
     }
     
     func update(storeInfo: StoreInfo) {
+        regionLabel.text = "\(formatAddress(storeInfo.formattedAddress)) • \(storeInfo.primaryTypeDisplayName)"
+        storeLabel.text = storeInfo.displayName
+        rateLabel.text = "\(storeInfo.rating)"
+        reviewLabel.text = "리뷰 \(storeInfo.userRatingCount)개"
+        
+        let openInfo = storeInfo.currentOpeningHours
+        let openInfoText = OpeningHours.getTodayClosingOrTomorrowOpening(openingHours: openInfo)
+        
+        timeLabel.text = storeInfo.currentOpeningHours.openNow ? "영업중" + " • \(openInfoText)" : "영업 종료" + " • \(openInfoText)"
+    }
+}
+
+extension SectionTwoViewCell {
+    // ex) 서울특별시 OO구 OO동 OOOOO을 서울시 OO구로 변환하는 함수
+    func formatAddress(_ fullAddress: String) -> String {
+        // 공백을 기준으로 분리
+        let components = fullAddress.components(separatedBy: " ")
+        
+        // 최소 3개 이상이어야 시, 구 추출 가능
+        guard components.count >= 3 else { return fullAddress }
+        
+        // 두 번째(시/도), 세 번째(구/군)만 추출
+        // "서울특별시" → "서울"로 변환
+        let city = components[1]
+            .replacingOccurrences(of: "특별시", with: "")
+            .replacingOccurrences(of: "특별자치도", with: "")
+            .replacingOccurrences(of: "특별자치시", with: "")
+            .replacingOccurrences(of: "광역시", with: "")
+            .replacingOccurrences(of: "시", with: "")
+            .replacingOccurrences(of: "도", with: "")
+        
+        // "OO구"는 그대로 사용
+        let district = components[2]
+        
+        return "\(city) \(district)"
     }
 }
