@@ -98,7 +98,7 @@ final class LocationReactor: Reactor {
                     Observable.just(.setPickerViewFilteredDataList(
                         [
                             locality,
-                            filteredSubLocality ?? []  // TODO: 초기값 지정
+                            filteredSubLocality ?? []
                         ]
                     )),
                     
@@ -159,7 +159,7 @@ final class LocationReactor: Reactor {
             return Observable.concat(
                 Observable.just(.setPickerViewFilteredDataList([
                     locality,
-                    subLocality ?? [] //TODO: 초기값 지정
+                    subLocality ?? []
                 ])),
                 
                 Observable.just(
