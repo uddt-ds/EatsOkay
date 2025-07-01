@@ -288,10 +288,10 @@ final class LocationReactor: Reactor {
             $0 < $1
         }
         
-        let hightPriorityLocalities = ["경기", "서울"]
+        let highPriorityLocalities = ["경기", "서울"]
         
-        for hightPriorityLocality in hightPriorityLocalities {
-            if let index = locality.firstIndex(of: hightPriorityLocality) {
+        for highPriorityLocality in highPriorityLocalities {
+            if let index = locality.firstIndex(of: highPriorityLocality) {
                 locality.move(fromOffsets: IndexSet(integer: index), toOffset: 0)
             }
         }
