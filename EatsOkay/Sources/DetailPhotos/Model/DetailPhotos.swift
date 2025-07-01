@@ -6,7 +6,7 @@
 //
 
 struct DetailPhotos {
-    let sotoreName: String
+    let storeName: String
     let selectedIndex: Int
     let photosUri: [String]
 }

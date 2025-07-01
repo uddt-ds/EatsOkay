@@ -18,8 +18,8 @@ class DetailPhotosReactor: Reactor {
     init(with data: DetailPhotos) {
         self.initialState = State(
             photosUri: data.photosUri,
-            storeName: data.sotoreName,
-            scollIndex: data.selectedIndex
+            storeName: data.storeName,
+            scrollIndex: data.selectedIndex
         )
     }
     
@@ -33,7 +33,7 @@ class DetailPhotosReactor: Reactor {
     enum Mutation {
         case setCollectionViewData([DetailPhotosSectionOfCellModel])
         case setStoreName(String)
-        case setScollIndex(Int)
+        case setScrollIndex(Int)
         case setSelectedIndex(Int?)
         case setDissmiss(Void?)
     }
@@ -42,7 +42,7 @@ class DetailPhotosReactor: Reactor {
         fileprivate var photosUri: [String]
         var collectionViewData = [DetailPhotosSectionOfCellModel]()
         var storeName: String
-        var scollIndex: Int
+        var scrollIndex: Int
         @Pulse var selectedIndex: Int?
         @Pulse var dissmissRequest: Void?
     }
@@ -51,11 +51,11 @@ class DetailPhotosReactor: Reactor {
         switch action {
         case .initialFetch:
             
-            let dataSource = makeDataSource(with: currentState.scollIndex)
+            let dataSource = makeDataSource(with: currentState.scrollIndex)
             
             return Observable.concat(
                 Observable.just(.setCollectionViewData(dataSource)),
-                Observable.just(.setSelectedIndex(currentState.scollIndex)),
+                Observable.just(.setSelectedIndex(currentState.scrollIndex)),
                 Observable.just(.setStoreName(currentState.storeName))
             )
         case .imagePaged(let pagedIndex):
@@ -64,7 +64,7 @@ class DetailPhotosReactor: Reactor {
             
             return Observable.concat(
                 Observable.just(.setCollectionViewData(dataSource)),
-                Observable.just(.setScollIndex(pagedIndex))
+                Observable.just(.setScrollIndex(pagedIndex))
             )
             
         case .previewTapped(let selectedIndex):
@@ -92,8 +92,8 @@ class DetailPhotosReactor: Reactor {
         case let .setStoreName(storeName):
             newState.storeName = storeName
             
-        case let .setScollIndex(selectedIndex):
-            newState.scollIndex = selectedIndex
+        case let .setScrollIndex(selectedIndex):
+            newState.scrollIndex = selectedIndex
             
         case let .setSelectedIndex(index):
             newState.selectedIndex = index
