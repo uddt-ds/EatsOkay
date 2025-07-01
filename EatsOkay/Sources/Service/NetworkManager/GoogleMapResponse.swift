@@ -33,6 +33,7 @@ extension GoogleMap {
         let reservable: Bool? // 예약
         let parkingOptions: ParkingOptions? // 주차옵션
         let nationalPhoneNumber: String? // 전화번호
+        let id: String? // 식별자
     }
 }
 
