@@ -203,22 +203,9 @@ final class OnboardingViewController: UIViewController, View {
             .distinctUntilChanged { $0.title == $1.title }
             .subscribe(onNext: { [weak self] page in
                 guard let self = self else { return }
-                UIView.transition(with: self.titleLabel, duration: 0, options: .transitionCrossDissolve, animations: {
-                    self.titleLabel.attributedText = AttributedStringManager.configureString(
-                        text: page.title,
-                        font: .customFontForSubtitle(weight: .w700),
-                        color: .neutral950
-                    )
-                })
+                self.titleLabel.attributedText = AttributedStringManager.configureString(text: page.title, font: .customFontForSubtitle(weight: .w700), color: .neutral950)
                 
-                UIView.transition(with: self.descriptionLabel, duration: 0, options: .transitionCrossDissolve, animations: {
-                    self.descriptionLabel.attributedText = AttributedStringManager.configureString(
-                        text: page.description,
-                        font: .customFontForHeader(weight: .w950),
-                        color: .neutral950,
-                        alignment: .center
-                    )
-                })
+                self.descriptionLabel.attributedText = AttributedStringManager.configureString(text: page.description, font: .customFontForHeader(weight: .w950), color: .neutral950, alignment: .center)
                 
                 UIView.transition(with: self.imageView, duration: 0.3, options: .transitionCrossDissolve, animations: {
                     self.imageView.image = UIImage(named: page.imageName)
