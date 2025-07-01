@@ -64,8 +64,8 @@ class SectionOneViewCell: UICollectionViewCell {
     private func configureUI() {
         contentView.backgroundColor = .white
         
-        scrollView.addSubview(testView) // 앞에 핸드폰
-        scrollView.addSubview(backgroundImageView) // 배경 이미지
+        scrollView.addSubview(testView)
+        scrollView.addSubview(backgroundImageView) 
         contentViews.forEach { testView.addSubview($0) }
         
         [
