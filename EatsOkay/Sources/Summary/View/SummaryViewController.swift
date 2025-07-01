@@ -8,13 +8,29 @@
 import UIKit
 import SnapKit
 import RxSwift
+import RxCocoa
+import ReactorKit
+import SafariServices
 
 class SummaryViewController: UIViewController {
 
+    typealias Reactor = SummaryReactor
+    let reactor: SummaryReactor
+    
+    var disposeBag = DisposeBag()
+    
+    init(reactor: SummaryReactor) {
+        self.reactor = reactor
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     let data = [1]
     
     private lazy var collectionView: UICollectionView = {
-        
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: createCompositionalLayout())
         
         collectionView.register(SectionOneViewCell.self, forCellWithReuseIdentifier: SectionOneViewCell.identifier)
@@ -59,7 +75,9 @@ class SummaryViewController: UIViewController {
 
         setupView()
         
-        setupNaviBar()        
+        setupNaviBar()
+        
+        bind(reactor: reactor)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -81,7 +99,6 @@ class SummaryViewController: UIViewController {
     }
     
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
-        
         let layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
             switch sectionIndex {
             case 0:
@@ -105,7 +122,6 @@ class SummaryViewController: UIViewController {
     
     // 첫번째 섹션 - 성필
     private func createOneSection() -> NSCollectionLayoutSection {
-        
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
         
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -123,7 +139,6 @@ class SummaryViewController: UIViewController {
     
     // 두번째 섹션 - 성필
     private func createTwoSection() -> NSCollectionLayoutSection {
-        
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
         
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -142,7 +157,6 @@ class SummaryViewController: UIViewController {
     
     // 세번째 섹션 - 혜민
     private func createThreeSection() -> NSCollectionLayoutSection {
-        
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
         
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -164,7 +178,6 @@ class SummaryViewController: UIViewController {
     
     // 네번째 섹션 - 기태
     private func createFourSection() -> NSCollectionLayoutSection {
-        
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
         
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -229,6 +242,22 @@ class SummaryViewController: UIViewController {
         
     }
 
+}
+
+extension SummaryViewController {
+    func bind(reactor: SummaryReactor) {
+        bindAction(reactor: reactor)
+        bindState(reactor: reactor)
+    }
+    
+    func bindAction(reactor: SummaryReactor) {
+        
+    }
+    
+    func bindState(reactor: SummaryReactor) {
+        
+    }
+    
 }
 
 extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataSource {
@@ -297,5 +326,4 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
         
         return UICollectionReusableView()
     }
-    
 }
