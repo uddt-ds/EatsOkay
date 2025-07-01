@@ -20,21 +20,33 @@ class SummaryReactor: Reactor {
     
     enum Action {
         case backButtonTapped // 뒤로가기 버튼 클릭 시
+        case webViewButtonTapped
+        case webViewDidDismiss
     }
     
     enum Mutation {
-       case shouldPop(Bool)
+        case shouldPop(Bool)
+        case setWebViewUri(String)
+        case dismissWebView
     }
     
     struct State {
         var storeInfo: StoreInfo
         var shouldPop: Bool = false
+        var webViewUrl: String? = nil
+        var shouldPresentWebView: Bool = false
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
         case .backButtonTapped:
             return .just(.shouldPop(true))
+        case .webViewButtonTapped:
+            let storeInfo = currentState.storeInfo
+            let uri = storeInfo.googleMapsUri
+            return Observable.just(.setWebViewUri(uri))
+        case .webViewDidDismiss:
+            return Observable.just(.dismissWebView)
         }
     }
     
@@ -43,6 +55,11 @@ class SummaryReactor: Reactor {
         switch mutation {
         case .shouldPop(let flag):
             newState.shouldPop = flag
+        case .setWebViewUri(let uri):
+            newState.webViewUrl = uri
+            newState.shouldPresentWebView = true
+        case .dismissWebView:
+            newState.shouldPresentWebView = false
         }
         return newState
     }

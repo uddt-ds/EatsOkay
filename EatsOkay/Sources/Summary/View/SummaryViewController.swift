@@ -10,9 +10,10 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import ReactorKit
+import SafariServices
 
 class SummaryViewController: UIViewController {
-
+    
     typealias Reactor = SummaryReactor
     let reactor: SummaryReactor
     
@@ -52,7 +53,7 @@ class SummaryViewController: UIViewController {
             style: .plain,
             target: nil,
             action: nil
-            )
+        )
         return button
     }()
     
@@ -71,7 +72,7 @@ class SummaryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setupView()
         
         setupNaviBar()
@@ -240,7 +241,7 @@ class SummaryViewController: UIViewController {
         }
         
     }
-
+    
 }
 
 extension SummaryViewController {
@@ -256,9 +257,16 @@ extension SummaryViewController {
             .map { Reactor.Action.backButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
+        
+        webViewButton.rx.tap
+            .map { Reactor.Action.webViewButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
     }
     
     func bindState(reactor: SummaryReactor) {
+        
+        // back Button 클릭 시
         reactor.state
             .map { $0.shouldPop }
             .distinctUntilChanged()
@@ -266,6 +274,23 @@ extension SummaryViewController {
             .asDriver(onErrorDriveWith: .empty())
             .drive(with: self, onNext: { owner, _ in
                 owner.navigationController?.popViewController(animated: true)
+            })
+            .disposed(by: disposeBag)
+        
+        // webViewButton 클릭 시
+        reactor.state
+            .map { $0.shouldPresentWebView }
+            .distinctUntilChanged()
+            .filter { $0 }
+            .withLatestFrom(reactor.state.map { $0.webViewUrl })
+            .compactMap { $0 }
+            .subscribe(onNext: { [weak self] urlString in
+                guard let url = URL(string: urlString) else { return }
+                let safariVC = SFSafariViewController(url: url)
+                safariVC.modalPresentationStyle = .popover
+                safariVC.delegate = self // 모달 닫기 delegate
+                safariVC.presentationController?.delegate = self // 모달 드래그 delegate
+                self?.present(safariVC, animated: true, completion: nil)
             })
             .disposed(by: disposeBag)
     }
@@ -293,6 +318,7 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionTwoViewCell.identifier, for: indexPath) as? SectionTwoViewCell else {
                 return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
             }
+            cell.update(storeInfo: reactor.initialState.storeInfo)
             return cell
         case 2:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else {
@@ -340,5 +366,16 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
     }
 }
 
+// 모달을 완료 버튼으로 dismiss 했을 때 체크
+extension SummaryViewController: SFSafariViewControllerDelegate {
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        reactor.action.onNext(.webViewDidDismiss)
+    }
+}
 
-
+// 모달을 드래그로 dismiss 했을 때 체크
+extension SummaryViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        reactor.action.onNext(.webViewDidDismiss)
+    }
+}
