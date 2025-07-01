@@ -18,8 +18,9 @@ class CustomHeaderView: UICollectionReusableView {
         addSubview(label)
         
         label.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-            //make.leading.equalToSuperview().offset(20) 
+            make.leading.equalToSuperview().offset(20)
+            make.top.equalToSuperview().offset(24)
+            make.bottom.equalToSuperview()
         }
     }
     

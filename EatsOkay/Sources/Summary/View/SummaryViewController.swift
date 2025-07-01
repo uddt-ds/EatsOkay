@@ -182,7 +182,7 @@ class SummaryViewController: UIViewController {
         
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.46952))
         
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
@@ -290,15 +290,20 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
             let text = "\(indexPath.section)_\(indexPath.item)"
             cell.update(text: text)
             return cell
-        case 3 :
+            
+            
+        case 3:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFourViewCell.identifier, for: indexPath) as? SectionFourViewCell else {
                 return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
             }
-            cell.contentView.backgroundColor = .gray
-            let text = "\(indexPath.section)_\(indexPath.item)"
+            let image = UIImage(resource: .company2)
+            let text = ""
+            cell.update(image: image)
             cell.update(text: text)
             return cell
+            
         default :
+            
             return .init()
         }
     }
