@@ -7,6 +7,8 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 class SectionTwoViewCell: UICollectionViewCell {
     static let identifier = "SectionTwoViewCell"
@@ -95,17 +97,11 @@ class SectionTwoViewCell: UICollectionViewCell {
         return label
     }()
     
-    private let callButton: UIButton = {
+    fileprivate let callButton: UIButton = {
         var configuration = UIButton.Configuration.plain()
-        configuration.image = UIImage(named: "Call")
         configuration.imagePlacement = .leading
         configuration.imagePadding = 4
         configuration.contentInsets = .init(top: 8, leading: 16, bottom: 8, trailing: 16)
-        configuration.attributedTitle = AttributedStringManager.configureString(
-                text: "전화",
-                font: .customFontForBody(weight: .w600),
-                color: .neutral700
-        )
         configuration.background.strokeWidth = 1
         configuration.background.strokeColor = UIColor.customColor(hexCode: .neutral100)
         configuration.background.cornerRadius = 50
@@ -187,6 +183,23 @@ class SectionTwoViewCell: UICollectionViewCell {
         rateLabel.text = "\(storeInfo.rating)"
         reviewLabel.text = "리뷰 \(storeInfo.userRatingCount)개"
         
+        // nationalPhoneNumber의 nil 값 유/무로 분기처리
+        if let _ = storeInfo.nationalPhoneNumber {
+            callButton.configuration?.image = UIImage(named: "Call")
+            callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
+                    text: "전화",
+                    font: .customFontForBody(weight: .w600),
+                    color: .neutral700
+            )
+        } else {
+            callButton.configuration?.image = UIImage(named: "Call2")
+            callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
+                text: "번호 없음",
+                font: UIFont.customFontForBody(weight: .w600),
+                color: .neutral200
+            )
+        }
+        
         let openInfo = storeInfo.currentOpeningHours
         let openInfoText = OpeningHours.getTodayClosingOrTomorrowOpening(openingHours: openInfo)
         
@@ -217,5 +230,12 @@ extension SectionTwoViewCell {
         let district = components[2]
         
         return "\(city) \(district)"
+    }
+}
+
+// VC에서 rx.tap을 사용하기 위한 확장
+extension Reactive where Base: SectionTwoViewCell {
+    var callButtonTapped: ControlEvent<Void> {
+        return base.callButton.rx.tap
     }
 }
