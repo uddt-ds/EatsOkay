@@ -32,6 +32,7 @@ final class LocationReactor: Reactor {
         case panGestureBegan
         case pickerViewChanged(component: Int, row: Int)
         case nextButtonTapped
+        case backButtonTapped
     }
     
     enum Mutation {
@@ -41,6 +42,7 @@ final class LocationReactor: Reactor {
         case setPickerViewSelectedItem(firstRow: Int, secondRow: Int)
         case setScrolling(Bool)
         case setNextView(Void?)
+        case setBackView(Void?)
         case setAlert(Void?)
         case setError(Error?)
     }
@@ -52,6 +54,7 @@ final class LocationReactor: Reactor {
         @Pulse var selectedItem: (firstRow: Int, secondRow: Int)
         var isScrolling: Bool
         @Pulse var nextViewState: Void?
+        @Pulse var backViewState: Void?
         @Pulse var alertState: Void?
         @Pulse var error: Error?
     }
@@ -194,6 +197,9 @@ final class LocationReactor: Reactor {
             } catch {
                 return Observable.just(.setError(error))
             }
+            
+        case .backButtonTapped:
+            return Observable.just(.setBackView(Void()))
         }
     }
     
@@ -218,6 +224,9 @@ final class LocationReactor: Reactor {
             newState.isScrolling = bool
             
         case let .setNextView(location):
+            newState.nextViewState = location
+            
+        case let .setBackView(location):
             newState.nextViewState = location
             
         case let .setAlert(alretTriger):
