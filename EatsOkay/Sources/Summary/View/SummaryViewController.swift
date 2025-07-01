@@ -10,7 +10,6 @@ import SnapKit
 import RxSwift
 import RxCocoa
 import ReactorKit
-import SafariServices
 
 class SummaryViewController: UIViewController {
 
@@ -89,7 +88,7 @@ class SummaryViewController: UIViewController {
         navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .customColor(hexCode: .neutral950)
         
-        self.title = "식당이름입니다"
+        self.title = reactor.initialState.storeInfo.displayName
         
         // 네비게이션 바 타이틀 색상, 폰트 설정
         navigationController?.navigationBar.titleTextAttributes = [
@@ -252,10 +251,23 @@ extension SummaryViewController {
     
     func bindAction(reactor: SummaryReactor) {
         
+        // 뒤로가기 버튼 클릭 시
+        backButton.rx.tap
+            .map { Reactor.Action.backButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
     }
     
     func bindState(reactor: SummaryReactor) {
-        
+        reactor.state
+            .map { $0.shouldPop }
+            .distinctUntilChanged()
+            .filter { $0 }
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(with: self, onNext: { owner, _ in
+                owner.navigationController?.popViewController(animated: true)
+            })
+            .disposed(by: disposeBag)
     }
     
 }
@@ -327,3 +339,6 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
         return UICollectionReusableView()
     }
 }
+
+
+
