@@ -46,6 +46,7 @@ class DetailReactor: Reactor {
         case sortStore([StoreSection]) // 데이터 정렬
         case dismissWebView // 웹뷰가 닫혔을 때
         case setSortType(SortType)
+        case setError(Error?)
     }
     
     struct State {
@@ -58,6 +59,7 @@ class DetailReactor: Reactor {
         var shouldPresentWebView: Bool = false // 초기 웹뷰 여부 false
         var webViewUrl: String? = nil
         var sortType: SortType = .rating // 기본값은 별점순
+        @Pulse var error: Error?
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
@@ -166,6 +168,8 @@ class DetailReactor: Reactor {
             newState.shouldPresentWebView = false
         case .setSortType(let sortType):
             newState.sortType = sortType
+        case .setError(let error):
+            newState.error = error
         }
         return newState
     }
@@ -418,6 +422,9 @@ extension DetailReactor {
             .map { location in
                 UserDefaultsManager.shared.saveLocation(location: location)
                 return .setCurrentLocation(lat: location.lat, lon: location.lon)
+            }
+            .catch { error in
+                return .just(.setError(error))
             }
     }
     
