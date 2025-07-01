@@ -7,8 +7,17 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
-class MainPhotosCell: UICollectionViewCell {
+final class MainPhotosCell: UICollectionViewCell {
+    
+    private lazy var imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.clipsToBounds = true
+        imageView.backgroundColor = .black
+        return imageView
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -19,26 +28,19 @@ class MainPhotosCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
-    private lazy var imageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(named: "company1"))
-        imageView.contentMode = .scaleAspectFit
-        imageView.clipsToBounds = true
-        return imageView
-    }()
-
+    
     private func configureUI() {
-        self.addSubview(imageView)
+        addSubview(imageView)
     }
-
+    
     private func setConstraints() {
-        imageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+        imageView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
         }
     }
-
-    // 여기서 데이터 가져와서 처리해야함
-    func configureImage(imageName: String) {
-        imageView.image = UIImage(named: imageName)
+    
+    func configureImage(uriString: String) {
+        guard let url = URL(string: uriString) else { return }
+        imageView.kf.setImage(with: url)
     }
 }

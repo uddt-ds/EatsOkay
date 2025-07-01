@@ -8,126 +8,228 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import ReactorKit
 import RxDataSources
 
-final class DetailPhotosViewController: UIViewController {
+final class DetailPhotosViewController: UIViewController, View {
+    
+    typealias DataSource = RxCollectionViewSectionedReloadDataSource<DetailPhotosSectionOfCellModel>
+    
+    var disposeBag = DisposeBag()
+    var reactor: DetailPhotosReactor
+    private let currentPageSubject = PublishRelay<Int>()
 
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(
             frame: .zero,
             collectionViewLayout: createCompositionalLayout()
         )
-
-        collectionView.register(MainPhotosCell.self,
-                                forCellWithReuseIdentifier: String(describing: MainPhotosCell.self))
-        collectionView.register(TotalPhotosCell.self,
-                                forCellWithReuseIdentifier: String(describing: TotalPhotosCell.self))
-
+        
         return collectionView
     }()
-
-    private let label = UILabel()
-
-    // TODO : 임시 섹션(삭제 예정, 데이터 바인딩 후에는 필요없는 Relay)
-    private let sections = BehaviorRelay<[DetailPhotosSectionOfCellModel]>(value: [])
-
-    private var disposeBag = DisposeBag()
-    private lazy var dataSource = makeDataSource()
-
-    // TODO : DetailVC로부터 데이터 바인딩 필요
-    private func setMokeData() {
-        let sectionData: [DetailPhotosSectionOfCellModel] = [
-            .init(section: .mainPhotosSection, items: [
-                .mainPhotosSection(imageName: "company1"),
-                .mainPhotosSection(imageName: "company2"),
-                .mainPhotosSection(imageName: "company3")
-            ]),
-            .init(section: .totalPhotosSection, items: [
-                .totalPhotosSection(imageName: "company1"),
-                .totalPhotosSection(imageName: "company2"),
-                .totalPhotosSection(imageName: "company3")
-            ])
-        ]
-
-        sections.accept(sectionData)
+    private let topView = {
+        let view = UIView()
+        view.backgroundColor = .black
+        return view
+    }()
+    
+    private let backButton: UIButton = {
+        let button = UIButton()
+        button.setImage(UIImage(resource: .closeIcon), for: .normal)
+        return button
+    }()
+    
+    private let countLabel = UILabel()
+    
+    private let titlLabel = UILabel()
+    
+    init(reactor: DetailPhotosReactor) {
+        self.reactor = reactor
+        super.init(nibName: nil, bundle: nil)
     }
-
-    private func bindCollectionView() {
-        sections
-            .bind(to: collectionView.rx.items(dataSource: dataSource))
-            .disposed(by: disposeBag)
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: animated)
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
+        setCollectionView()
         setConstraints()
-        setMokeData()
-        bindCollectionView()
-        setNavigation()
+        bind(reactor: reactor)
     }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: animated)
-    }
-
+    
     private func configureUI() {
-        [collectionView].forEach { view.addSubview($0) }
+        view.backgroundColor = .black
+        
+        [
+            topView,
+            collectionView
+        ].forEach { view.addSubview($0) }
+        
+        [
+            backButton,
+            titlLabel,
+            countLabel
+        ].forEach { topView.addSubview($0) }
+    }
+    
+    private func setCollectionView() {
         collectionView.isScrollEnabled = false
-        collectionView.alwaysBounceVertical = false
-        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.backgroundColor = .black
+        collectionView.register(MainPhotosCell.self,
+                                forCellWithReuseIdentifier: String(describing: MainPhotosCell.self))
+        collectionView.register(TotalPhotosCell.self,
+                                forCellWithReuseIdentifier: String(describing: TotalPhotosCell.self))
     }
 
     private func setConstraints() {
-        collectionView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+        
+        backButton.snp.makeConstraints {
+            $0.size.equalTo(44)
+            $0.leading.equalTo(view.safeAreaLayoutGuide.snp.leading).inset(10)
+            $0.top.equalTo(topView.snp.top)
+        }
+        
+        titlLabel.snp.makeConstraints {
+            $0.center.equalTo(topView.snp.center)
+        }
+        
+        countLabel.snp.makeConstraints {
+            $0.trailing.equalTo(topView.snp.trailing).inset(19.5)
+            $0.centerY.equalTo(topView.snp.centerY)
+        }
+        
+        topView.snp.makeConstraints {
+            $0.height.equalTo(44)
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges)
+        }
+        
+        collectionView.snp.makeConstraints {
+            $0.top.equalTo(topView.snp.bottom)
+            $0.leading.trailing.equalToSuperview()
+            $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+        }
+    }
+    
+    func bind(reactor: DetailPhotosReactor) {
+        bindAction(reactor: reactor)
+        bindState(reactor: reactor)
+    }
+    
+    func bindAction(reactor: DetailPhotosReactor) {
+        Observable.just(())
+            .map { Reactor.Action.initialFetch }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        backButton.rx.tap
+            .map { Reactor.Action.backButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        currentPageSubject
+            .distinctUntilChanged()
+            .map { Reactor.Action.imagePaged($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        collectionView.rx.itemSelected
+            .filter { $0.section == 1 }
+            .map { $0.item }
+            .map { Reactor.Action.previewTapped($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+    }
+    
+    func bindState(reactor: DetailPhotosReactor) {
+        reactor.state.map { $0.scrollIndex }
+            .distinctUntilChanged()
+            .map { index -> NSMutableAttributedString in
+                AttributedStringManager.configureString(
+                    text: "\(index + 1) / 3",
+                    font: .customFontForBody(weight: .w500),
+                    color: .bgColor
+                )
+            }
+            .bind(to: countLabel.rx.attributedText)
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$selectedIndex)
+            .compactMap { $0 }
+            .withUnretained(self)
+            .bind { vc, index in
+                vc.scrollCollectionView(to: index)
+            }
+            .disposed(by: disposeBag)
+        
+        
+        reactor.state.map { $0.storeName }
+            .distinctUntilChanged()
+            .map { title -> NSMutableAttributedString in
+                AttributedStringManager.configureString(
+                    text: title,
+                    font: .customFontForHeader(weight: .w800),
+                    color: .bgColor
+                )
+            }
+            .bind(to: titlLabel.rx.attributedText)
+            .disposed(by: disposeBag)
+        
+        reactor.state.map { $0.collectionViewData }
+            .bind(to: collectionView.rx.items(dataSource: makeDataSource()))
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$dissmissRequest)
+            .compactMap { $0 }
+            .withUnretained(self)
+            .bind { vc, _ in
+                self.dismiss(animated: true)
+            }
+            .disposed(by: disposeBag)
+    }
+    
+    private func makeDataSource() -> DataSource {
+        return DataSource { dataSource, collectionView, indexPath, item in
+            switch item {
+            case .mainPhotosSection(let imageName):
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: String(describing: MainPhotosCell.self),
+                    for: indexPath
+                ) as? MainPhotosCell else { return .init() }
+                cell.configureImage(uriString: imageName)
+                return cell
+            case .totalPhotosSection(let imageName, let isHighlighted):
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: String(describing: TotalPhotosCell.self),
+                    for: indexPath
+                ) as? TotalPhotosCell else { return .init() }
+                cell.configureImage(uriString: imageName, isHighlited: isHighlighted)
+                return cell
+            }
+        }
+    }
+    
+    private func scrollCollectionView(to index: Int) {
+        DispatchQueue.main.async {
+            self.collectionView.layoutIfNeeded()
+
+            guard self.collectionView.numberOfSections > 0 else { return }
+            let itemCount = self.collectionView.numberOfItems(inSection: 0)
+            guard index >= 0 && index < itemCount else { return }
+
+            self.collectionView.scrollToItem(
+                at: IndexPath(item: index, section: 0),
+                at: .centeredHorizontally,
+                animated: false
+            )
         }
     }
 
-    private func setNavigation() {
-        self.title = "가게 라벨"
-        navigationController?.navigationBar.titleTextAttributes = [
-            .foregroundColor: UIColor.white,
-            .font: UIFont.customFontForHeader(weight: .w800)
-        ]
-
-        // TODO : back버튼 누르면 이전 View로 돌아가게 바인딩 필요
-        let backButtonItem = UIBarButtonItem(image: UIImage(named: "closeIcon"),
-                                             style: .done,
-                                             target: nil,
-                                             action: nil)
-        backButtonItem.tintColor = .white
-        navigationItem.leftBarButtonItem = backButtonItem
-
-        /* TODO :
-         title에 사진 총 개수, 현재 선택된 사진 바인딩 필요 / 터치 이벤트 삭제 필요
-         버튼 외 Label을 얹을지 고민 중
-         */
-        let rightButtonItem = UIBarButtonItem(title: "1 / 3",
-                                              style: .plain,
-                                              target: nil,
-                                              action: nil)
-
-        rightButtonItem.setTitleTextAttributes([
-            .foregroundColor: UIColor.white,
-            .font: UIFont.customFontForBody(weight: .w500)
-        ], for: .normal)
-        navigationItem.rightBarButtonItem = rightButtonItem
-    }
-
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
-
-        let layout = UICollectionViewCompositionalLayout {
-            sectionIndex, environment in
-
+        let layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
             switch sectionIndex {
             case 0:
                 return self.createHorizontalMainItemSection()
@@ -137,10 +239,6 @@ final class DetailPhotosViewController: UIViewController {
                 return self.createDefaultSectionLayout()
             }
         }
-        
-        layout.register(BlackBackgroundView.self,
-                        forDecorationViewOfKind: String(describing: BlackBackgroundView.self))
-
         return layout
     }
 
@@ -164,7 +262,13 @@ final class DetailPhotosViewController: UIViewController {
 
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .paging
-
+        
+        section.visibleItemsInvalidationHandler = { [weak self] (visibleItems, offset, env) in
+            guard let self = self else { return }
+            let currentPage = Int(max(0, round(offset.x / env.container.contentSize.width)))
+            self.currentPageSubject.accept(currentPage)
+        }
+        
         return section
     }
 
@@ -174,7 +278,7 @@ final class DetailPhotosViewController: UIViewController {
             widthDimension: .fractionalWidth(1/3),
             heightDimension: .fractionalWidth(1/3)
         )
-
+        
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
         let groupSize = NSCollectionLayoutSize(
@@ -193,13 +297,10 @@ final class DetailPhotosViewController: UIViewController {
 
         section.contentInsets = .init(top: 10, leading: 27.5, bottom: 10, trailing: 27.5)
 
-        let sectionBgDecoration = NSCollectionLayoutDecorationItem.background(elementKind: String(describing: BlackBackgroundView.self))
-        section.decorationItems = [sectionBgDecoration]
-
         return section
     }
 
-    func createDefaultSectionLayout() -> NSCollectionLayoutSection {
+    private func createDefaultSectionLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
             heightDimension: .fractionalHeight(1.0)
@@ -217,29 +318,5 @@ final class DetailPhotosViewController: UIViewController {
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .continuous
         return section
-    }
-}
-
-extension DetailPhotosViewController {
-    typealias DataSource = RxCollectionViewSectionedReloadDataSource<DetailPhotosSectionOfCellModel>
-    private func makeDataSource() -> DataSource {
-        return DataSource { dataSource, collectionView, indexPath, item in
-            switch item {
-            case .mainPhotosSection(let imageName):
-                guard let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: String(describing: MainPhotosCell.self),
-                    for: indexPath
-                ) as? MainPhotosCell else { return .init() }
-                cell.configureImage(imageName: imageName)
-                return cell
-            case .totalPhotosSection(let imageName):
-                guard let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: String(describing: TotalPhotosCell.self),
-                    for: indexPath
-                ) as? TotalPhotosCell else { return .init() }
-                cell.configureImage(imageName: imageName)
-                return cell
-            }
-        }
     }
 }
