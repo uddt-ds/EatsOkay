@@ -13,13 +13,28 @@ struct StoreInfo: Hashable {
     let userRatingCount: Int
     let photosNames: String
     let currentOpeningHours: OpeningHours
-    let id: String
+    let goodForGroups: Bool? // 단체모임
+    let takeout: Bool? // 포장
+    let reservable: Bool? // 예약
+    let parkingOptions: ParkingOptions? // 주차옵션
+    let nationalPhoneNumber: String? // 전화번호
+    let id: String // 가게 id
+    let photos: [Photo]? // 리뷰 이미지들
 }
 
 struct OpeningHours: Decodable, Hashable {
     let openNow: Bool
     let periods: [Periods]
     let weekdayDescriptions: [String]?
+}
+
+// 주차 옵션
+struct ParkingOptions: Decodable, Hashable {
+    let freeParkingLot, paidParkingLot, freeStreetParking, paidStreetParking, valetParking, freeGarageParking, paidGarageParking: Bool?
+}
+
+struct Photo: Decodable, Hashable {
+    let name: String
 }
 
 extension OpeningHours {
