@@ -186,7 +186,7 @@ final class DetailPhotosViewController: UIViewController, View {
             .compactMap { $0 }
             .withUnretained(self)
             .bind { vc, _ in
-                self.dismiss(animated: true)
+                vc.dismiss(animated: true)
             }
             .disposed(by: disposeBag)
     }
