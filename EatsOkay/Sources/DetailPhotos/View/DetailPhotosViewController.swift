@@ -41,7 +41,7 @@ final class DetailPhotosViewController: UIViewController, View {
     
     private let countLabel = UILabel()
     
-    private let titlLabel = UILabel()
+    private let titleLabel = UILabel()
     
     init(reactor: DetailPhotosReactor) {
         self.reactor = reactor
@@ -70,7 +70,7 @@ final class DetailPhotosViewController: UIViewController, View {
         
         [
             backButton,
-            titlLabel,
+            titleLabel,
             countLabel
         ].forEach { topView.addSubview($0) }
     }
@@ -92,7 +92,7 @@ final class DetailPhotosViewController: UIViewController, View {
             $0.top.equalTo(topView.snp.top)
         }
         
-        titlLabel.snp.makeConstraints {
+        titleLabel.snp.makeConstraints {
             $0.center.equalTo(topView.snp.center)
         }
         
@@ -175,7 +175,7 @@ final class DetailPhotosViewController: UIViewController, View {
                     color: .bgColor
                 )
             }
-            .bind(to: titlLabel.rx.attributedText)
+            .bind(to: titleLabel.rx.attributedText)
             .disposed(by: disposeBag)
         
         reactor.state.map { $0.collectionViewData }
