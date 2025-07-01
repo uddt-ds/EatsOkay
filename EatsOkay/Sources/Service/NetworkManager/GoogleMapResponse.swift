@@ -31,8 +31,9 @@ extension GoogleMap {
         let goodForGroups: Bool? // 단체모임
         let takeout: Bool? // 포장
         let reservable: Bool? // 예약
-        let parkingOptions: ParkingOptions?
-        
+        let parkingOptions: ParkingOptions? // 주차옵션
+        let nationalPhoneNumber: String? // 전화번호
+        let id: String? // 식별자
     }
 }
 
