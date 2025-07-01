@@ -31,7 +31,7 @@ extension GoogleMap {
         let goodForGroups: Bool? // 단체모임
         let takeout: Bool? // 포장
         let reservable: Bool? // 예약
-        let parkingOptions: ParkingOptions
+        let parkingOptions: ParkingOptions?
         
     }
 }
@@ -62,7 +62,7 @@ extension GoogleMap.Place {
     }
     // 주차 옵션
     struct ParkingOptions: Decodable {
-        let freeParkingLot, paidParkingLot, freeStreetParking, paidStreetParking, valetParking, freeGarageParking, paidGarageParking: Bool
+        let freeParkingLot, paidParkingLot, freeStreetParking, paidStreetParking, valetParking, freeGarageParking, paidGarageParking: Bool?
     }
 }
 
