@@ -88,7 +88,7 @@ extension GoogleAPI: TargetType {
     
     var headers: [String : String]? {
         guard let apiKey = Bundle.main.infoDictionary?["GoogleAPIKey"] as? String else { return nil }
-        let fieldMask = "places.displayName,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.formattedAddress,places.currentOpeningHours,places.postalAddress,places.location,places.photos,places.googleMapsUri,places.goodForGroups,places.reservable,places.takeout,places.parkingOptions"
+        let fieldMask = "places.displayName,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.formattedAddress,places.currentOpeningHours,places.postalAddress,places.location,places.photos,places.googleMapsUri,places.goodForGroups,places.reservable,places.takeout,places.parkingOptions,places.nationalPhoneNumber,places.id"
         
         switch self {
         case .storeInfoDataRectangle:
