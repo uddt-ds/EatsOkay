@@ -13,6 +13,7 @@ struct StoreInfo: Hashable {
     let userRatingCount: Int
     let photosNames: String
     let currentOpeningHours: OpeningHours
+    let id: String
 }
 
 struct OpeningHours: Decodable, Hashable {
@@ -37,7 +38,7 @@ extension OpeningHours {
 }
 
 extension StoreInfo: IdentifiableType {
-    var identity: String { return displayName } // 고유 식별자로 가게명 사용
+    var identity: String { return id } // 고유 식별자로 가게 id 사용
 }
 
 struct StoreSection {

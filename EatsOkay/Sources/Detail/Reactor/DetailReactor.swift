@@ -172,7 +172,8 @@ extension DetailReactor {
               let googleMapsUri = place.googleMapsUri,
               let rating = place.rating,
               let userRatingCount = place.userRatingCount,
-              let currentOpeningHours = place.currentOpeningHours
+              let currentOpeningHours = place.currentOpeningHours,
+              let id = place.id
         else { return nil }
         
         let convertedOpeningHours = convertOpeningHours(currentOpeningHours)
@@ -187,7 +188,8 @@ extension DetailReactor {
             googleMapsUri: googleMapsUri,
             userRatingCount: userRatingCount,
             photosNames: photoUri, // photoUri(이미지 URL)를 여기에 저장
-            currentOpeningHours: convertedOpeningHours
+            currentOpeningHours: convertedOpeningHours,
+            id: id
         )
         
     }
