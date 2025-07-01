@@ -19,7 +19,8 @@ final class LocationReactor: Reactor {
     
     init() {
         self.initialState = State(
-            pickerViewData: [],
+            pickerViewData: .init(locality: [], subLocalitys: [:]),
+            pickerViewFilteredData: [],
             selectedItem: (0, 0),
             isScrolling: false
         )
@@ -34,7 +35,8 @@ final class LocationReactor: Reactor {
     }
     
     enum Mutation {
-        case setPickerViewDataList([[String]])
+        case setPickerViewDataList(MatchedLocationListData)
+        case setPickerViewFilteredDataList([[String]])
         case setPickerViewInitialRows(firstRow: Int, secondRow: Int)
         case setPickerViewSelectedItem(firstRow: Int, secondRow: Int)
         case setScrolling(Bool)
@@ -44,9 +46,10 @@ final class LocationReactor: Reactor {
     }
     
     struct State {
-        @Pulse var pickerViewData: [[String]]
+        fileprivate var pickerViewData: MatchedLocationListData
+        var pickerViewFilteredData: [[String]]
         @Pulse var pickerViewinitialRows: (firstRow: Int, secondRow: Int)?
-        var selectedItem: (firstRow: Int, secondRow: Int)
+        @Pulse var selectedItem: (firstRow: Int, secondRow: Int)
         var isScrolling: Bool
         @Pulse var nextViewState: Void?
         @Pulse var alertState: Void?
@@ -56,11 +59,10 @@ final class LocationReactor: Reactor {
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
         case .initialFetch:
-            
             do {
                 let decodedData = try AddressManager.shared.getAddressList()
-                let locality = Array(Set(decodedData.map { $0.locality }))
-                let subLocality = decodedData.map { $0.subLocality }
+                let locality = returnLocalityArray(from: decodedData)
+                let subLocality = returnSubLocalityDicationary(from: decodedData, with: locality)
                 
                 // UserDefault에 저장된 위치가 없을 경우에 기본값을 서울 강남으로 작성
                 var savedLocation: UserLocation
@@ -72,23 +74,32 @@ final class LocationReactor: Reactor {
                 }
                 
                 let saveLocationArray = savedLocation.address.split(separator: " ")
-                let savedlocality = saveLocationArray[0]
-                let savedSublcality = saveLocationArray[1]
+                let savedlocality = String(saveLocationArray[0].prefix(2))
+                let savedSublcality = String(saveLocationArray[1])
+                
+                let filteredSubLocality = subLocality[savedlocality]
                 
                 let localityIndex = locality.firstIndex(of: String(savedlocality))
-                let sublocalityIndex = subLocality.firstIndex(of: String(savedSublcality))
+                let sublocalityIndex = filteredSubLocality?.firstIndex(of: String(savedSublcality))
                 
                 return Observable.concat(
                     Observable.just(.setPickerViewDataList(
-                        [
-                            locality,
-                            subLocality
-                        ]
+                        MatchedLocationListData(
+                            locality: locality,
+                            subLocalitys: subLocality
+                        )
                     )),
                     
                     Observable.just(.setPickerViewInitialRows(
                         firstRow: localityIndex ?? 0,
                         secondRow: sublocalityIndex ?? 0
+                    )),
+                    
+                    Observable.just(.setPickerViewFilteredDataList(
+                        [
+                            locality,
+                            filteredSubLocality ?? []
+                        ]
                     )),
                     
                     Observable.just(.setPickerViewSelectedItem(
@@ -131,15 +142,26 @@ final class LocationReactor: Reactor {
             return Observable.just(.setScrolling(true))
             
         case let .pickerViewChanged(component, row):
+            
             var rows = currentState.selectedItem
             
             if component == 0 {
                 rows.firstRow = row
+                rows.secondRow = 0
             } else if component == 1 {
                 rows.secondRow = row
             }
             
+            let locality = currentState.pickerViewData.locality
+            
+            let subLocality = currentState.pickerViewData.subLocalitys[locality[rows.firstRow]]
+            
             return Observable.concat(
+                Observable.just(.setPickerViewFilteredDataList([
+                    locality,
+                    subLocality ?? []
+                ])),
+                
                 Observable.just(
                     .setPickerViewSelectedItem(
                         firstRow: rows.firstRow,
@@ -151,20 +173,21 @@ final class LocationReactor: Reactor {
             )
             
         case .nextButtonTapped:
-            
             do {
-                let data = currentState.pickerViewData
+                let totlaData = currentState.pickerViewData
                 let selectedItem = currentState.selectedItem
-                let subLocality = data[1][selectedItem.secondRow]
-                let filteredData = try AddressManager.shared.getCoordinates(with: subLocality)
+                let locality = currentState.pickerViewData.locality[selectedItem.firstRow]
+                let subLocality = totlaData.subLocalitys[locality]![selectedItem.secondRow]
+                let matchedData = try AddressManager.shared.getCoordinates(locality: locality, subLocality: subLocality)
                 
                 UserDefaultsManager.shared.saveLocation(
                     location: .init(
-                        address: "\(filteredData.locality) \(filteredData.subLocality)",
-                        lat: filteredData.lat,
-                        lon: filteredData.lon
+                        address: "\(locality) \(subLocality)",
+                        lat: matchedData.lat,
+                        lon: matchedData.lon
                     )
                 )
+                
                 
                 return Observable.just(.setNextView(Void()))
                 
@@ -180,6 +203,9 @@ final class LocationReactor: Reactor {
         switch mutation {
         case let .setPickerViewDataList(addressList):
             newState.pickerViewData = addressList
+            
+        case let .setPickerViewFilteredDataList(filteredAddressList):
+            newState.pickerViewFilteredData = filteredAddressList
             
         case let .setPickerViewInitialRows(firstRow, secondRow):
             newState.pickerViewinitialRows = (firstRow, secondRow)
@@ -216,7 +242,7 @@ final class LocationReactor: Reactor {
                 lat = locationEvent.lat
                 lon = locationEvent.lon
                 
-                let guardSWcoord = (lat: 34.3607042, lon: 126.0890561)
+                let guardSWcoord = (lat: 33.1078403, lon: 126.0890561)
                 let guardNEcoord = (lat: 38.6111004, lon: 129.5847337)
                 
                 guard (guardSWcoord.lat...guardNEcoord.lat).contains(lat),
@@ -235,12 +261,18 @@ final class LocationReactor: Reactor {
                     return .empty()
                 }
                 
+                let splitedSublocality = location.1.split(separator: " ")
+                
+                guard let sublocality = splitedSublocality.first else {
+                    return .empty()
+                }
+                
+                
                 return Observable.just(UserLocation(
-                    address: "\(location.0) \(location.1)",
+                    address: "\(location.0.prefix(2)) \(sublocality)",
                     lat: lat,
                     lon: lon
                 ))
-                
             }
             .map { location in
                 UserDefaultsManager.shared.saveLocation(location: location)
@@ -250,4 +282,35 @@ final class LocationReactor: Reactor {
                 return .just(.setError(error))
             })
     }
+    
+    func returnLocalityArray(from addressList: [LocationListData]) -> [String] {
+        var locality = Array(Set(addressList.map { $0.locality })).sorted {
+            $0 < $1
+        }
+        
+        let highPriorityLocalities = ["경기", "서울"]
+        
+        for highPriorityLocality in highPriorityLocalities {
+            if let index = locality.firstIndex(of: highPriorityLocality) {
+                locality.move(fromOffsets: IndexSet(integer: index), toOffset: 0)
+            }
+        }
+        
+        return locality
+    }
+    
+    func returnSubLocalityDicationary(from addressList: [LocationListData], with localityArray: [String]) -> [String: [String]] {
+        var subLocalityDictionary: [String: [String]] = [:]
+        
+        for locality in localityArray {
+            let subLocalities = addressList
+                .filter { $0.locality == locality }
+                .map { $0.subLocality }
+            
+            subLocalityDictionary[locality] = subLocalities
+        }
+        
+        return subLocalityDictionary
+    }
+    
 }
