@@ -11,8 +11,7 @@ import RxSwift
 
 class SummaryViewController: UIViewController {
 
-    let data = [1, 2, 3]
-    let data2 = [1]
+    let data = [1]
     
     private lazy var collectionView: UICollectionView = {
         
@@ -32,6 +31,16 @@ class SummaryViewController: UIViewController {
         return collectionView
     }()
     
+    private let backButton: UIBarButtonItem = {
+        let button = UIBarButtonItem(
+            image: UIImage(named: "chevronLeft"),
+            style: .plain,
+            target: nil,
+            action: nil
+            )
+        return button
+    }()
+    
     private let webViewButton: UIButton = {
         let button = CustomButton(title: " 웹에서 보기")
         button.setImage(UIImage(named: "WebIcon"), for: .normal)
@@ -40,10 +49,35 @@ class SummaryViewController: UIViewController {
         return button
     }()
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.isHidden = false
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupView()
+        
+        setupNaviBar()        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.navigationBar.isHidden = true
+    }
+    
+    private func setupNaviBar() {
+        navigationItem.leftBarButtonItem = backButton
+        backButton.tintColor = .customColor(hexCode: .neutral950)
+        
+        self.title = "식당이름입니다"
+        
+        // 네비게이션 바 타이틀 색상, 폰트 설정
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: UIColor.customColor(hexCode: .neutral950),
+            .font: UIFont.customFontForHeader(weight: .w800)
+        ]
     }
     
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
@@ -82,7 +116,7 @@ class SummaryViewController: UIViewController {
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
-        section.orthogonalScrollingBehavior = .paging
+        section.orthogonalScrollingBehavior = .none
         
         return section
     }
@@ -100,7 +134,7 @@ class SummaryViewController: UIViewController {
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
-        section.orthogonalScrollingBehavior = .groupPaging
+        section.orthogonalScrollingBehavior = .none
         
         return section
         
@@ -193,7 +227,6 @@ class SummaryViewController: UIViewController {
             make.bottom.equalTo(webViewButton.snp.top).offset(-10)
         }
         
-        
     }
 
 }
@@ -203,7 +236,7 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
         if section == 0 {
             return data.count
         } else {
-            return data2.count
+            return data.count
         }
     }
     
@@ -213,17 +246,12 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionOneViewCell.identifier, for: indexPath) as? SectionOneViewCell else {
                 return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
             }
-            cell.contentView.backgroundColor = .yellow
-            let text = "\(indexPath.section)_\(indexPath.item)"
-            cell.update(text: text)
+            cell.backgroundColor = .clear
             return cell
         case 1:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionTwoViewCell.identifier, for: indexPath) as? SectionTwoViewCell else {
                 return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
             }
-            cell.contentView.backgroundColor = .cyan
-            let text = "\(indexPath.section)_\(indexPath.item)"
-            cell.update(text: text)
             return cell
         case 2:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else {
@@ -233,7 +261,7 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
             let text = "\(indexPath.section)_\(indexPath.item)"
             cell.update(text: text)
             return cell
-        default :
+        case 3 :
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFourViewCell.identifier, for: indexPath) as? SectionFourViewCell else {
                 return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
             }
@@ -241,9 +269,9 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
             let text = "\(indexPath.section)_\(indexPath.item)"
             cell.update(text: text)
             return cell
+        default :
+            return .init()
         }
-        
-        
     }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -268,7 +296,6 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
         }
         
         return UICollectionReusableView()
-        
     }
     
 }
