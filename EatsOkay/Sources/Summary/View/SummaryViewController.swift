@@ -13,7 +13,7 @@ import ReactorKit
 import SafariServices
 
 class SummaryViewController: UIViewController {
-
+    
     typealias Reactor = SummaryReactor
     let reactor: SummaryReactor
     
@@ -53,7 +53,7 @@ class SummaryViewController: UIViewController {
             style: .plain,
             target: nil,
             action: nil
-            )
+        )
         return button
     }()
     
@@ -72,7 +72,7 @@ class SummaryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setupView()
         
         setupNaviBar()
@@ -89,7 +89,7 @@ class SummaryViewController: UIViewController {
         navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .customColor(hexCode: .neutral950)
         
-        self.title = "식당이름입니다"
+        self.title = reactor.initialState.storeInfo.displayName
         
         // 네비게이션 바 타이틀 색상, 폰트 설정
         navigationController?.navigationBar.titleTextAttributes = [
@@ -241,7 +241,7 @@ class SummaryViewController: UIViewController {
         }
         
     }
-
+    
 }
 
 extension SummaryViewController {
@@ -252,10 +252,47 @@ extension SummaryViewController {
     
     func bindAction(reactor: SummaryReactor) {
         
+        // 뒤로가기 버튼 클릭 시
+        backButton.rx.tap
+            .map { Reactor.Action.backButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        webViewButton.rx.tap
+            .map { Reactor.Action.webViewButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
     }
     
     func bindState(reactor: SummaryReactor) {
         
+        // back Button 클릭 시
+        reactor.state
+            .map { $0.shouldPop }
+            .distinctUntilChanged()
+            .filter { $0 }
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(with: self, onNext: { owner, _ in
+                owner.navigationController?.popViewController(animated: true)
+            })
+            .disposed(by: disposeBag)
+        
+        // webViewButton 클릭 시
+        reactor.state
+            .map { $0.shouldPresentWebView }
+            .distinctUntilChanged()
+            .filter { $0 }
+            .withLatestFrom(reactor.state.map { $0.webViewUrl })
+            .compactMap { $0 }
+            .subscribe(onNext: { [weak self] urlString in
+                guard let url = URL(string: urlString) else { return }
+                let safariVC = SFSafariViewController(url: url)
+                safariVC.modalPresentationStyle = .popover
+                safariVC.delegate = self // 모달 닫기 delegate
+                safariVC.presentationController?.delegate = self // 모달 드래그 delegate
+                self?.present(safariVC, animated: true, completion: nil)
+            })
+            .disposed(by: disposeBag)
     }
     
 }
@@ -281,6 +318,7 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionTwoViewCell.identifier, for: indexPath) as? SectionTwoViewCell else {
                 return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
             }
+            cell.update(storeInfo: reactor.initialState.storeInfo)
             return cell
         case 2:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else {
@@ -330,5 +368,19 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
         }
         
         return UICollectionReusableView()
+    }
+}
+
+// 모달을 완료 버튼으로 dismiss 했을 때 체크
+extension SummaryViewController: SFSafariViewControllerDelegate {
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        reactor.action.onNext(.webViewDidDismiss)
+    }
+}
+
+// 모달을 드래그로 dismiss 했을 때 체크
+extension SummaryViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        reactor.action.onNext(.webViewDidDismiss)
     }
 }

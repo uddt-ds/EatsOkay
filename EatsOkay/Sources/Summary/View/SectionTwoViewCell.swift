@@ -181,7 +181,6 @@ class SectionTwoViewCell: UICollectionViewCell {
         
     }
     
-    func update(StoreInfo: [StoreInfo]) {
-        
+    func update(storeInfo: StoreInfo) {
     }
 }

@@ -5,7 +5,7 @@ import ReactorKit
 import RxSwift
 import RxCocoa
 import RxDataSources
-import SafariServices
+
 
 class DetailViewController: UIViewController, GMSMapViewDelegate, View {
 
@@ -366,22 +366,18 @@ extension DetailViewController {
             .drive(tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
-        // tableView cell 클릭 시 WebView 띄우기
-        reactor.state
-            .map { $0.shouldPresentWebView }
-            .distinctUntilChanged()
-            .filter { $0 }
-            .withLatestFrom(reactor.state.map { $0.webViewUrl })
+        // tableView cell 클릭 시 Summary VC로 이동
+        reactor.pulse(\.$pushSummaryViewWithData)
             .compactMap { $0 }
-            .subscribe(onNext: { [weak self] urlString in
-                guard let url = URL(string: urlString) else { return }
-                let safariVC = SFSafariViewController(url: url)
-                safariVC.modalPresentationStyle = .popover
-                safariVC.delegate = self // 모달 닫기 delegate
-                safariVC.presentationController?.delegate = self // 모달 드래그 delegate
-                self?.present(safariVC, animated: true, completion: nil)
+            .withUnretained(self)
+            .bind(onNext: { vc, data in
+                let reactor = SummaryReactor(storeInfo: data)
+                let summaryVC = SummaryViewController(reactor: reactor)
+                vc.navigationController?.pushViewController(summaryVC, animated: true)
             })
             .disposed(by: disposeBag)
+            
+            
         
         // 매장 개수 Label에 StoreInfo 매장 개수 바인딩
         reactor.state
@@ -398,19 +394,5 @@ extension DetailViewController {
 extension DetailViewController {
     func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
         currentLocationSearchButton.isHidden = false
-    }
-}
-
-// 모달을 완료 버튼으로 dismiss 했을 때 체크
-extension DetailViewController: SFSafariViewControllerDelegate {
-    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
-        reactor.action.onNext(.webViewDidDismiss)
-    }
-}
-
-// 모달을 드래그로 dismiss 했을 때 체크
-extension DetailViewController: UIAdaptivePresentationControllerDelegate {
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-        reactor.action.onNext(.webViewDidDismiss)
     }
 }
