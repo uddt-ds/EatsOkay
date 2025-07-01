@@ -119,16 +119,16 @@ final class OnboardingViewController: UIViewController, View {
         }
         
         for (index, view) in contentViews.enumerated() {
-                    view.snp.makeConstraints {
-                        $0.top.bottom.equalToSuperview()
-                        $0.width.equalTo(scrollView.snp.width)
-                        if index == 0 {
-                            $0.leading.equalToSuperview()
-                        } else {
-                            $0.leading.equalTo(contentViews[index - 1].snp.trailing)
-                        }
-                    }
+            view.snp.makeConstraints {
+                $0.top.bottom.equalToSuperview()
+                $0.width.equalTo(scrollView.snp.width)
+                if index == 0 {
+                    $0.leading.equalToSuperview()
+                } else {
+                    $0.leading.equalTo(contentViews[index - 1].snp.trailing)
                 }
+            }
+        }
         
         titleView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide).offset(30)
@@ -184,7 +184,7 @@ final class OnboardingViewController: UIViewController, View {
             .map(Reactor.Action.scrollAction)
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
-
+        
         
         reactor.state
             .map { $0.pages.count }
@@ -202,9 +202,27 @@ final class OnboardingViewController: UIViewController, View {
             .map { $0.currentPageModel }
             .distinctUntilChanged { $0.title == $1.title }
             .subscribe(onNext: { [weak self] page in
-                self?.titleLabel.attributedText = AttributedStringManager.configureString(text: page.title, font: .customFontForSubtitle(weight: .w700), color: .neutral950)
-                self?.descriptionLabel.attributedText = AttributedStringManager.configureString(text: page.description, font: .customFontForHeader(weight: .w950), color: .neutral950, alignment: .center)
-                self?.imageView.image = UIImage(named: page.imageName)
+                guard let self = self else { return }
+                UIView.transition(with: self.titleLabel, duration: 0, options: .transitionCrossDissolve, animations: {
+                    self.titleLabel.attributedText = AttributedStringManager.configureString(
+                        text: page.title,
+                        font: .customFontForSubtitle(weight: .w700),
+                        color: .neutral950
+                    )
+                })
+                
+                UIView.transition(with: self.descriptionLabel, duration: 0, options: .transitionCrossDissolve, animations: {
+                    self.descriptionLabel.attributedText = AttributedStringManager.configureString(
+                        text: page.description,
+                        font: .customFontForHeader(weight: .w950),
+                        color: .neutral950,
+                        alignment: .center
+                    )
+                })
+                
+                UIView.transition(with: self.imageView, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                    self.imageView.image = UIImage(named: page.imageName)
+                })
             })
             .disposed(by: disposeBag)
         
@@ -238,29 +256,29 @@ final class OnboardingViewController: UIViewController, View {
 
 final class GradationView: UIView {
     
-  override class var layerClass: AnyClass {
-    return CAGradientLayer.self
-  }
+    override class var layerClass: AnyClass {
+        return CAGradientLayer.self
+    }
     
-  var gradientLayer: CAGradientLayer {
-    return layer as! CAGradientLayer
-  }
+    var gradientLayer: CAGradientLayer {
+        return layer as! CAGradientLayer
+    }
     
-  override init(frame: CGRect) {
-    super.init(frame: frame)
-    setupGradient()
-  }
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupGradient()
+    }
     
-  required init?(coder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
-  private func setupGradient() {
-    gradientLayer.colors = [
-        UIColor(red: 1, green: 1, blue: 1, alpha: 0).cgColor,
-        UIColor(red: 1, green: 1, blue: 1, alpha: 1).cgColor
-    ]
-    gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-    gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-  }
+    private func setupGradient() {
+        gradientLayer.colors = [
+            UIColor(red: 1, green: 1, blue: 1, alpha: 0).cgColor,
+            UIColor(red: 1, green: 1, blue: 1, alpha: 1).cgColor
+        ]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+    }
 }
