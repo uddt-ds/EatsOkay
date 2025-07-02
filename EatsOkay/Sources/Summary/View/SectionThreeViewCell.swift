@@ -147,16 +147,25 @@ class SectionThreeViewCell: UICollectionViewCell {
         }
     }
     
-    func update(storeInfo: StoreInfo) {
-        
+    func update(with item: SummarySectionModel.CellModel) {
+        guard case let .summaryFeaturesCell(data) = item else { return }
+
         let hasParking: Bool = {
-            guard let parking = storeInfo.parkingOptions else { return false }
-            return parking.freeParkingLot == true || parking.paidParkingLot == true || parking.freeStreetParking == true || parking.paidStreetParking == true || parking.valetParking == true || parking.freeGarageParking == true || parking.paidGarageParking == true
+            guard let parking = data.parkingOptions else { return false }
+            return [
+                parking.freeParkingLot,
+                parking.paidParkingLot,
+                parking.freeStreetParking,
+                parking.paidStreetParking,
+                parking.valetParking,
+                parking.freeGarageParking,
+                parking.paidGarageParking
+            ].contains(true)
         }()
-        
-        groupFeatureStackView.isHidden = !(storeInfo.goodForGroups ?? false)
-        reserveFeatureStackView.isHidden = !(storeInfo.reservable ?? false)
-        takeoutFeatureStackView.isHidden = !(storeInfo.takeout ?? false)
+
+        groupFeatureStackView.isHidden = !(data.goodForGroups ?? false)
+        reserveFeatureStackView.isHidden = !(data.reservable ?? false)
+        takeoutFeatureStackView.isHidden = !(data.takeout ?? false)
         parkingFeatureStackView.isHidden = !hasParking
     }
 }

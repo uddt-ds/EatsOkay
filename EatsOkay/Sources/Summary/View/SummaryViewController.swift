@@ -355,7 +355,7 @@ extension SummaryViewController {
             case .summaryFeaturesCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else { return .init()}
                 let text = "\(indexPath.section)_\(indexPath.item)"
-                cell.update(text: text)
+                cell.update(with: item)
                 return cell
             case .summaryMapCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFourViewCell.identifier, for: indexPath) as? SectionFourViewCell else { return .init()}
