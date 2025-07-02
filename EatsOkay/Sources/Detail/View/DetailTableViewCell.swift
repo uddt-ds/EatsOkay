@@ -16,10 +16,7 @@ class DetailTableViewCell: UITableViewCell {
     
     var disposeBag = DisposeBag()
     
-    private let storeNameLabel: UILabel = {
-        let label = UILabel()
-        return label
-    }()
+    private let storeNameLabel = UILabel()
     
     private let rateImageView: UIImageView = {
         let imageView = UIImageView()
@@ -27,25 +24,13 @@ class DetailTableViewCell: UITableViewCell {
         return imageView
     }()
     
-    private let rateLabel: UILabel = {
-        let label = UILabel()
-        return label
-    }()
+    private let rateLabel = UILabel()
     
-    private let userRateCountLabel: UILabel = {
-        let label = UILabel()
-        return label
-    }()
+    private let userRateCountLabel = UILabel()
     
-    private let storeTypeLabel: UILabel = {
-        let label = UILabel()
-        return label
-    }()
+    private let storeTypeLabel = UILabel()
     
-    private let addressLabel: UILabel = {
-        let label = UILabel()
-        return label
-    }()
+    private let addressLabel = UILabel()
     
     private let timeImageView: UIImageView = {
         let imageView = UIImageView()
@@ -53,10 +38,7 @@ class DetailTableViewCell: UITableViewCell {
         return imageView
     }()
     
-    private let openNowLabel: UILabel = {
-        let label = UILabel()
-        return label
-    }()
+    private let openNowLabel = UILabel()
     
     private let storeImageView: UIImageView = {
         let imageView = UIImageView()
@@ -88,9 +70,18 @@ class DetailTableViewCell: UITableViewCell {
         
         contentView.backgroundColor = .customColor(hexCode: .bgColor)
         
-        [storeNameLabel, rateImageView, rateLabel, userRateCountLabel, storeTypeLabel, addressLabel, timeImageView, openNowLabel, separatorView, storeImageView].forEach {
-            contentView.addSubview($0)
-        }
+        [
+            storeNameLabel,
+            rateImageView,
+            rateLabel,
+            userRateCountLabel,
+            storeTypeLabel,
+            addressLabel,
+            timeImageView,
+            openNowLabel,
+            separatorView,
+            storeImageView
+        ].forEach { contentView.addSubview($0) }
         
         // 식당명
         storeNameLabel.snp.makeConstraints { make in
