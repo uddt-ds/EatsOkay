@@ -52,7 +52,7 @@ class SectionOneViewCell: UICollectionViewCell {
         return label
     }()
     
-    private let testView = UIView()
+    private let storeImageView = UIView()
     private let contentViews: [UIImageView] = {
         ["DefaultImage", "DefaultImage", "DefaultImage"].map { imageName in
             let imageView = UIImageView()
@@ -65,9 +65,9 @@ class SectionOneViewCell: UICollectionViewCell {
     private func configureUI() {
         contentView.backgroundColor = .white
         
-        scrollView.addSubview(testView)
+        scrollView.addSubview(storeImageView)
         scrollView.addSubview(backgroundImageView)
-        contentViews.forEach { testView.addSubview($0) }
+        contentViews.forEach { storeImageView.addSubview($0) }
         
         [
             scrollView, photoPageLabel
@@ -85,7 +85,7 @@ class SectionOneViewCell: UICollectionViewCell {
             $0.edges.equalToSuperview()
         }
         
-        testView.snp.makeConstraints {
+        storeImageView.snp.makeConstraints {
             $0.edges.equalToSuperview()
             $0.height.equalToSuperview()
             $0.width.equalToSuperview().multipliedBy(contentViews.count)
