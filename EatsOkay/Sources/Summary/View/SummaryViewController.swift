@@ -319,68 +319,81 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
                 return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
             }
             cell.update(storeInfo: reactor.initialState.storeInfo)
-            return cell
-        case 2:
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else {
-                return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
+            
+            cell.rx.callButtonTapped
+                .bind { _ in
+                    guard let phoneNumber = self.reactor.initialState.storeInfo.nationalPhoneNumber else { return }
+                    
+                    let cleanedNumber = phoneNumber.replacingOccurrences(of: " ", with: "")
+                                                       .replacingOccurrences(of: "-", with: "")
+                    
+                    if let phoneURL = URL(string: "tel://\(cleanedNumber)"), UIApplication.shared.canOpenURL(phoneURL) {
+                        UIApplication.shared.open(phoneURL, options: [:], completionHandler: nil)
+                    }
+                }.disposed(by: disposeBag)
+                    
+                    return cell
+                case 2:
+                    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else {
+                        return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
+                    }
+                    cell.contentView.backgroundColor = .green
+                    let text = "\(indexPath.section)_\(indexPath.item)"
+                    cell.update(text: text)
+                    return cell
+                    
+                    
+                case 3:
+                    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFourViewCell.identifier, for: indexPath) as? SectionFourViewCell else {
+                        return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
+                    }
+                    let image = UIImage(resource: .company2)
+                    let text = ""
+                    cell.update(image: image)
+                    cell.update(text: text)
+                    return cell
+                    
+                default :
+                    
+                    return .init()
+                }
+        }
+        
+        func numberOfSections(in collectionView: UICollectionView) -> Int {
+            return 4
+        }
+        
+        // 헤더 설정
+        func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+            
+            if kind == UICollectionView.elementKindSectionHeader {
+                guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CustomHeaderView.identifier, for: indexPath) as? CustomHeaderView else {
+                    return UICollectionReusableView()
+                }
+                
+                if indexPath.section == 2 {
+                    header.configure(with: "매장 특징")
+                } else if indexPath.section == 3 {
+                    header.configure(with: "위치")
+                }
+                
+                return header
             }
-            cell.contentView.backgroundColor = .green
-            let text = "\(indexPath.section)_\(indexPath.item)"
-            cell.update(text: text)
-            return cell
             
-            
-        case 3:
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFourViewCell.identifier, for: indexPath) as? SectionFourViewCell else {
-                return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
-            }
-            let image = UIImage(resource: .company2)
-            let text = ""
-            cell.update(image: image)
-            cell.update(text: text)
-            return cell
-            
-        default :
-            
-            return .init()
+            return UICollectionReusableView()
         }
     }
     
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 4
+    // 모달을 완료 버튼으로 dismiss 했을 때 체크
+    extension SummaryViewController: SFSafariViewControllerDelegate {
+        func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+            reactor.action.onNext(.webViewDidDismiss)
+        }
     }
     
-    // 헤더 설정
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        
-        if kind == UICollectionView.elementKindSectionHeader {
-            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CustomHeaderView.identifier, for: indexPath) as? CustomHeaderView else {
-                return UICollectionReusableView()
-            }
-            
-            if indexPath.section == 2 {
-                header.configure(with: "매장 특징")
-            } else if indexPath.section == 3 {
-                header.configure(with: "위치")
-            }
-            
-            return header
+    // 모달을 드래그로 dismiss 했을 때 체크
+    extension SummaryViewController: UIAdaptivePresentationControllerDelegate {
+        func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+            reactor.action.onNext(.webViewDidDismiss)
         }
-        
-        return UICollectionReusableView()
     }
-}
-
-// 모달을 완료 버튼으로 dismiss 했을 때 체크
-extension SummaryViewController: SFSafariViewControllerDelegate {
-    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
-        reactor.action.onNext(.webViewDidDismiss)
-    }
-}
-
-// 모달을 드래그로 dismiss 했을 때 체크
-extension SummaryViewController: UIAdaptivePresentationControllerDelegate {
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-        reactor.action.onNext(.webViewDidDismiss)
-    }
-}

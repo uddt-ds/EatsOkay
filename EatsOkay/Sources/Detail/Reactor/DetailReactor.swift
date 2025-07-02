@@ -117,7 +117,7 @@ class DetailReactor: Reactor {
             return .just(.shouldPop(true))
         case .currentLocationSearchButtonTapped(sw: let sw, ne: let ne):
             let currentSortType = currentState.sortType
-
+            
             let centerLat = (sw.lat + ne.lat) / 2
             let centerLon = (sw.lon + ne.lon) / 2
             
@@ -129,11 +129,11 @@ class DetailReactor: Reactor {
                     guard let self else { return [] }
                     let merged = Array(Set(first + second))
                     let sorted = self.sortStoreItems(
-                                    merged,
-                                    sortType: currentSortType,
-                                    centerLat: centerLat,
-                                    centerLon: centerLon
-                                )
+                        merged,
+                        sortType: currentSortType,
+                        centerLat: centerLat,
+                        centerLon: centerLon
+                    )
                     return [StoreSection(items: sorted)]
                 }
                 .map { .setStore($0) }
@@ -172,8 +172,23 @@ extension DetailReactor {
               let googleMapsUri = place.googleMapsUri,
               let rating = place.rating,
               let userRatingCount = place.userRatingCount,
-              let currentOpeningHours = place.currentOpeningHours
+              let currentOpeningHours = place.currentOpeningHours,
+              let id = place.id
         else { return nil }
+        
+        let photos = place.photos?.map { googlePhoto in
+            Photo(name: googlePhoto.name)
+        }
+        
+        let parkingOptions = place.parkingOptions.map { googleParkingOptions in
+            ParkingOptions(freeParkingLot: googleParkingOptions.freeGarageParking,
+                           paidParkingLot: googleParkingOptions.paidParkingLot,
+                           freeStreetParking: googleParkingOptions.freeStreetParking,
+                           paidStreetParking: googleParkingOptions.paidStreetParking,
+                           valetParking: googleParkingOptions.valetParking,
+                           freeGarageParking: googleParkingOptions.freeGarageParking,
+                           paidGarageParking: googleParkingOptions.paidGarageParking)
+        }
         
         let convertedOpeningHours = convertOpeningHours(currentOpeningHours)
         
@@ -187,7 +202,14 @@ extension DetailReactor {
             googleMapsUri: googleMapsUri,
             userRatingCount: userRatingCount,
             photosNames: photoUri, // photoUri(이미지 URL)를 여기에 저장
-            currentOpeningHours: convertedOpeningHours
+            currentOpeningHours: convertedOpeningHours,
+            goodForGroups: place.goodForGroups,
+            takeout: place.takeout,
+            reservable: place.reservable,
+            parkingOptions: parkingOptions,
+            nationalPhoneNumber: place.nationalPhoneNumber,
+            id: id,
+            photos: photos
         )
         
     }
