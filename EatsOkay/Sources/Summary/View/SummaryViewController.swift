@@ -16,7 +16,7 @@ import RxDataSources
 class SummaryViewController: UIViewController {
     
     typealias Reactor = SummaryReactor
-    let reactor: SummaryReactor
+    var reactor: SummaryReactor
     
     var disposeBag = DisposeBag()
     
@@ -62,28 +62,6 @@ class SummaryViewController: UIViewController {
         button.imageView?.contentMode = .scaleAspectFill
         return button
     }()
-    
-    private var shouldHideFeatureSection: Bool {
-        let store = reactor.initialState.storeInfo
-
-        let hasGroup = store.goodForGroups ?? false
-        let hasReserve = store.reservable ?? false
-        let hasTakeout = store.takeout ?? false
-        let hasParking = {
-            guard let parking = store.parkingOptions else { return false }
-            return [
-                parking.freeParkingLot,
-                parking.paidParkingLot,
-                parking.freeStreetParking,
-                parking.paidStreetParking,
-                parking.valetParking,
-                parking.freeGarageParking,
-                parking.paidGarageParking
-            ].contains(true)
-        }()
-
-        return !(hasGroup || hasReserve || hasTakeout || hasParking)
-    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -354,7 +332,6 @@ extension SummaryViewController {
                 return cell
             case .summaryFeaturesCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else { return .init()}
-                let text = "\(indexPath.section)_\(indexPath.item)"
                 cell.update(with: item)
                 return cell
             case .summaryMapCell:
