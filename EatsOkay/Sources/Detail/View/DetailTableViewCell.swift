@@ -18,7 +18,6 @@ class DetailTableViewCell: UITableViewCell {
     
     private let storeNameLabel: UILabel = {
         let label = UILabel()
-        label.text = "식당명"
         label.textColor = .customColor(hexCode: .neutral950)
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -34,7 +33,6 @@ class DetailTableViewCell: UITableViewCell {
     
     private let rateLabel: UILabel = {
         let label = UILabel()
-        label.text = "평점"
         label.textColor = .customColor(hexCode: .neutral800)
         label.font = .customFontForBody(weight: .w600)
         return label
@@ -42,7 +40,6 @@ class DetailTableViewCell: UITableViewCell {
     
     private let userRateCountLabel: UILabel = {
         let label = UILabel()
-        label.text = "(리뷰수)"
         label.textColor = .customColor(hexCode: .neutral800)
         label.font = .customFontForBody(weight: .w600)
         return label
@@ -50,7 +47,6 @@ class DetailTableViewCell: UITableViewCell {
     
     private let storeTypeLabel: UILabel = {
         let label = UILabel()
-        label.text = "식당 종류"
         label.textColor = .customColor(hexCode: .neutral700)
         label.font = .customFontForBody(weight: .w500)
         return label
@@ -58,7 +54,6 @@ class DetailTableViewCell: UITableViewCell {
     
     private let addressLabel: UILabel = {
         let label = UILabel()
-        label.text = "주소"
         label.textColor = .customColor(hexCode: .neutral700)
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -74,7 +69,6 @@ class DetailTableViewCell: UITableViewCell {
     
     private let openNowLabel: UILabel = {
         let label = UILabel()
-        label.text = "영업전/후 • 시간"
         label.textColor = .customColor(hexCode: .neutral700)
         label.numberOfLines = 0
         label.font = .customFontForBody(weight: .w500)
