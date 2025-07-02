@@ -18,10 +18,6 @@ class DetailTableViewCell: UITableViewCell {
     
     private let storeNameLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .customColor(hexCode: .neutral950)
-        label.numberOfLines = 1
-        label.lineBreakMode = .byTruncatingTail
-        label.font = .customFontForHeader(weight: .w800)
         return label
     }()
     
@@ -33,31 +29,21 @@ class DetailTableViewCell: UITableViewCell {
     
     private let rateLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .customColor(hexCode: .neutral800)
-        label.font = .customFontForBody(weight: .w600)
         return label
     }()
     
     private let userRateCountLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .customColor(hexCode: .neutral800)
-        label.font = .customFontForBody(weight: .w600)
         return label
     }()
     
     private let storeTypeLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .customColor(hexCode: .neutral700)
-        label.font = .customFontForBody(weight: .w500)
         return label
     }()
     
     private let addressLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .customColor(hexCode: .neutral700)
-        label.numberOfLines = 1
-        label.lineBreakMode = .byTruncatingTail
-        label.font = .customFontForBody(weight: .w500)
         return label
     }()
     
@@ -69,9 +55,6 @@ class DetailTableViewCell: UITableViewCell {
     
     private let openNowLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .customColor(hexCode: .neutral700)
-        label.numberOfLines = 0
-        label.font = .customFontForBody(weight: .w500)
         return label
     }()
     
@@ -188,11 +171,37 @@ class DetailTableViewCell: UITableViewCell {
         let openInfo = storeInfo.currentOpeningHours
         let openInfoText = getTodayClosingOrTomorrowOpening(openingHours: openInfo)
         
-        storeNameLabel.text = storeInfo.displayName
-        rateLabel.text = "\(storeInfo.rating)"
-        userRateCountLabel.text = "(\(storeInfo.userRatingCount))"
-        addressLabel.text = address
-        storeTypeLabel.text = storeInfo.primaryTypeDisplayName
+        storeNameLabel.attributedText = AttributedStringManager.configureString(
+            text: storeInfo.displayName,
+            font: .customFontForHeader(weight: .w800),
+            color: .neutral950,
+            lineBreak: .byTruncatingTail
+        )
+        
+        rateLabel.attributedText = AttributedStringManager.configureString(
+            text: "\(storeInfo.rating)",
+            font: .customFontForBody(weight: .w600),
+            color: .neutral800
+        )
+        
+        userRateCountLabel.attributedText = AttributedStringManager.configureString(
+            text: "(\(storeInfo.userRatingCount))",
+            font: .customFontForBody(weight: .w600),
+            color: .neutral800
+        )
+        
+        addressLabel.attributedText = AttributedStringManager.configureString(
+            text: address,
+            font: .customFontForBody(weight: .w500),
+            color: .neutral700,
+            lineBreak: .byTruncatingTail
+        )
+        
+        storeTypeLabel.attributedText = AttributedStringManager.configureString(
+            text: storeInfo.primaryTypeDisplayName,
+            font: .customFontForBody(weight: .w500),
+            color: .neutral700
+        )
         
         if storeInfo.currentOpeningHours.openNow {
             openNowLabel.attributedText = AttributedStringManager.configureString(
