@@ -9,7 +9,7 @@ import Foundation
 import ReactorKit
 import RxSwift
 
-class DetailPhotosReactor: Reactor {
+final class DetailPhotosReactor: Reactor {
     
     var initialState: State
     
