@@ -199,7 +199,23 @@ class DetailTableViewCell: UITableViewCell {
         userRateCountLabel.text = "(\(storeInfo.userRatingCount))"
         addressLabel.text = address
         storeTypeLabel.text = storeInfo.primaryTypeDisplayName
-        openNowLabel.text = storeInfo.currentOpeningHours.openNow ? "영업중" + " • \(openInfoText)" : "영업 종료" + " • \(openInfoText)"
+        
+        if storeInfo.currentOpeningHours.openNow {
+            openNowLabel.attributedText = AttributedStringManager.configureString(
+                text: "영업 중" + " • \(openInfoText)",
+                font: .customFontForBody(weight: .w500),
+                color: .neutral700
+            )
+        } else {
+            openNowLabel.attributedText = AttributedStringManager.configureHighlightString(
+                text: "영업 종료" + " • \(openInfoText)",
+                font: .customFontForBody(weight: .w500),
+                color: .neutral700,
+                highlightWords: [
+                    .init(word: "영업 종료", color: .closedColor)
+                ]
+            )
+        }
         
         // photoNames이 빈문자열이면 DefaultImage 표시
         if storeInfo.photosNames != "" {
@@ -322,6 +338,3 @@ extension DetailTableViewCell {
         return ""
     }
 }
-
-
-
