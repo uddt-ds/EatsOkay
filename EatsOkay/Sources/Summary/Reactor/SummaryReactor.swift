@@ -15,7 +15,7 @@ class SummaryReactor: Reactor {
     var disposeBag = DisposeBag()
     
     init(storeInfo: StoreInfo) {
-        self.initialState = State(storeInfo: storeInfo, section: [])
+        self.initialState = State(storeInfo: storeInfo, setSections: [])
     }
     
     enum Action {
@@ -34,7 +34,7 @@ class SummaryReactor: Reactor {
     
     struct State {
         var storeInfo: StoreInfo
-        var section: [SummarySectionModel]
+        var setSections: [SummarySectionModel]
         var imagesUri: [String] = []
         var shouldPop: Bool = false
         var webViewUrl: String? = nil
@@ -47,7 +47,6 @@ class SummaryReactor: Reactor {
             let storeInfo = currentState.storeInfo
             let firstImageUrl = storeInfo.photosNames
             
-            print(firstImageUrl)
             let photos = storeInfo.photos ?? []
             
             let secondImageName = photos.count > 1 ? photos[1].name : "DefaultImage"
@@ -131,7 +130,7 @@ class SummaryReactor: Reactor {
         var newState = state
         switch mutation {
         case .setSections(let dataSource):
-            newState.section = dataSource
+            newState.setSections = dataSource
         case .shouldPop(let flag):
             newState.shouldPop = flag
         case .setWebViewUri(let uri):

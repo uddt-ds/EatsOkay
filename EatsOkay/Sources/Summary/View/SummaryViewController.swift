@@ -272,7 +272,7 @@ extension SummaryViewController {
         
         // 컬렉션 뷰 RxDataSource 바인딩
         reactor.state
-            .map { $0.section }
+            .map { $0.setSections }
             .bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
