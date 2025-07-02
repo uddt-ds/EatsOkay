@@ -177,33 +177,62 @@ class SectionTwoViewCell: UICollectionViewCell {
         
     }
     
-    func update(storeInfo: StoreInfo) {
-        regionLabel.text = "\(formatAddress(storeInfo.formattedAddress)) • \(storeInfo.primaryTypeDisplayName)"
-        storeLabel.text = storeInfo.displayName
-        rateLabel.text = "\(storeInfo.rating)"
-        reviewLabel.text = "리뷰 \(storeInfo.userRatingCount)개"
-        
-        // nationalPhoneNumber의 nil 값 유/무로 분기처리
-        if let _ = storeInfo.nationalPhoneNumber {
-            callButton.configuration?.image = UIImage(named: "Call")
-            callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
-                    text: "전화",
+    func update(with: SummarySectionModel.CellModel) {
+//        if case.summaryInfoCell(let data) = with {
+//            data.
+//        }
+        switch with {
+        case .summaryInfoCell(let data):
+            regionLabel.attributedText = AttributedStringManager.configureString(
+                text: "\(formatAddress(data.storeAddress)) • \(data.storeType)",
+                font: .customFontForBody(weight: .w500),
+                color: .neutral400
+            )
+            
+            storeLabel.attributedText = AttributedStringManager.configureString(
+                text: data.storeName,
+                font: .customFontForHeader(weight: .w700),
+                color: .neutral950
+            )
+            
+            rateLabel.attributedText = AttributedStringManager.configureString(
+                text: data.rate,
+                font: .customFontForHeader(weight: .w700),
+                color: .neutral950
+            )
+            
+            reviewLabel.attributedText = AttributedStringManager.configureString(
+                text: data.reviewCount,
+                font: .customFontForSubtitle(weight: .w700),
+                color: .neutral950
+            )
+            
+            // nationalPhoneNumber의 nil 값 유/무로 분기처리
+            if let _ = data.storePhoneNumber {
+                callButton.configuration?.image = UIImage(named: "Call")
+                callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
+                        text: "전화",
+                        font: .customFontForBody(weight: .w600),
+                        color: .neutral700
+                )
+            } else {
+                callButton.configuration?.image = UIImage(named: "Call2")
+                callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
+                    text: "번호 없음",
                     font: .customFontForBody(weight: .w600),
-                    color: .neutral700
+                    color: .neutral200
+                )
+            }
+            
+            let openInfo = data.openInfo
+            timeLabel.attributedText = AttributedStringManager.configureString(
+                text: data.isOpen ? "영업중" + " • \(openInfo)" : "영업 종료" + " • \(openInfo)",
+                font: .customFontForBody(weight: .w600),
+                color: .neutral800
             )
-        } else {
-            callButton.configuration?.image = UIImage(named: "Call2")
-            callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
-                text: "번호 없음",
-                font: UIFont.customFontForBody(weight: .w600),
-                color: .neutral200
-            )
+        default:
+            break
         }
-        
-        let openInfo = storeInfo.currentOpeningHours
-        let openInfoText = OpeningHours.getTodayClosingOrTomorrowOpening(openingHours: openInfo)
-        
-        timeLabel.text = storeInfo.currentOpeningHours.openNow ? "영업중" + " • \(openInfoText)" : "영업 종료" + " • \(openInfoText)"
     }
 }
 
