@@ -4,95 +4,123 @@ import SnapKit
 class SectionThreeViewCell: UICollectionViewCell {
     static let identifier = "SectionThreeViewCell"
     
-    private let featuresStackView: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 20
-        stack.alignment = .center
-        return stack
-    }()
-    
-    private let groupFeatureView = StoreFeatureView()
-    private let reserveFeatureView = StoreFeatureView()
-    private let takeoutFeatureView = StoreFeatureView()
-    private let parkingFeatureView = StoreFeatureView()
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupView()
-        setConstraints()
-    }
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupView()
-        setConstraints()
-    }
-    
-    private func setupView() {
-        
-        [
-            groupFeatureView,
-            reserveFeatureView,
-            takeoutFeatureView,
-            parkingFeatureView
-        ].forEach { featuresStackView.addArrangedSubview($0) }
-        
-        contentView.addSubview(featuresStackView)
-    }
-    
-    private func setConstraints() {
-        featuresStackView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(16)
-            $0.leading.equalToSuperview().offset(20)
-            $0.trailing.equalToSuperview().inset(20)
-            $0.bottom.equalToSuperview().inset(24)
-        }
-    }
-    
-    func update(storeInfo: StoreInfo) {
-        
-        groupFeatureView.update(image: UIImage(named: "users"), text: "단체모임")
-        reserveFeatureView.update(image: UIImage(named: "calendar"), text: "예약")
-        takeoutFeatureView.update(image: UIImage(named: "bag"), text: "포장")
-        parkingFeatureView.update(image: UIImage(named: "car"), text: "주차")
-        
-        let hasParking: Bool = {
-            guard let parking = storeInfo.parkingOptions else { return false }
-            return parking.freeParkingLot == true || parking.paidParkingLot == true || parking.freeStreetParking == true || parking.paidStreetParking == true || parking.valetParking == true || parking.freeGarageParking == true || parking.paidGarageParking == true
-        }()
-        
-        groupFeatureView.isHidden = !(storeInfo.goodForGroups ?? false)
-        reserveFeatureView.isHidden = !(storeInfo.reservable ?? false)
-        takeoutFeatureView.isHidden = !(storeInfo.takeout ?? false)
-        parkingFeatureView.isHidden = !hasParking
-    }
-}
-
-private class StoreFeatureView: UIView {
-    
-    private let featureImageView: UIImageView = {
+    private let groupFeatureImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
+        imageView.image = UIImage(resource: .users)
         return imageView
     }()
     
-    private let featureLabel: UILabel = {
+    private let groupFeatureLabel: UILabel = {
         let label = UILabel()
         label.attributedText = AttributedStringManager.configureString(
-            text: "",
+            text: "단체모임",
             font: .customFontForBody(weight: .w500),
             color: .neutral950
         )
         return label
     }()
     
-    private let verticalStackView: UIStackView = {
-        let stackView = UIStackView()
+    private lazy var groupFeatureStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [
+            groupFeatureImageView,
+            groupFeatureLabel
+        ])
         stackView.axis = .vertical
         stackView.alignment = .center
         return stackView
+    }()
+    
+    private let reserveFeatureImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .calendar)
+        return imageView
+    }()
+    
+    private let reserveFeatureLabel: UILabel = {
+        let label = UILabel()
+        label.attributedText = AttributedStringManager.configureString(
+            text: "예약",
+            font: .customFontForBody(weight: .w500),
+            color: .neutral950
+        )
+        return label
+    }()
+    
+    private lazy var reserveFeatureStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [
+            reserveFeatureImageView,
+            reserveFeatureLabel
+        ])
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        return stackView
+    }()
+    
+    private let takeoutFeatureImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .bag)
+        return imageView
+    }()
+    
+    private let takeoutFeatureLabel: UILabel = {
+        let label = UILabel()
+        label.attributedText = AttributedStringManager.configureString(
+            text: "포장",
+            font: .customFontForBody(weight: .w500),
+            color: .neutral950
+        )
+        return label
+    }()
+    
+    private lazy var takeoutFeatureStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [
+            takeoutFeatureImageView,
+            takeoutFeatureLabel
+        ])
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        return stackView
+    }()
+    
+    private let parkingFeatureImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .car)
+        return imageView
+    }()
+    
+    private let parkingFeatureLabel: UILabel = {
+        let label = UILabel()
+        label.attributedText = AttributedStringManager.configureString(
+            text: "주차",
+            font: .customFontForBody(weight: .w500),
+            color: .neutral950
+        )
+        return label
+    }()
+    
+    private lazy var parkingFeatureStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [
+            parkingFeatureImageView,
+            parkingFeatureLabel
+        ])
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        return stackView
+    }()
+    
+    private lazy var featuresStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [
+            groupFeatureStackView,
+            reserveFeatureStackView,
+            takeoutFeatureStackView,
+            parkingFeatureStackView
+        ])
+        
+        stack.axis = .horizontal
+        stack.spacing = 20
+        stack.distribution = .equalSpacing
+        stack.alignment = .center
+        return stack
     }()
     
     required init?(coder: NSCoder) {
@@ -108,28 +136,27 @@ private class StoreFeatureView: UIView {
     }
     
     private func setupView() {
-        verticalStackView.addArrangedSubview(featureImageView)
-        verticalStackView.addArrangedSubview(featureLabel)
-        
-        addSubview(verticalStackView)
+        addSubview(featuresStackView)
     }
     
     private func setConstraints() {
-        featureImageView.snp.makeConstraints {
-            $0.height.width.equalTo(60)
-        }
-        
-        verticalStackView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+        featuresStackView.snp.makeConstraints {
+            $0.top.equalToSuperview()
+            $0.leading.equalToSuperview().offset(20)
+            $0.bottom.equalToSuperview().inset(24)
         }
     }
     
-    func update(image: UIImage?, text: String) {
-        featureImageView.image = image
-        featureLabel.attributedText = AttributedStringManager.configureString(
-            text: text,
-            font: .customFontForBody(weight: .w500),
-            color: .neutral950
-        )
+    func update(storeInfo: StoreInfo) {
+        
+        let hasParking: Bool = {
+            guard let parking = storeInfo.parkingOptions else { return false }
+            return parking.freeParkingLot == true || parking.paidParkingLot == true || parking.freeStreetParking == true || parking.paidStreetParking == true || parking.valetParking == true || parking.freeGarageParking == true || parking.paidGarageParking == true
+        }()
+        
+        groupFeatureStackView.isHidden = !(storeInfo.goodForGroups ?? false)
+        reserveFeatureStackView.isHidden = !(storeInfo.reservable ?? false)
+        takeoutFeatureStackView.isHidden = !(storeInfo.takeout ?? false)
+        parkingFeatureStackView.isHidden = !hasParking
     }
 }

@@ -65,6 +65,28 @@ class SummaryViewController: UIViewController {
         return button
     }()
     
+    private var shouldHideFeatureSection: Bool {
+        let store = reactor.initialState.storeInfo
+
+        let hasGroup = store.goodForGroups ?? false
+        let hasReserve = store.reservable ?? false
+        let hasTakeout = store.takeout ?? false
+        let hasParking = {
+            guard let parking = store.parkingOptions else { return false }
+            return [
+                parking.freeParkingLot,
+                parking.paidParkingLot,
+                parking.freeStreetParking,
+                parking.paidStreetParking,
+                parking.valetParking,
+                parking.freeGarageParking,
+                parking.paidGarageParking
+            ].contains(true)
+        }()
+
+        return !(hasGroup || hasReserve || hasTakeout || hasParking)
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.isHidden = false
@@ -161,13 +183,13 @@ class SummaryViewController: UIViewController {
         
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.1943))
         
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
         
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(65))
         
         let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
         
@@ -307,7 +329,13 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        switch indexPath.section {
+        
+        var section = indexPath.section
+        if shouldHideFeatureSection && section >= 2 {
+            section += 1
+        }
+        
+        switch section {
         case 0:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionOneViewCell.identifier, for: indexPath) as? SectionOneViewCell else {
                 return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
@@ -358,20 +386,25 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
         }
         
         func numberOfSections(in collectionView: UICollectionView) -> Int {
-            return 4
+            return shouldHideFeatureSection ? 3 : 4
         }
         
         // 헤더 설정
         func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+            
+            var section = indexPath.section
+            if shouldHideFeatureSection && section >= 2 {
+                section += 1
+            }
             
             if kind == UICollectionView.elementKindSectionHeader {
                 guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CustomHeaderView.identifier, for: indexPath) as? CustomHeaderView else {
                     return UICollectionReusableView()
                 }
                 
-                if indexPath.section == 2 {
+                if section == 2 {
                     header.configure(with: "매장 특징")
-                } else if indexPath.section == 3 {
+                } else if section == 3 {
                     header.configure(with: "위치")
                 }
                 
