@@ -64,4 +64,48 @@ struct AttributedStringManager {
         
         return AttributedString(attributedString)
     }
+    
+    static func configureHighlightString(
+        text: String,
+        font: UIFont,
+        color: UIColor.CustomColor,
+        alignment: NSTextAlignment = .left,
+        highlightWords: [HighlightWord] = []
+    ) -> NSMutableAttributedString {
+        
+        let attributedString: NSMutableAttributedString = configureString(
+            text: text,
+            font: font,
+            color: color,
+            alignment: alignment
+        )
+        
+        let nsText = text as NSString
+        for highlightWord in highlightWords {
+            var searchRange = NSRange(location: 0, length: nsText.length)
+            
+            while true {
+                let foundRange = nsText.range(of: highlightWord.word, options: [], range: searchRange)
+                if foundRange.location == NSNotFound { break }
+                
+                attributedString.addAttribute(
+                    .foregroundColor,
+                    value: UIColor.customColor(hexCode: highlightWord.color),
+                    range: foundRange
+                )
+                
+                let nextLocation = foundRange.location + foundRange.length
+                searchRange = NSRange(location: nextLocation, length: nsText.length - nextLocation)
+            }
+        }
+        
+        return attributedString
+    }
+}
+
+extension AttributedStringManager {
+    struct HighlightWord {
+        let word: String
+        let color: UIColor.CustomColor
+    }
 }
