@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class SectionOneViewCell: UICollectionViewCell {
     static let identifier = "SectionOneViewCell"
@@ -52,8 +53,8 @@ class SectionOneViewCell: UICollectionViewCell {
     }()
     
     private let testView = UIView()
-    private let contentViews: [UIView] = {
-        ["DefaultImage", "Star", "Time"].map { imageName in
+    private let contentViews: [UIImageView] = {
+        ["DefaultImage", "DefaultImage", "DefaultImage"].map { imageName in
             let imageView = UIImageView()
             imageView.image = UIImage(named: imageName)
             imageView.contentMode = .scaleAspectFit
@@ -65,14 +66,14 @@ class SectionOneViewCell: UICollectionViewCell {
         contentView.backgroundColor = .white
         
         scrollView.addSubview(testView)
-        scrollView.addSubview(backgroundImageView) 
+        scrollView.addSubview(backgroundImageView)
         contentViews.forEach { testView.addSubview($0) }
         
         [
             scrollView, photoPageLabel
         ]
             .forEach { contentView.addSubview($0) }
- 
+        
     }
     
     private func setConstraints() {
@@ -111,7 +112,22 @@ class SectionOneViewCell: UICollectionViewCell {
         
     }
     
-    func update(imageUri: String) {
-
+    func update(with: SummarySectionModel.CellModel) {
+        switch with {
+        case .summaryImageCell(let data):
+            for (index, urlString) in data.photosUrl.enumerated() {
+                if index < contentViews.count {
+                    if urlString == "DefaultImage" {
+                        contentViews[index].image = UIImage(named: "DefaultImage")
+                    } else if let url = URL(string: urlString), urlString.hasPrefix("https") {
+                        contentViews[index].kf.setImage(with: url)
+                    } else {
+                        contentViews[index].image = UIImage(named: "DefaultImage")
+                    }
+                }
+            }
+        default:
+            break
+        }
     }
 }
