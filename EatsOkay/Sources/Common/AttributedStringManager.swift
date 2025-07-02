@@ -7,8 +7,29 @@
 
 import UIKit
 
+/// 디자인 시스템과 일치된 AttributedString 적용을 위한 구조체
 struct AttributedStringManager {
     
+    /// AttributedString에 LineHeight 140% 적용을 위한 메서드
+    /// - Parameters:
+    ///   - text: AttributedString을 적용할 텍스트 입력
+    ///   - font: AttributedString에 적용할 폰트 입력
+    ///   - color: AttributedString에 적용할 색상 입력(색상은 CustomColor만 가능)
+    ///   - alignment: (기본값 left) AttributedString에 적용할 정렬 기준 입력
+    ///   - lineBreak: (기본값 nil) AttributedString에 적용할 lineBreakMode 입력
+    ///   - breakStrategy: (기본값 nil) AttributedString에 적용할 lineBreakStrategy 입력
+    /// - Returns: NSMutableAttributedString을 반환
+    ///
+    /// ```swift
+    /// let label = UILabel()
+    ///
+    /// label.attributedText = AttributedStringManager.configureString(
+    ///     text: "안녕하세요.",
+    ///     font: .customFontForHeader(weight: .w950),
+    ///     color: .neutral950
+    /// )
+    /// ```
+    ///
     static func configureString(
         text: String, font: UIFont, color: UIColor.CustomColor, alignment: NSTextAlignment = .left, lineBreak: NSLineBreakMode? = nil, breakStrategy: NSParagraphStyle.LineBreakStrategy? = nil
     ) -> NSMutableAttributedString {
@@ -45,6 +66,28 @@ struct AttributedStringManager {
         return attributedString
     }
     
+    /// AttributedString에 LineHeight 140% 적용을 위한 메서드
+    /// - Parameters:
+    ///   - text: AttributedString을 적용할 텍스트 입력
+    ///   - font: AttributedString에 적용할 폰트 입력
+    ///   - color: AttributedString에 적용할 색상 입력(색상은 CustomColor만 가능)
+    ///   - alignment: (기본값 left) AttributedString에 적용할 정렬 기준 입력
+    ///   - lineBreak: (기본값 nil) AttributedString에 적용할 lineBreakMode 입력
+    ///   - breakStrategy: (기본값 nil) AttributedString에 적용할 lineBreakStrategy 입력
+    /// - Returns: AttributedString을 반환
+    ///
+    /// ```swift
+    /// var configuration = UIButton.Configuration.plain()
+    /// configuration.attributedTitle = AttributedStringManager.configureString(
+    ///     text: "설정",
+    ///     font: .customFontForSubtitle(weight: .w700),
+    ///     color: .infoColor,
+    ///     alignment: .center
+    /// )
+    ///
+    /// let button = UIButton(configuration: configuration)
+    /// ```
+    ///
     static func configureString(
         text: String, font: UIFont, color: UIColor.CustomColor, alignment: NSTextAlignment = .left, lineBreak: NSLineBreakMode? = nil, breakStrategy: NSParagraphStyle.LineBreakStrategy? = nil
     ) -> AttributedString {
@@ -81,6 +124,27 @@ struct AttributedStringManager {
         return AttributedString(attributedString)
     }
     
+    /// AttributedString에 LineHeight 140%와 부분 Highlight 적용을 위한 메서드
+    /// - Parameters:
+    ///   - text: AttributedString을 적용할 텍스트 입력
+    ///   - font: AttributedString에 적용할 폰트 입력
+    ///   - color: AttributedString에 적용할 색상 입력(색상은 CustomColor만 가능)
+    ///   - alignment: (기본값 left) AttributedString에 적용할 정렬 기준 입력
+    ///   - highlightWords: AttributedString에 부분적으로 Highlight를 적용할 텍스트와 색상 입력
+    /// - Returns: NSMutableAttributedString을 반환
+    ///
+    /// ```swift
+    /// let label = UILabel()
+    ///
+    /// label.attributedText = AttributedStringManager.configureHighlightString(
+    ///     text: "Hello, Swift",
+    ///     font: .customFontForBody(weight: .w500),
+    ///     color: .neutral700,
+    ///     highlightWords: [
+    ///         .init(word: "Hello", color: .primary400)
+    ///     ]
+    /// )
+    /// ```
     static func configureHighlightString(
         text: String,
         font: UIFont,
