@@ -10,14 +10,14 @@ import UIKit
 struct AttributedStringManager {
     
     static func configureString(
-        text: String, font: UIFont, color: UIColor.CustomColor, alignment: NSTextAlignment = .left
+        text: String, font: UIFont, color: UIColor.CustomColor, alignment: NSTextAlignment = .left, lineBreak: NSLineBreakMode? = nil, breakStrategy: NSParagraphStyle.LineBreakStrategy? = nil
     ) -> NSMutableAttributedString {
         
         let attributedString = NSMutableAttributedString(string: text)
         let range = NSRange(location: 0, length: attributedString.length)
         
         let customColor = UIColor.customColor(hexCode: color)
-
+        
         let lineHeightRatio: CGFloat = 1.41
         let targetLineHeight = font.pointSize * lineHeightRatio
         let lineHeightMultiple = targetLineHeight / font.lineHeight
@@ -28,6 +28,14 @@ struct AttributedStringManager {
         paragraphStyle.lineHeightMultiple = lineHeightMultiple
         paragraphStyle.minimumLineHeight = targetLineHeight
         paragraphStyle.maximumLineHeight = targetLineHeight
+        
+        if let lineBreak {
+            paragraphStyle.lineBreakMode = lineBreak
+        }
+        
+        if let breakStrategy {
+            paragraphStyle.lineBreakStrategy = breakStrategy
+        }
         
         attributedString.addAttribute(.font, value: font, range: range)
         attributedString.addAttribute(.foregroundColor, value: customColor, range: range)
@@ -38,14 +46,14 @@ struct AttributedStringManager {
     }
     
     static func configureString(
-        text: String, font: UIFont, color: UIColor.CustomColor, alignment: NSTextAlignment = .left
+        text: String, font: UIFont, color: UIColor.CustomColor, alignment: NSTextAlignment = .left, lineBreak: NSLineBreakMode? = nil, breakStrategy: NSParagraphStyle.LineBreakStrategy? = nil
     ) -> AttributedString {
         
         let attributedString = NSMutableAttributedString(string: text)
         let range = NSRange(location: 0, length: attributedString.length)
         
         let customColor = UIColor.customColor(hexCode: color)
-
+        
         let lineHeightRatio: CGFloat = 1.41
         let targetLineHeight = font.pointSize * lineHeightRatio
         let lineHeightMultiple = targetLineHeight / font.lineHeight
@@ -56,6 +64,14 @@ struct AttributedStringManager {
         paragraphStyle.lineHeightMultiple = lineHeightMultiple
         paragraphStyle.minimumLineHeight = targetLineHeight
         paragraphStyle.maximumLineHeight = targetLineHeight
+        
+        if let lineBreak {
+            paragraphStyle.lineBreakMode = lineBreak
+        }
+        
+        if let breakStrategy {
+            paragraphStyle.lineBreakStrategy = breakStrategy
+        }
         
         attributedString.addAttribute(.font, value: font, range: range)
         attributedString.addAttribute(.foregroundColor, value: customColor, range: range)
