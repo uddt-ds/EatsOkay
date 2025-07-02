@@ -61,7 +61,7 @@ extension SummarySectionModel {
         let goodForGroups: Bool?
         let takeout: Bool?
         let reservable: Bool?
-        let parkingOPtions: ParkingOptions?
+        let parkingOptions: ParkingOptions?
     }
     
     struct SummaryMapResult {

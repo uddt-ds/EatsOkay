@@ -119,7 +119,7 @@ class SectionOneViewCell: UICollectionViewCell {
                 if index < contentViews.count {
                     if urlString == "DefaultImage" {
                         contentViews[index].image = UIImage(named: "DefaultImage")
-                    } else if let url = URL(string: urlString), urlString.hasPrefix("http") {
+                    } else if let url = URL(string: urlString), urlString.hasPrefix("https") {
                         contentViews[index].kf.setImage(with: url)
                     } else {
                         contentViews[index].image = UIImage(named: "DefaultImage")

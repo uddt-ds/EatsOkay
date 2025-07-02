@@ -47,6 +47,7 @@ class SummaryReactor: Reactor {
             let storeInfo = currentState.storeInfo
             let firstImageUrl = storeInfo.photosNames
             
+            print(firstImageUrl)
             let photos = storeInfo.photos ?? []
             
             let secondImageName = photos.count > 1 ? photos[1].name : "DefaultImage"
@@ -89,7 +90,7 @@ class SummaryReactor: Reactor {
                                 goodForGroups: storeInfo.goodForGroups,
                                 takeout: storeInfo.takeout,
                                 reservable: storeInfo.reservable,
-                                parkingOPtions: storeInfo.parkingOptions
+                                parkingOptions: storeInfo.parkingOptions
                             )
                         )
                     ]
