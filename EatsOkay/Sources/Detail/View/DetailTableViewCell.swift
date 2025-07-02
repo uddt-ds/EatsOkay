@@ -16,15 +16,7 @@ class DetailTableViewCell: UITableViewCell {
     
     var disposeBag = DisposeBag()
     
-    private let storeNameLabel: UILabel = {
-        let label = UILabel()
-        label.text = "식당명"
-        label.textColor = .customColor(hexCode: .neutral950)
-        label.numberOfLines = 1
-        label.lineBreakMode = .byTruncatingTail
-        label.font = .customFontForHeader(weight: .w800)
-        return label
-    }()
+    private let storeNameLabel = UILabel()
     
     private let rateImageView: UIImageView = {
         let imageView = UIImageView()
@@ -32,39 +24,13 @@ class DetailTableViewCell: UITableViewCell {
         return imageView
     }()
     
-    private let rateLabel: UILabel = {
-        let label = UILabel()
-        label.text = "평점"
-        label.textColor = .customColor(hexCode: .neutral800)
-        label.font = .customFontForBody(weight: .w600)
-        return label
-    }()
+    private let rateLabel = UILabel()
     
-    private let userRateCountLabel: UILabel = {
-        let label = UILabel()
-        label.text = "(리뷰수)"
-        label.textColor = .customColor(hexCode: .neutral800)
-        label.font = .customFontForBody(weight: .w600)
-        return label
-    }()
+    private let userRateCountLabel = UILabel()
     
-    private let storeTypeLabel: UILabel = {
-        let label = UILabel()
-        label.text = "식당 종류"
-        label.textColor = .customColor(hexCode: .neutral700)
-        label.font = .customFontForBody(weight: .w500)
-        return label
-    }()
+    private let storeTypeLabel = UILabel()
     
-    private let addressLabel: UILabel = {
-        let label = UILabel()
-        label.text = "주소"
-        label.textColor = .customColor(hexCode: .neutral700)
-        label.numberOfLines = 1
-        label.lineBreakMode = .byTruncatingTail
-        label.font = .customFontForBody(weight: .w500)
-        return label
-    }()
+    private let addressLabel = UILabel()
     
     private let timeImageView: UIImageView = {
         let imageView = UIImageView()
@@ -72,14 +38,7 @@ class DetailTableViewCell: UITableViewCell {
         return imageView
     }()
     
-    private let openNowLabel: UILabel = {
-        let label = UILabel()
-        label.text = "영업전/후 • 시간"
-        label.textColor = .customColor(hexCode: .neutral700)
-        label.numberOfLines = 0
-        label.font = .customFontForBody(weight: .w500)
-        return label
-    }()
+    private let openNowLabel = UILabel()
     
     private let storeImageView: UIImageView = {
         let imageView = UIImageView()
@@ -111,9 +70,18 @@ class DetailTableViewCell: UITableViewCell {
         
         contentView.backgroundColor = .customColor(hexCode: .bgColor)
         
-        [storeNameLabel, rateImageView, rateLabel, userRateCountLabel, storeTypeLabel, addressLabel, timeImageView, openNowLabel, separatorView, storeImageView].forEach {
-            contentView.addSubview($0)
-        }
+        [
+            storeNameLabel,
+            rateImageView,
+            rateLabel,
+            userRateCountLabel,
+            storeTypeLabel,
+            addressLabel,
+            timeImageView,
+            openNowLabel,
+            separatorView,
+            storeImageView
+        ].forEach { contentView.addSubview($0) }
         
         // 식당명
         storeNameLabel.snp.makeConstraints { make in
@@ -194,12 +162,54 @@ class DetailTableViewCell: UITableViewCell {
         let openInfo = storeInfo.currentOpeningHours
         let openInfoText = OpeningHours.getTodayClosingOrTomorrowOpening(openingHours: openInfo) 
         
-        storeNameLabel.text = storeInfo.displayName
-        rateLabel.text = "\(storeInfo.rating)"
-        userRateCountLabel.text = "(\(storeInfo.userRatingCount))"
-        addressLabel.text = address
-        storeTypeLabel.text = storeInfo.primaryTypeDisplayName
-        openNowLabel.text = storeInfo.currentOpeningHours.openNow ? "영업중" + " • \(openInfoText)" : "영업 종료" + " • \(openInfoText)"
+        storeNameLabel.attributedText = AttributedStringManager.configureString(
+            text: storeInfo.displayName,
+            font: .customFontForHeader(weight: .w800),
+            color: .neutral950,
+            lineBreak: .byTruncatingTail
+        )
+        
+        rateLabel.attributedText = AttributedStringManager.configureString(
+            text: "\(storeInfo.rating)",
+            font: .customFontForBody(weight: .w600),
+            color: .neutral800
+        )
+        
+        userRateCountLabel.attributedText = AttributedStringManager.configureString(
+            text: "(\(storeInfo.userRatingCount))",
+            font: .customFontForBody(weight: .w600),
+            color: .neutral800
+        )
+        
+        addressLabel.attributedText = AttributedStringManager.configureString(
+            text: address,
+            font: .customFontForBody(weight: .w500),
+            color: .neutral700,
+            lineBreak: .byTruncatingTail
+        )
+        
+        storeTypeLabel.attributedText = AttributedStringManager.configureString(
+            text: storeInfo.primaryTypeDisplayName,
+            font: .customFontForBody(weight: .w500),
+            color: .neutral700
+        )
+        
+        if storeInfo.currentOpeningHours.openNow {
+            openNowLabel.attributedText = AttributedStringManager.configureString(
+                text: "영업 중" + " • \(openInfoText)",
+                font: .customFontForBody(weight: .w500),
+                color: .neutral700
+            )
+        } else {
+            openNowLabel.attributedText = AttributedStringManager.configureHighlightString(
+                text: "영업 종료" + " • \(openInfoText)",
+                font: .customFontForBody(weight: .w500),
+                color: .neutral700,
+                highlightWords: [
+                    .init(word: "영업 종료", color: .closedColor)
+                ]
+            )
+        }
         
         // photoNames이 빈문자열이면 DefaultImage 표시
         if storeInfo.photosNames != "" {
@@ -215,3 +225,71 @@ class DetailTableViewCell: UITableViewCell {
 
 
 
+
+        // 오늘 영업 중일 때
+        if openingHours.openNow {
+            var todayCloseTimes: [(Int, Int)] = []
+            for period in todayPeriods {
+                if period.close.day == todayWeekday {
+                    todayCloseTimes.append((period.close.hour, period.close.minute))
+                }
+            }
+            var midnightCloseTimes: [(Int, Int)] = []
+            for period in todayPeriods {
+                if period.close.day == tomorrowWeekday {
+                    midnightCloseTimes.append((period.close.hour, period.close.minute))
+                }
+            }
+            let allCloseTimes = todayCloseTimes + midnightCloseTimes
+            if let close = allCloseTimes
+                .filter({ hour, minute in
+                    let closeMinutes = hour * 60 + minute
+                    return closeMinutes > nowMinutes || (hour < 6 && closeMinutes < nowMinutes)
+                })
+                .min(by: { lhs, rhs in
+                    let lhsValue = lhs.0 * 60 + lhs.1
+                    let rhsValue = rhs.0 * 60 + rhs.1
+                    return lhsValue < rhsValue
+                }) {
+                if close.0 < 6 {
+                    return String(format: "새벽 %02d:%02d 영업 종료", close.0, close.1)
+                } else {
+                    return String(format: "%02d:%02d 영업 종료", close.0, close.1)
+                }
+            }
+        }
+
+        // 오늘 요일의 오픈 시간 중, 현재 시간보다 큰(아직 오픈 전) 가장 가까운 오픈 시간 찾기
+        let todayOpenTimes = todayPeriods.map { ($0.open.hour, $0.open.minute) }
+        if let nextOpen = todayOpenTimes
+            .filter({ hour, minute in hour * 60 + minute > nowMinutes })
+            .min(by: { lhs, rhs in lhs.0 * 60 + lhs.1 < rhs.0 * 60 + rhs.1 }) {
+            // 오늘 영업이 있고, 내일이 휴무인데 아직 오픈 시간 전이면 오늘 오픈 시간 표시
+            if tomorrowPeriods.isEmpty {
+                return String(format: "%02d:%02d 영업 시작", nextOpen.0, nextOpen.1)
+            } else {
+                return String(format: "%02d:%02d 영업 시작", nextOpen.0, nextOpen.1)
+            }
+        }
+
+        // 오늘 영업이 없고, 내일이 휴무인 경우
+        if tomorrowPeriods.isEmpty {
+            // 오늘 영업이 없고, 내일도 영업이 없음 (연속 휴무)
+            let nowHour = calendar.component(.hour, from: now)
+            // 오후 10시(22시) 이전이면 "오늘 휴무", 이후면 "다음날 휴무"
+            if nowHour < 22 {
+                return "오늘 휴무"
+            } else {
+                return "다음날 휴무"
+            }
+        } else {
+            // 내일 영업 시간이 있으면 내일 첫 번째 오픈 시간 표시
+            if let firstPeriod = tomorrowPeriods.min(by: {
+                ($0.open.hour * 60 + $0.open.minute) < ($1.open.hour * 60 + $1.open.minute)
+            }) {
+                return String(format: "%02d:%02d 영업 시작", firstPeriod.open.hour, firstPeriod.open.minute)
+            }
+        }
+        return ""
+    }
+}
