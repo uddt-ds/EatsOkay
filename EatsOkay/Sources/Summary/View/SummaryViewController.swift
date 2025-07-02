@@ -11,6 +11,7 @@ import RxSwift
 import RxCocoa
 import ReactorKit
 import SafariServices
+import RxDataSources
 
 class SummaryViewController: UIViewController {
     
@@ -40,9 +41,6 @@ class SummaryViewController: UIViewController {
         
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "DefaultCell")
         collectionView.register(CustomHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CustomHeaderView.identifier)
-        
-        collectionView.delegate = self
-        collectionView.dataSource = self
         
         return collectionView
     }()
@@ -92,6 +90,8 @@ class SummaryViewController: UIViewController {
         navigationController?.navigationBar.isHidden = false
     }
     
+    typealias DataSource = RxCollectionViewSectionedReloadDataSource<SummarySectionModel>
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -102,6 +102,8 @@ class SummaryViewController: UIViewController {
         bind(reactor: reactor)
     }
     
+    private lazy var dataSource = self.makeDataSource()
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.navigationBar.isHidden = true
@@ -110,8 +112,6 @@ class SummaryViewController: UIViewController {
     private func setupNaviBar() {
         navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .customColor(hexCode: .neutral950)
-        
-        self.title = reactor.initialState.storeInfo.displayName
         
         // 네비게이션 바 타이틀 색상, 폰트 설정
         navigationController?.navigationBar.titleTextAttributes = [
@@ -274,12 +274,16 @@ extension SummaryViewController {
     
     func bindAction(reactor: SummaryReactor) {
         
+        // viewDidLoad 시점시
+        reactor.action.onNext(.viewDidLoad)
+        
         // 뒤로가기 버튼 클릭 시
         backButton.rx.tap
             .map { Reactor.Action.backButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
+        // webViewButton 클릭 시
         webViewButton.rx.tap
             .map { Reactor.Action.webViewButtonTapped }
             .bind(to: reactor.action)
@@ -287,6 +291,22 @@ extension SummaryViewController {
     }
     
     func bindState(reactor: SummaryReactor) {
+        
+        // 컬렉션 뷰 RxDataSource 바인딩
+        reactor.state
+            .map { $0.section }
+            .bind(to: collectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
+        
+        // 네비게이션 바 타이틀 바인딩
+        reactor.state
+            .map { $0.storeInfo.displayName }
+            .distinctUntilChanged()
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(with: self) { owner, title in
+                owner.title = title
+            }
+            .disposed(by: disposeBag)
         
         // back Button 클릭 시
         reactor.state
@@ -319,112 +339,61 @@ extension SummaryViewController {
     
 }
 
-extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if section == 0 {
-            return data.count
-        } else {
-            return data.count
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        var section = indexPath.section
-        if shouldHideFeatureSection && section >= 2 {
-            section += 1
-        }
-        
-        switch section {
-        case 0:
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionOneViewCell.identifier, for: indexPath) as? SectionOneViewCell else {
-                return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
+extension SummaryViewController {
+    private func makeDataSource() -> DataSource {
+        return DataSource(configureCell: { dataSource, collectionView, indexPath, item in
+
+            switch item {
+            case .summaryImageCell:
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionOneViewCell.identifier, for: indexPath) as? SectionOneViewCell else { return .init()}
+                cell.update(with: item)
+                return cell
+            case .summaryInfoCell:
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionTwoViewCell.identifier, for: indexPath) as? SectionTwoViewCell else { return .init()}
+                cell.update(with: item)
+                return cell
+            case .summaryFeaturesCell:
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else { return .init()}
+                let text = "\(indexPath.section)_\(indexPath.item)"
+                cell.update(text: text)
+                return cell
+            case .summaryMapCell:
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFourViewCell.identifier, for: indexPath) as? SectionFourViewCell else { return .init()}
+                let image = UIImage(resource: .company2)
+                cell.update(image: image)
+                cell.update(text: "")
+                return cell
             }
-            cell.backgroundColor = .clear
-            return cell
-        case 1:
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionTwoViewCell.identifier, for: indexPath) as? SectionTwoViewCell else {
-                return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
-            }
-            cell.update(storeInfo: reactor.initialState.storeInfo)
-            
-            cell.rx.callButtonTapped
-                .bind { _ in
-                    guard let phoneNumber = self.reactor.initialState.storeInfo.nationalPhoneNumber else { return }
-                    
-                    let cleanedNumber = phoneNumber.replacingOccurrences(of: " ", with: "")
-                                                       .replacingOccurrences(of: "-", with: "")
-                    
-                    if let phoneURL = URL(string: "tel://\(cleanedNumber)"), UIApplication.shared.canOpenURL(phoneURL) {
-                        UIApplication.shared.open(phoneURL, options: [:], completionHandler: nil)
-                    }
-                }.disposed(by: disposeBag)
-                    
-                    return cell
-                case 2:
-                    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else {
-                        return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
-                    }
-                    cell.update(storeInfo: reactor.initialState.storeInfo)
-                    return cell
-                    
-                    
-                case 3:
-                    guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFourViewCell.identifier, for: indexPath) as? SectionFourViewCell else {
-                        return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
-                    }
-                    let image = UIImage(resource: .company2)
-                    let text = ""
-                    cell.update(image: image)
-                    cell.update(text: text)
-                    return cell
-                    
-                default :
-                    
-                    return .init()
-                }
-        }
-        
-        func numberOfSections(in collectionView: UICollectionView) -> Int {
-            return shouldHideFeatureSection ? 3 : 4
-        }
-        
-        // 헤더 설정
-        func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-            
-            var section = indexPath.section
-            if shouldHideFeatureSection && section >= 2 {
-                section += 1
-            }
-            
+        },
+        configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
             if kind == UICollectionView.elementKindSectionHeader {
-                guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CustomHeaderView.identifier, for: indexPath) as? CustomHeaderView else {
-                    return UICollectionReusableView()
+                let section = dataSource.sectionModels[indexPath.section]
+                guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CustomHeaderView.identifier, for: indexPath) as? CustomHeaderView else { return .init() }
+                switch indexPath.section {
+                case 2:
+                    header.configure(with: section.section.title)
+                case 3:
+                    header.configure(with: section.section.title)
+                default: break
                 }
-                
-                if section == 2 {
-                    header.configure(with: "매장 특징")
-                } else if section == 3 {
-                    header.configure(with: "위치")
-                }
-                
                 return header
             }
-            
             return UICollectionReusableView()
         }
+        )
     }
+}
     
-    // 모달을 완료 버튼으로 dismiss 했을 때 체크
-    extension SummaryViewController: SFSafariViewControllerDelegate {
-        func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
-            reactor.action.onNext(.webViewDidDismiss)
-        }
+// 모달을 완료 버튼으로 dismiss 했을 때 체크
+extension SummaryViewController: SFSafariViewControllerDelegate {
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        reactor.action.onNext(.webViewDidDismiss)
     }
-    
-    // 모달을 드래그로 dismiss 했을 때 체크
-    extension SummaryViewController: UIAdaptivePresentationControllerDelegate {
-        func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-            reactor.action.onNext(.webViewDidDismiss)
-        }
+}
+
+// 모달을 드래그로 dismiss 했을 때 체크
+extension SummaryViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        reactor.action.onNext(.webViewDidDismiss)
     }
+}
