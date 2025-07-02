@@ -16,15 +16,7 @@ class DetailTableViewCell: UITableViewCell {
     
     var disposeBag = DisposeBag()
     
-    private let storeNameLabel: UILabel = {
-        let label = UILabel()
-        label.text = "식당명"
-        label.textColor = .customColor(hexCode: .neutral950)
-        label.numberOfLines = 1
-        label.lineBreakMode = .byTruncatingTail
-        label.font = .customFontForHeader(weight: .w800)
-        return label
-    }()
+    private let storeNameLabel = UILabel()
     
     private let rateImageView: UIImageView = {
         let imageView = UIImageView()
@@ -32,39 +24,13 @@ class DetailTableViewCell: UITableViewCell {
         return imageView
     }()
     
-    private let rateLabel: UILabel = {
-        let label = UILabel()
-        label.text = "평점"
-        label.textColor = .customColor(hexCode: .neutral800)
-        label.font = .customFontForBody(weight: .w600)
-        return label
-    }()
+    private let rateLabel = UILabel()
     
-    private let userRateCountLabel: UILabel = {
-        let label = UILabel()
-        label.text = "(리뷰수)"
-        label.textColor = .customColor(hexCode: .neutral800)
-        label.font = .customFontForBody(weight: .w600)
-        return label
-    }()
+    private let userRateCountLabel = UILabel()
     
-    private let storeTypeLabel: UILabel = {
-        let label = UILabel()
-        label.text = "식당 종류"
-        label.textColor = .customColor(hexCode: .neutral700)
-        label.font = .customFontForBody(weight: .w500)
-        return label
-    }()
+    private let storeTypeLabel = UILabel()
     
-    private let addressLabel: UILabel = {
-        let label = UILabel()
-        label.text = "주소"
-        label.textColor = .customColor(hexCode: .neutral700)
-        label.numberOfLines = 1
-        label.lineBreakMode = .byTruncatingTail
-        label.font = .customFontForBody(weight: .w500)
-        return label
-    }()
+    private let addressLabel = UILabel()
     
     private let timeImageView: UIImageView = {
         let imageView = UIImageView()
@@ -72,14 +38,7 @@ class DetailTableViewCell: UITableViewCell {
         return imageView
     }()
     
-    private let openNowLabel: UILabel = {
-        let label = UILabel()
-        label.text = "영업전/후 • 시간"
-        label.textColor = .customColor(hexCode: .neutral700)
-        label.numberOfLines = 0
-        label.font = .customFontForBody(weight: .w500)
-        return label
-    }()
+    private let openNowLabel = UILabel()
     
     private let storeImageView: UIImageView = {
         let imageView = UIImageView()
@@ -111,9 +70,18 @@ class DetailTableViewCell: UITableViewCell {
         
         contentView.backgroundColor = .customColor(hexCode: .bgColor)
         
-        [storeNameLabel, rateImageView, rateLabel, userRateCountLabel, storeTypeLabel, addressLabel, timeImageView, openNowLabel, separatorView, storeImageView].forEach {
-            contentView.addSubview($0)
-        }
+        [
+            storeNameLabel,
+            rateImageView,
+            rateLabel,
+            userRateCountLabel,
+            storeTypeLabel,
+            addressLabel,
+            timeImageView,
+            openNowLabel,
+            separatorView,
+            storeImageView
+        ].forEach { contentView.addSubview($0) }
         
         // 식당명
         storeNameLabel.snp.makeConstraints { make in
@@ -194,12 +162,54 @@ class DetailTableViewCell: UITableViewCell {
         let openInfo = storeInfo.currentOpeningHours
         let openInfoText = getTodayClosingOrTomorrowOpening(openingHours: openInfo)
         
-        storeNameLabel.text = storeInfo.displayName
-        rateLabel.text = "\(storeInfo.rating)"
-        userRateCountLabel.text = "(\(storeInfo.userRatingCount))"
-        addressLabel.text = address
-        storeTypeLabel.text = storeInfo.primaryTypeDisplayName
-        openNowLabel.text = storeInfo.currentOpeningHours.openNow ? "영업중" + " • \(openInfoText)" : "영업 종료" + " • \(openInfoText)"
+        storeNameLabel.attributedText = AttributedStringManager.configureString(
+            text: storeInfo.displayName,
+            font: .customFontForHeader(weight: .w800),
+            color: .neutral950,
+            lineBreak: .byTruncatingTail
+        )
+        
+        rateLabel.attributedText = AttributedStringManager.configureString(
+            text: "\(storeInfo.rating)",
+            font: .customFontForBody(weight: .w600),
+            color: .neutral800
+        )
+        
+        userRateCountLabel.attributedText = AttributedStringManager.configureString(
+            text: "(\(storeInfo.userRatingCount))",
+            font: .customFontForBody(weight: .w600),
+            color: .neutral800
+        )
+        
+        addressLabel.attributedText = AttributedStringManager.configureString(
+            text: address,
+            font: .customFontForBody(weight: .w500),
+            color: .neutral700,
+            lineBreak: .byTruncatingTail
+        )
+        
+        storeTypeLabel.attributedText = AttributedStringManager.configureString(
+            text: storeInfo.primaryTypeDisplayName,
+            font: .customFontForBody(weight: .w500),
+            color: .neutral700
+        )
+        
+        if storeInfo.currentOpeningHours.openNow {
+            openNowLabel.attributedText = AttributedStringManager.configureString(
+                text: "영업 중" + " • \(openInfoText)",
+                font: .customFontForBody(weight: .w500),
+                color: .neutral700
+            )
+        } else {
+            openNowLabel.attributedText = AttributedStringManager.configureHighlightString(
+                text: "영업 종료" + " • \(openInfoText)",
+                font: .customFontForBody(weight: .w500),
+                color: .neutral700,
+                highlightWords: [
+                    .init(word: "영업 종료", color: .closedColor)
+                ]
+            )
+        }
         
         // photoNames이 빈문자열이면 DefaultImage 표시
         if storeInfo.photosNames != "" {
@@ -322,6 +332,3 @@ extension DetailTableViewCell {
         return ""
     }
 }
-
-
-
