@@ -74,6 +74,10 @@ class SectionOneViewCell: UICollectionViewCell {
         ]
             .forEach { contentView.addSubview($0) }
         
+        backgroundImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
     }
     
     private func setConstraints() {
