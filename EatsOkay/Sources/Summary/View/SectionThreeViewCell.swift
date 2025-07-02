@@ -42,7 +42,12 @@ class SectionThreeViewCell: UICollectionViewCell {
     }
     
     private func setConstraints() {
-        
+        featuresStackView.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(16)
+            $0.leading.equalToSuperview().offset(20)
+            $0.trailing.equalToSuperview().inset(20)
+            $0.bottom.equalToSuperview().inset(24)
+        }
     }
     
     func update(storeInfo: StoreInfo) {
@@ -52,9 +57,9 @@ class SectionThreeViewCell: UICollectionViewCell {
         takeoutFeatureView.update(image: UIImage(named: "bag"), text: "포장")
         parkingFeatureView.update(image: UIImage(named: "car"), text: "주차")
         
-        let hasParking = {
-            let parking = storeInfo.parkingOptions
-            return parking?.freeParkingLot == true || parking?.paidParkingLot == true || parking?.freeStreetParking == true || parking?.paidStreetParking == true || parking?.valetParking == true || parking?.freeGarageParking == true || parking?.paidGarageParking == true
+        let hasParking: Bool = {
+            guard let parking = storeInfo.parkingOptions else { return false }
+            return parking.freeParkingLot == true || parking.paidParkingLot == true || parking.freeStreetParking == true || parking.paidStreetParking == true || parking.valetParking == true || parking.freeGarageParking == true || parking.paidGarageParking == true
         }()
         
         groupFeatureView.isHidden = !(storeInfo.goodForGroups ?? false)
@@ -83,10 +88,9 @@ private class StoreFeatureView: UIView {
         return label
     }()
     
-    private let horizontalStackView: UIStackView = {
+    private let verticalStackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 20
+        stackView.axis = .vertical
         stackView.alignment = .center
         return stackView
     }()
@@ -104,14 +108,20 @@ private class StoreFeatureView: UIView {
     }
     
     private func setupView() {
-        horizontalStackView.addArrangedSubview(featureImageView)
-        horizontalStackView.addArrangedSubview(featureLabel)
+        verticalStackView.addArrangedSubview(featureImageView)
+        verticalStackView.addArrangedSubview(featureLabel)
         
-        addSubview(horizontalStackView)
+        addSubview(verticalStackView)
     }
     
     private func setConstraints() {
+        featureImageView.snp.makeConstraints {
+            $0.height.width.equalTo(60)
+        }
         
+        verticalStackView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
     }
     
     func update(image: UIImage?, text: String) {

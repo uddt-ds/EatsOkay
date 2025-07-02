@@ -337,9 +337,7 @@ extension SummaryViewController: UICollectionViewDelegate, UICollectionViewDataS
                     guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else {
                         return collectionView.dequeueReusableCell(withReuseIdentifier: "DefaultCell", for: indexPath)
                     }
-                    cell.contentView.backgroundColor = .green
-                    let text = "\(indexPath.section)_\(indexPath.item)"
-                    cell.update(text: text)
+                    cell.update(storeInfo: reactor.initialState.storeInfo)
                     return cell
                     
                     
