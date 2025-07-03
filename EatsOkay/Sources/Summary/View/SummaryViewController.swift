@@ -167,11 +167,18 @@ class SummaryViewController: UIViewController {
         
         let section = NSCollectionLayoutSection(group: group)
         
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(65))
+        let items = reactor.currentState.section[2].items
         
-        let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
-        
-        section.boundarySupplementaryItems = [header]
+        // 섹션이 비어있지 않다면 헤더 추가
+        if !items.isEmpty {
+            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(65))
+            let header = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: headerSize,
+                elementKind: UICollectionView.elementKindSectionHeader,
+                alignment: .top
+            )
+            section.boundarySupplementaryItems = [header]
+        }
         
         return section
     }
@@ -345,6 +352,7 @@ extension SummaryViewController {
         configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
             if kind == UICollectionView.elementKindSectionHeader {
                 let section = dataSource.sectionModels[indexPath.section]
+                
                 guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CustomHeaderView.identifier, for: indexPath) as? CustomHeaderView else { return .init() }
                 switch indexPath.section {
                 case 2:
