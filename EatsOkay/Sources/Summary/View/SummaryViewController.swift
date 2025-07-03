@@ -41,6 +41,7 @@ class SummaryViewController: UIViewController {
         
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "DefaultCell")
         collectionView.register(CustomHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CustomHeaderView.identifier)
+        collectionView.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: String(describing: UICollectionReusableView.self))
         
         return collectionView
     }()
@@ -161,24 +162,21 @@ class SummaryViewController: UIViewController {
         
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.1943))
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.169))
         
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
         
-        let items = reactor.currentState.section[2].items
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(65))
         
-        // 섹션이 비어있지 않다면 헤더 추가
-        if !items.isEmpty {
-            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(65))
-            let header = NSCollectionLayoutBoundarySupplementaryItem(
-                layoutSize: headerSize,
-                elementKind: UICollectionView.elementKindSectionHeader,
-                alignment: .top
-            )
-            section.boundarySupplementaryItems = [header]
-        }
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
+        
+        section.boundarySupplementaryItems = [header]
         
         return section
     }
@@ -351,6 +349,15 @@ extension SummaryViewController {
             if kind == UICollectionView.elementKindSectionHeader {
                 let section = dataSource.sectionModels[indexPath.section]
                 
+                if section.items.isEmpty {
+                    let header = collectionView.dequeueReusableSupplementaryView(
+                        ofKind: kind,
+                        withReuseIdentifier: String(describing: UICollectionReusableView.self),
+                        for: indexPath)
+                    header.frame = .zero
+                    return header
+                }
+                
                 guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CustomHeaderView.identifier, for: indexPath) as? CustomHeaderView else { return .init() }
                 switch indexPath.section {
                 case 2:
@@ -362,8 +369,7 @@ extension SummaryViewController {
                 return header
             }
             return UICollectionReusableView()
-        }
-        )
+        })
     }
 }
     
