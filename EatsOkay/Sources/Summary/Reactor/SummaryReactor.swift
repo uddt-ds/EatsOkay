@@ -23,6 +23,8 @@ class SummaryReactor: Reactor {
         case backButtonTapped // 뒤로가기 버튼 클릭 시
         case webViewButtonTapped
         case webViewDidDismiss
+        case imagePageChanged(Int)
+        case callButtonTapped
     }
     
     enum Mutation {
@@ -30,6 +32,8 @@ class SummaryReactor: Reactor {
         case shouldPop(Bool)
         case setWebViewUri(String)
         case dismissWebView
+        case setImagePage(Int)
+        case setNationalNumber(String?)
     }
     
     struct State {
@@ -39,6 +43,8 @@ class SummaryReactor: Reactor {
         var shouldPop: Bool = false
         var webViewUrl: String? = nil
         var shouldPresentWebView: Bool = false
+        var currentImagePage: Int = 1
+        @Pulse var nationalNumber: String?
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
@@ -123,6 +129,11 @@ class SummaryReactor: Reactor {
             return Observable.just(.setWebViewUri(uri))
         case .webViewDidDismiss:
             return Observable.just(.dismissWebView)
+        case .imagePageChanged(let page):
+            return Observable.just(.setImagePage(page))
+        case .callButtonTapped:
+            let nationalNumber = currentState.storeInfo.nationalPhoneNumber
+            return Observable.just(.setNationalNumber(nationalNumber))
         }
     }
     
@@ -138,6 +149,10 @@ class SummaryReactor: Reactor {
             newState.shouldPresentWebView = true
         case .dismissWebView:
             newState.shouldPresentWebView = false
+        case .setImagePage(let page):
+            newState.currentImagePage = page
+        case .setNationalNumber(let nationalNumber):
+            newState.nationalNumber = nationalNumber
         }
         return newState
     }

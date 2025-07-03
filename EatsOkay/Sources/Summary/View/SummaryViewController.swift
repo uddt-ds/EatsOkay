@@ -61,6 +61,19 @@ class SummaryViewController: UIViewController {
         return button
     }()
     
+    private let callButton: UIButton = {
+        var configuration = UIButton.Configuration.plain()
+        configuration.imagePlacement = .top
+        configuration.imagePadding = 4
+        configuration.contentInsets = .init(top: 6, leading: 6, bottom: 6, trailing: 6)
+        configuration.background.strokeWidth = 1
+        configuration.background.strokeColor = UIColor.customColor(hexCode: .neutral100)
+        configuration.background.cornerRadius = 8
+        
+        let button = UIButton(configuration: configuration)
+        return button
+    }()
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.isHidden = false
@@ -219,15 +232,22 @@ class SummaryViewController: UIViewController {
     private func setupView() {
         view.backgroundColor = .customColor(hexCode: .bgColor)
         
-        [webViewButton, collectionView].forEach{
+        [webViewButton, collectionView, callButton].forEach{
             view.addSubview($0)
+        }
+        
+        callButton.snp.makeConstraints { make in
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).offset(-10)
+            make.leading.equalToSuperview().offset(20)
+            make.height.equalTo(60)
+            make.width.equalTo(60)
         }
         
         // button autoLayout 설정
         webViewButton.snp.makeConstraints { make in
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).offset(-10)
-            make.centerX.equalToSuperview()
-            make.horizontalEdges.equalToSuperview().inset(20)
+            make.leading.equalTo(callButton.snp.trailing).offset(10)
+            make.trailing.equalToSuperview().inset(20)
             make.height.equalTo(60)
         }
         
@@ -262,6 +282,12 @@ extension SummaryViewController {
         // webViewButton 클릭 시
         webViewButton.rx.tap
             .map { Reactor.Action.webViewButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        // callButton 클릭 시
+        callButton.rx.tap
+            .map { Reactor.Action.callButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
     }
@@ -311,14 +337,50 @@ extension SummaryViewController {
                 self?.present(safariVC, animated: true, completion: nil)
             })
             .disposed(by: disposeBag)
+        
+        // call Button Image,Text 바인딩
+        reactor.state
+            .map { $0.storeInfo.nationalPhoneNumber }
+            .distinctUntilChanged()
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(with: self) { owner, nationalPhoneNumber in
+                if let _ = nationalPhoneNumber {
+                    owner.callButton.configuration?.image = UIImage(named: "Call1")
+                    owner.callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
+                        text: "전화하기",
+                        font: .customFontForBody(weight: .w500),
+                        color: .neutral700
+                    )
+                } else {
+                    owner.callButton.configuration?.image = UIImage(named: "Call2")
+                    owner.callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
+                        text: "번호없음",
+                        font: .customFontForBody(weight: .w500),
+                        color: .neutral400
+                    )
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        // call Button Action 바인딩
+        reactor.pulse(\.$nationalNumber)
+            .compactMap { $0 }
+            .subscribe(onNext: { phoneNumber in
+                let cleanedNumber = phoneNumber
+                    .replacingOccurrences(of: " ", with: "")
+                    .replacingOccurrences(of: "-", with: "")
+                if let phoneURL = URL(string: "tel://\(cleanedNumber)"),
+                   UIApplication.shared.canOpenURL(phoneURL) {
+                    UIApplication.shared.open(phoneURL, options: [:], completionHandler: nil)
+                }
+            })
+            .disposed(by: disposeBag)
     }
-    
 }
 
 extension SummaryViewController {
     private func makeDataSource() -> DataSource {
         return DataSource(configureCell: { dataSource, collectionView, indexPath, item in
-
             switch item {
             case .summaryImageCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionOneViewCell.identifier, for: indexPath) as? SectionOneViewCell else { return .init()}
@@ -341,7 +403,7 @@ extension SummaryViewController {
                 return cell
             }
         },
-        configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
+                          configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
             if kind == UICollectionView.elementKindSectionHeader {
                 let section = dataSource.sectionModels[indexPath.section]
                 guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CustomHeaderView.identifier, for: indexPath) as? CustomHeaderView else { return .init() }
@@ -359,7 +421,7 @@ extension SummaryViewController {
         )
     }
 }
-    
+
 // 모달을 완료 버튼으로 dismiss 했을 때 체크
 extension SummaryViewController: SFSafariViewControllerDelegate {
     func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
