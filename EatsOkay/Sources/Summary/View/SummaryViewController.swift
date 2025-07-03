@@ -29,8 +29,6 @@ class SummaryViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    let data = [1]
-    
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: createCompositionalLayout())
         
