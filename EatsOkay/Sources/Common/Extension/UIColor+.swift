@@ -24,6 +24,7 @@ extension UIColor {
         case secondary50 = "FFF5EB"
         case starColor = "FFCC00"
         case infoColor = "007AFF"
+        case closedColor = "FF161A"
     }
 }
 
