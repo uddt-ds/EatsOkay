@@ -12,7 +12,6 @@ enum GoogleAPI {
     // 사각형으로 데이터 불러오기, 이미지 불러오기
     case storeInfoDataRectangle(textQuery: String, locationRestriction: SearchTextBody.LocationRestriction)
     case storeImageData(mediaName: String)
-    case staticMapImage(center: String, zoom: Int, size: String)
 }
 
 extension GoogleAPI: TargetType {
@@ -20,8 +19,6 @@ extension GoogleAPI: TargetType {
         switch self {
         case .storeInfoDataRectangle, .storeImageData:
             return URL(string: "https://places.googleapis.com")!
-        case .staticMapImage:
-            return URL(string: "https://maps.googleapis.com")!
         }
     }
     
@@ -33,10 +30,6 @@ extension GoogleAPI: TargetType {
         
         case .storeImageData(mediaName: let mediaName):
             return "/v1/\(mediaName)/media"
-            
-        case .staticMapImage:
-            return "/maps/api/staticmap"
-
         }
     }
     
@@ -46,9 +39,6 @@ extension GoogleAPI: TargetType {
             return .post
             
         case .storeImageData:
-            return .get
-        
-        case .staticMapImage:
             return .get
         }
     }
@@ -71,18 +61,6 @@ extension GoogleAPI: TargetType {
                 "skipHttpRedirect": true
             ]
             return .requestParameters(parameters: param, encoding: URLEncoding.queryString)
-            
-        case .staticMapImage(center: let center, zoom: let zoom, size: let size):
-            guard let apiKey = Bundle.main.infoDictionary?["GoogleAPIKey"] as? String else { return .requestPlain }
-            
-            let params: [String: Any] = [
-                "center": center,
-                "zoom": zoom,
-                "size": size,
-                "key": apiKey
-            ]
-            
-            return .requestParameters(parameters: params, encoding: URLEncoding.queryString)
         }
     }
     
@@ -99,9 +77,6 @@ extension GoogleAPI: TargetType {
             ]
             
         case .storeImageData:
-            return nil
-            
-        case .staticMapImage:
             return nil
         }
     }

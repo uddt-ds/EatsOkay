@@ -89,6 +89,12 @@ class SectionFourViewCell: UICollectionViewCell {
     func update(with: SummarySectionModel.CellModel ) {
         switch with {
         case .summaryMapCell(let summaryMapResult):
+            addressLabel.attributedText = AttributedStringManager.configureString(
+                text: summaryMapResult.address,
+                font: .customFontForBody(weight: .w600),
+                color: UIColor.CustomColor.neutral950,
+                lineBreak: .byTruncatingTail,
+                breakStrategy: .hangulWordPriority)
             addressLabel.text = summaryMapResult.address
             if let url = URL(string: summaryMapResult.imageUrl) {
                 imageView.kf.setImage(with: url,
