@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class SectionFourViewCell: UICollectionViewCell {
     static let identifier = "SectionFourViewCell"
@@ -23,9 +24,12 @@ class SectionFourViewCell: UICollectionViewCell {
     
     private let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(resource: .company1)
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 12
+        imageView.layer.borderWidth = 1
+        imageView.layer.borderColor = UIColor.customColor(hexCode: .neutral100).cgColor
+        imageView.kf.indicatorType = .activity
         return imageView
     }()
     
@@ -46,10 +50,7 @@ class SectionFourViewCell: UICollectionViewCell {
     
     private let addressLabel: UILabel = {
         let label = UILabel()
-        label.text = "주소"
-        
         label.numberOfLines = 0
-        
         return label
     }()
     
@@ -61,11 +62,9 @@ class SectionFourViewCell: UICollectionViewCell {
         [markerImageView, addressLabel].forEach {
             stackView.addArrangedSubview($0)
         }
-        // 가로 사이즈 375 / 세로사이즈 815
-        // 335 / 172
-        // 0.8933 / 0.211
+        
         imageView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(10)
+            $0.top.equalToSuperview()
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.height.equalTo(imageView.snp.width).multipliedBy(172.0 / 335.0)
         }
@@ -87,11 +86,26 @@ class SectionFourViewCell: UICollectionViewCell {
         }
     }
     
-    func update(image: UIImage?) {
-        imageView.image = image
-    }
-    
-    func update(text: String) {
-        addressLabel.text = text
+    func update(with: SummarySectionModel.CellModel ) {
+        switch with {
+        case .summaryMapCell(let summaryMapResult):
+            addressLabel.attributedText = AttributedStringManager.configureString(
+                text: summaryMapResult.address,
+                font: .customFontForBody(weight: .w600),
+                color: UIColor.CustomColor.neutral950,
+                lineBreak: .byTruncatingTail,
+                breakStrategy: .hangulWordPriority)
+            addressLabel.text = summaryMapResult.address
+            if let url = URL(string: summaryMapResult.imageUrl) {
+                imageView.kf.setImage(with: url,
+                                      options: [
+                                        .onFailureImage(UIImage(resource: .default))
+                                      ]
+                )
+            }
+        default:
+            break
+            
+        }
     }
 }

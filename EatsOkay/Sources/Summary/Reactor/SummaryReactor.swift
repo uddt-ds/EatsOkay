@@ -89,7 +89,19 @@ class SummaryReactor: Reactor {
                     let infoSection = SummarySectionModel(section: .summaryInfo, items: infoItems)
                     
                     // 섹션 3
-                    let featuresItems: [SummarySectionModel.CellModel] = [
+                    let hasFeatureInfo = (storeInfo.goodForGroups ?? false) ||
+                    (storeInfo.takeout ?? false) ||
+                    (storeInfo.reservable ?? false) ||
+                    (storeInfo.parkingOptions?.freeParkingLot ?? false) ||
+                    (storeInfo.parkingOptions?.paidParkingLot ?? false) ||
+                    (storeInfo.parkingOptions?.freeStreetParking ?? false) ||
+                    (storeInfo.parkingOptions?.paidStreetParking ?? false) ||
+                    (storeInfo.parkingOptions?.valetParking ?? false) ||
+                    (storeInfo.parkingOptions?.freeGarageParking ?? false) ||
+                    (storeInfo.parkingOptions?.paidGarageParking ?? false)
+                    
+                    // 단체모임/포장/예약/주차 정보가 모두 false 또는 nil일 경우 빈 배열 반환
+                    let featuresItems: [SummarySectionModel.CellModel] = hasFeatureInfo ? [
                         .summaryFeaturesCell(
                             .init(
                                 goodForGroups: storeInfo.goodForGroups,
@@ -98,14 +110,17 @@ class SummaryReactor: Reactor {
                                 parkingOptions: storeInfo.parkingOptions
                             )
                         )
-                    ]
+                    ] : []
+                    
                     let featuresSection = SummarySectionModel(section: .summaryFeatures, items: featuresItems)
                     
                     // 섹션 4
-                    let mapImageUrl = "asdfas" // 이미지 url 만드는 로직 추가 - 기태형님
+                    let centerLat = storeInfo.latitude
+                    let centerLon = storeInfo.longitude
+                    let mapImageUrl = NetworkManager.shared.fetchStaticURL(center: "\(centerLat),\(centerLon)")
                     let mapItems: [SummarySectionModel.CellModel] = [
                         .summaryMapCell(
-                            .init(imageUrl: mapImageUrl, address: storeInfo.formattedAddress)
+                            .init(imageUrl: mapImageUrl ?? "", address: storeInfo.formattedAddress)
                         )
                     ]
                     let mapSection = SummarySectionModel(section: .summaryMap, items: mapItems)
