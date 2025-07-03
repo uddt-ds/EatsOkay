@@ -8,9 +8,13 @@
 import UIKit
 import SnapKit
 import Kingfisher
+import RxSwift
+import RxCocoa
 
 class SectionOneViewCell: UICollectionViewCell {
     static let identifier = "SectionOneViewCell"
+    
+    var disposeBag = DisposeBag()
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
@@ -30,7 +34,7 @@ class SectionOneViewCell: UICollectionViewCell {
         return imageView
     }()
     
-    private lazy var scrollView: UIScrollView = {
+    fileprivate lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.isPagingEnabled = true
         scrollView.showsHorizontalScrollIndicator = false
@@ -38,17 +42,12 @@ class SectionOneViewCell: UICollectionViewCell {
         return scrollView
     }()
     
-    private let photoPageLabel: UILabel = {
+    let photoPageLabel: UILabel = {
         let label = UILabel()
-        label.attributedText = AttributedStringManager.configureString(
-            text: "1 / 3",
-            font: UIFont.customFontForBody(weight: .w500),
-            color: .bgColor
-        )
         label.backgroundColor = UIColor.customColor(hexCode: .neutral950).withAlphaComponent(0.6)
         label.layer.cornerRadius = 13
         label.clipsToBounds = true
-        label.textAlignment = .center
+        
         return label
     }()
     
@@ -78,6 +77,11 @@ class SectionOneViewCell: UICollectionViewCell {
             make.edges.equalToSuperview()
         }
         
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        disposeBag = DisposeBag()
     }
     
     private func setConstraints() {
@@ -135,3 +139,12 @@ class SectionOneViewCell: UICollectionViewCell {
         }
     }
 }
+
+extension Reactive where Base: SectionOneViewCell {
+    var imagePage: Observable<CGPoint> {
+        return base.scrollView.rx.contentOffset
+            .asObservable()
+            .debug()
+    }
+}
+

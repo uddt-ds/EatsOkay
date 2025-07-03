@@ -380,15 +380,56 @@ extension SummaryViewController {
                 }
             })
             .disposed(by: disposeBag)
+        
+
     }
 }
 
 extension SummaryViewController {
     private func makeDataSource() -> DataSource {
-        return DataSource(configureCell: { dataSource, collectionView, indexPath, item in
+        return DataSource(configureCell: { [weak self] dataSource, collectionView, indexPath, item in
+            guard let self else { return .init() }
             switch item {
             case .summaryImageCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionOneViewCell.identifier, for: indexPath) as? SectionOneViewCell else { return .init()}
+                
+                cell.rx.imagePage
+                    .map({ value -> Int in
+                        let width = Int(UIScreen.main.bounds.width)
+                        let intValue = Int(value.x)
+                        var currentIndex = 1
+                        switch intValue {
+                        case 0..<width:
+                            currentIndex = 1
+                        case width..<width*2:
+                            currentIndex = 2
+                        case width*2..<width*3:
+                            currentIndex = 3
+                        default:
+                            currentIndex = 1
+                        }
+                        return currentIndex
+                    })
+                    .distinctUntilChanged()
+                    .map { Reactor.Action.imagePageChanged($0) }
+                    .bind(to: self.reactor.action)
+                    .disposed(by: cell.disposeBag)
+                
+                // photoPageLabel 바인딩
+                reactor.state
+                    .map { $0.currentImagePage }
+                    .distinctUntilChanged()
+                    .map { index -> NSAttributedString in
+                        AttributedStringManager.configureString(
+                            text: "\(index) / 3",
+                            font: UIFont.customFontForBody(weight: .w500),
+                            color: .bgColor,
+                            alignment: .center
+                        )
+                    }
+                    .bind(to: cell.photoPageLabel.rx.attributedText)
+                    .disposed(by: disposeBag)
+                
                 cell.update(with: item)
                 return cell
             case .summaryInfoCell:

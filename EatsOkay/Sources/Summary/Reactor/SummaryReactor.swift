@@ -145,7 +145,16 @@ class SummaryReactor: Reactor {
         case .webViewDidDismiss:
             return Observable.just(.dismissWebView)
         case .imagePageChanged(let page):
-            return Observable.just(.setImagePage(page))
+            return Observable.just(.setImagePage(page)).filter { [weak self] mutation in
+                guard let self else { return false }
+                if case let .setImagePage(page) = mutation {
+                    let prev = self.currentState.currentImagePage
+                    let now = page
+                    return prev == now ? false : true
+                } else {
+                    return true
+                }
+            }
         case .callButtonTapped:
             let nationalNumber = currentState.storeInfo.nationalPhoneNumber
             return Observable.just(.setNationalNumber(nationalNumber))
