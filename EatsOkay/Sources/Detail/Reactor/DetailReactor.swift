@@ -44,6 +44,7 @@ class DetailReactor: Reactor {
         case sortStore([StoreSection]) // 데이터 정렬
         case setSortType(SortType)
         case pushSummaryView(data: StoreInfo)
+        case setError(Error?)
     }
     
     struct State {
@@ -57,6 +58,7 @@ class DetailReactor: Reactor {
         var webViewUrl: String? = nil
         var sortType: SortType = .rating // 기본값은 별점순
         @Pulse var pushSummaryViewWithData: StoreInfo?
+        @Pulse var error: Error?
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
@@ -159,6 +161,8 @@ class DetailReactor: Reactor {
             newState.sortType = sortType
         case .pushSummaryView(let data):
             newState.pushSummaryViewWithData = data
+        case .setError(let error):
+            newState.error = error
         }
         return newState
     }
@@ -433,6 +437,9 @@ extension DetailReactor {
             .map { location in
                 UserDefaultsManager.shared.saveLocation(location: location)
                 return .setCurrentLocation(lat: location.lat, lon: location.lon)
+            }
+            .catch { error in
+                return .just(.setError(error))
             }
     }
     

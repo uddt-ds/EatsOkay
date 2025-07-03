@@ -20,7 +20,6 @@ class CustomHeaderView: UICollectionReusableView {
         label.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(20)
             make.top.equalToSuperview().offset(24)
-            make.bottom.equalToSuperview()
         }
     }
     
@@ -29,8 +28,9 @@ class CustomHeaderView: UICollectionReusableView {
     }
     
     func configure(with text: String) {
-        label.attributedText = AttributedStringManager.configureString(text: text,
-                                                                       font: .customFontForHeader(weight: .w800),
-                                                                       color: .neutral950)
+        label.attributedText = AttributedStringManager
+            .configureString(text: text,
+                             font: .customFontForHeader(weight: .w800),
+                             color: .neutral950)
     }
 }

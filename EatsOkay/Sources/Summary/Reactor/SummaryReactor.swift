@@ -110,10 +110,12 @@ class SummaryReactor: Reactor {
                     let featuresSection = SummarySectionModel(section: .summaryFeatures, items: featuresItems)
                     
                     // 섹션 4
-                    let mapImageUrl = "asdfas" // 이미지 url 만드는 로직 추가 - 기태형님
+                    let centerLat = storeInfo.latitude
+                    let centerLon = storeInfo.longitude
+                    let mapImageUrl = NetworkManager.shared.fetchStaticURL(center: "\(centerLat),\(centerLon)")
                     let mapItems: [SummarySectionModel.CellModel] = [
                         .summaryMapCell(
-                            .init(imageUrl: mapImageUrl, address: storeInfo.formattedAddress)
+                            .init(imageUrl: mapImageUrl ?? "", address: storeInfo.formattedAddress)
                         )
                     ]
                     let mapSection = SummarySectionModel(section: .summaryMap, items: mapItems)

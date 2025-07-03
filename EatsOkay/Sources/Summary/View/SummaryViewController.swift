@@ -189,13 +189,13 @@ class SummaryViewController: UIViewController {
         
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.46952))
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.3887))
         
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
         
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(59))
         
         let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
         
@@ -343,9 +343,7 @@ extension SummaryViewController {
                 return cell
             case .summaryMapCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFourViewCell.identifier, for: indexPath) as? SectionFourViewCell else { return .init()}
-                let image = UIImage(resource: .company2)
-                cell.update(image: image)
-                cell.update(text: "")
+                cell.update(with: item)
                 return cell
             }
         },
