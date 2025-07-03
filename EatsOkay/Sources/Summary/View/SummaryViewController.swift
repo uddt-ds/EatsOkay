@@ -16,7 +16,7 @@ import RxDataSources
 class SummaryViewController: UIViewController {
     
     typealias Reactor = SummaryReactor
-    let reactor: SummaryReactor
+    var reactor: SummaryReactor
     
     var disposeBag = DisposeBag()
     
@@ -41,6 +41,7 @@ class SummaryViewController: UIViewController {
         
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "DefaultCell")
         collectionView.register(CustomHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CustomHeaderView.identifier)
+        collectionView.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: String(describing: UICollectionReusableView.self))
         
         return collectionView
     }()
@@ -161,15 +162,19 @@ class SummaryViewController: UIViewController {
         
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(0.169))
         
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
         
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(65))
         
-        let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
         
         section.boundarySupplementaryItems = [header]
         
@@ -332,8 +337,7 @@ extension SummaryViewController {
                 return cell
             case .summaryFeaturesCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionThreeViewCell.identifier, for: indexPath) as? SectionThreeViewCell else { return .init()}
-                let text = "\(indexPath.section)_\(indexPath.item)"
-                cell.update(text: text)
+                cell.update(with: item)
                 return cell
             case .summaryMapCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFourViewCell.identifier, for: indexPath) as? SectionFourViewCell else { return .init()}
@@ -344,6 +348,16 @@ extension SummaryViewController {
         configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
             if kind == UICollectionView.elementKindSectionHeader {
                 let section = dataSource.sectionModels[indexPath.section]
+                
+                if section.items.isEmpty {
+                    let header = collectionView.dequeueReusableSupplementaryView(
+                        ofKind: kind,
+                        withReuseIdentifier: String(describing: UICollectionReusableView.self),
+                        for: indexPath)
+                    header.frame = .zero
+                    return header
+                }
+                
                 guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CustomHeaderView.identifier, for: indexPath) as? CustomHeaderView else { return .init() }
                 switch indexPath.section {
                 case 2:
@@ -355,8 +369,7 @@ extension SummaryViewController {
                 return header
             }
             return UICollectionReusableView()
-        }
-        )
+        })
     }
 }
     
