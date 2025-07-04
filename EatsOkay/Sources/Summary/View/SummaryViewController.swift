@@ -17,6 +17,7 @@ class SummaryViewController: UIViewController {
     
     typealias Reactor = SummaryReactor
     var reactor: SummaryReactor
+    private let tapGesture = UITapGestureRecognizer()
     
     var disposeBag = DisposeBag()
     
@@ -295,6 +296,11 @@ extension SummaryViewController {
             .map { Reactor.Action.callButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
+        
+        tapGesture.rx.tapGestureRecognition
+            .map { _ in Reactor.Action.imageSeleted }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
     }
     
     func bindState(reactor: SummaryReactor) {
@@ -370,7 +376,7 @@ extension SummaryViewController {
         // call Button Action 바인딩
         reactor.pulse(\.$nationalNumber)
             .compactMap { $0 }
-            .subscribe(onNext: { phoneNumber in
+            .bind { phoneNumber in
                 let cleanedNumber = phoneNumber
                     .replacingOccurrences(of: " ", with: "")
                     .replacingOccurrences(of: "-", with: "")
@@ -378,10 +384,21 @@ extension SummaryViewController {
                    UIApplication.shared.canOpenURL(phoneURL) {
                     UIApplication.shared.open(phoneURL, options: [:], completionHandler: nil)
                 }
-            })
+            }
             .disposed(by: disposeBag)
         
-
+        reactor.pulse(\.$setDetailPhoto)
+            .compactMap { $0 }
+            .withUnretained(self)
+            .bind { vc, photosData in
+                let reactor = DetailPhotosReactor(with: photosData)
+                let detailPhotoVC = DetailPhotosViewController(reactor: reactor)
+                detailPhotoVC.modalPresentationStyle = .fullScreen
+                detailPhotoVC.modalTransitionStyle = .crossDissolve
+                vc.present(detailPhotoVC, animated: true)
+            }
+            .disposed(by: disposeBag)
+        
     }
 }
 
@@ -397,16 +414,16 @@ extension SummaryViewController {
                     .map({ value -> Int in
                         let width = Int(UIScreen.main.bounds.width)
                         let intValue = Int(value.x)
-                        var currentIndex = 1
+                        var currentIndex = 0
                         switch intValue {
                         case 0..<width:
-                            currentIndex = 1
+                            currentIndex = 0
                         case width..<width*2:
-                            currentIndex = 2
-                        case width*2..<width*3:
-                            currentIndex = 3
-                        default:
                             currentIndex = 1
+                        case width*2..<width*3:
+                            currentIndex = 2
+                        default:
+                            currentIndex = 0
                         }
                         return currentIndex
                     })
@@ -421,7 +438,7 @@ extension SummaryViewController {
                     .distinctUntilChanged()
                     .map { index -> NSAttributedString in
                         AttributedStringManager.configureString(
-                            text: "\(index) / 3",
+                            text: "\(index + 1) / 3",
                             font: UIFont.customFontForBody(weight: .w500),
                             color: .bgColor,
                             alignment: .center
@@ -430,6 +447,7 @@ extension SummaryViewController {
                     .bind(to: cell.photoPageLabel.rx.attributedText)
                     .disposed(by: disposeBag)
                 
+                cell.addGestureRecognizer(tapGesture)
                 cell.update(with: item)
                 return cell
             case .summaryInfoCell:

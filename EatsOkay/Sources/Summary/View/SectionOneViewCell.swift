@@ -28,10 +28,10 @@ class SectionOneViewCell: UICollectionViewCell {
         setConstraints()
     }
     
-    private let backgroundImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        return imageView
+    private let bgView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .customColor(hexCode: .bgColor)
+        return view
     }()
     
     fileprivate lazy var scrollView: UIScrollView = {
@@ -47,7 +47,6 @@ class SectionOneViewCell: UICollectionViewCell {
         label.backgroundColor = UIColor.customColor(hexCode: .neutral950).withAlphaComponent(0.6)
         label.layer.cornerRadius = 13
         label.clipsToBounds = true
-        
         return label
     }()
     
@@ -63,9 +62,10 @@ class SectionOneViewCell: UICollectionViewCell {
     
     private func configureUI() {
         contentView.backgroundColor = .white
-        
+        scrollView.addSubview(bgView)
         scrollView.addSubview(storeImageView)
-        scrollView.addSubview(backgroundImageView)
+        
+        
         contentViews.forEach { storeImageView.addSubview($0) }
         
         [
@@ -73,7 +73,7 @@ class SectionOneViewCell: UICollectionViewCell {
         ]
             .forEach { contentView.addSubview($0) }
         
-        backgroundImageView.snp.makeConstraints { make in
+        bgView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
         
@@ -95,7 +95,7 @@ class SectionOneViewCell: UICollectionViewCell {
             $0.width.equalToSuperview().multipliedBy(contentViews.count)
         }
         
-        backgroundImageView.snp.makeConstraints { make in
+        bgView.snp.makeConstraints { make in
             make.height.equalTo(contentView.snp.height)
         }
         
@@ -143,8 +143,7 @@ class SectionOneViewCell: UICollectionViewCell {
 extension Reactive where Base: SectionOneViewCell {
     var imagePage: Observable<CGPoint> {
         return base.scrollView.rx.contentOffset
-            .asObservable()
-            .debug()
+            .asObservable() 
     }
 }
 

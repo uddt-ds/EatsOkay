@@ -19,12 +19,13 @@ class SummaryReactor: Reactor {
     }
     
     enum Action {
-        case viewDidLoad // viewDidLoad 시
-        case backButtonTapped // 뒤로가기 버튼 클릭 시
+        case viewDidLoad
+        case backButtonTapped 
         case webViewButtonTapped
         case webViewDidDismiss
         case imagePageChanged(Int)
         case callButtonTapped
+        case imageSeleted
     }
     
     enum Mutation {
@@ -34,17 +35,18 @@ class SummaryReactor: Reactor {
         case dismissWebView
         case setImagePage(Int)
         case setNationalNumber(String?)
+        case setDetailPhoto(DetailPhotos)
     }
     
     struct State {
         var storeInfo: StoreInfo
         var setSections: [SummarySectionModel]
-        var imagesUri: [String] = []
         var shouldPop: Bool = false
         var webViewUrl: String? = nil
         var shouldPresentWebView: Bool = false
         var currentImagePage: Int = 1
         @Pulse var nationalNumber: String?
+        @Pulse var setDetailPhoto: DetailPhotos?
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
@@ -158,6 +160,18 @@ class SummaryReactor: Reactor {
         case .callButtonTapped:
             let nationalNumber = currentState.storeInfo.nationalPhoneNumber
             return Observable.just(.setNationalNumber(nationalNumber))
+        case .imageSeleted:
+            let storeName = currentState.storeInfo.displayName
+            let selectedIndex = currentState.currentImagePage
+            let photoUri = currentState.setSections[0].items[0]
+            switch photoUri {
+            case .summaryImageCell(let photosUri):
+                let detailPhotos = DetailPhotos(storeName: storeName, selectedIndex: selectedIndex, photosUri: photosUri.photosUrl)
+                return .just(.setDetailPhoto(detailPhotos))
+            default :
+                return .empty()
+            }
+            
         }
     }
     
@@ -177,6 +191,8 @@ class SummaryReactor: Reactor {
             newState.currentImagePage = page
         case .setNationalNumber(let nationalNumber):
             newState.nationalNumber = nationalNumber
+        case .setDetailPhoto(let detailPhotos):
+            newState.setDetailPhoto = detailPhotos
         }
         return newState
     }
