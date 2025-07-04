@@ -340,12 +340,13 @@ extension SummaryViewController {
             .withLatestFrom(reactor.state.map { $0.webViewUrl })
             .compactMap { $0 }
             .subscribe(onNext: { [weak self] urlString in
+                guard let self else { return }
                 guard let url = URL(string: urlString) else { return }
                 let safariVC = SFSafariViewController(url: url)
                 safariVC.modalPresentationStyle = .popover
                 safariVC.delegate = self // 모달 닫기 delegate
                 safariVC.presentationController?.delegate = self // 모달 드래그 delegate
-                self?.present(safariVC, animated: true, completion: nil)
+                self.present(safariVC, animated: true, completion: nil)
             })
             .disposed(by: disposeBag)
         
