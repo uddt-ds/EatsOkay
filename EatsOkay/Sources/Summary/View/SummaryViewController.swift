@@ -408,7 +408,7 @@ extension SummaryViewController {
                 cell.rx.buttonsTapped
                     .map { Reactor.Action.imageSeleted }
                     .bind(to: reactor.action)
-                    .disposed(by: disposeBag)
+                    .disposed(by: cell.disposeBag)
                 
                 cell.rx.imagePage
                     .map({ value -> Int in
@@ -433,12 +433,14 @@ extension SummaryViewController {
                     .disposed(by: cell.disposeBag)
                 
                 // photoPageLabel 바인딩
-                reactor.state
+                let currentImagePageInfo: Observable<(Int, Int)> = reactor.state
                     .map { $0.currentImagePage }
-                    .distinctUntilChanged()
-                    .map { index -> NSAttributedString in
+                    .distinctUntilChanged { $0 == $1 }
+                
+                currentImagePageInfo
+                    .map { (index, total) -> NSAttributedString in
                         AttributedStringManager.configureString(
-                            text: "\(index + 1) / 3",
+                            text: "\(index + 1) / \(total)",
                             font: UIFont.customFontForBody(weight: .w500),
                             color: .bgColor,
                             alignment: .center

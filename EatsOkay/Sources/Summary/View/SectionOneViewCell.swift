@@ -52,21 +52,11 @@ class SectionOneViewCell: UICollectionViewCell {
     }()
     
     private let storeImageView = UIView()
-    private let contentButtons: [UIButton] = {
-        ["DefaultImage", "DefaultImage", "DefaultImage"].map { imageName in
-            let button = UIButton()
-            button.imageView?.contentMode = .scaleAspectFit
-            return button
-        }
-    }()
     
     private func configureUI() {
         contentView.backgroundColor = .white
         scrollView.addSubview(bgView)
         scrollView.addSubview(storeImageView)
-        
-        
-        contentButtons.forEach { storeImageView.addSubview($0) }
         
         [
             scrollView, photoPageLabel
@@ -92,23 +82,10 @@ class SectionOneViewCell: UICollectionViewCell {
         storeImageView.snp.makeConstraints {
             $0.edges.equalToSuperview()
             $0.height.equalToSuperview()
-            $0.width.equalToSuperview().multipliedBy(contentButtons.count)
         }
         
         bgView.snp.makeConstraints { make in
             make.height.equalTo(contentView.snp.height)
-        }
-        
-        for (index, view) in contentButtons.enumerated() {
-            view.snp.makeConstraints {
-                $0.top.bottom.equalToSuperview()
-                $0.width.equalTo(scrollView.snp.width)
-                if index == 0 {
-                    $0.leading.equalToSuperview()
-                } else {
-                    $0.leading.equalTo(contentButtons[index - 1].snp.trailing)
-                }
-            }
         }
         
         photoPageLabel.snp.makeConstraints { make in
@@ -121,24 +98,54 @@ class SectionOneViewCell: UICollectionViewCell {
     }
     
     func update(with: SummarySectionModel.CellModel) {
+        storeImageView.subviews.forEach { $0.removeFromSuperview() }
         switch with {
         case .summaryImageCell(let data):
-            contentButtons.forEach {
-                $0.rx.tap
+            
+            let contentsButtons = data.photosUrl.map { uri in
+                let button = UIButton()
+                button.imageView?.contentMode = .scaleAspectFit
+                
+                if let uri = URL(string: uri) {
+                    button.kf.setImage(with: uri, for: .normal, completionHandler:  { response in
+                        if case .failure = response {
+                            button.setImage(UIImage(named: "DefaultImage"), for: .normal)
+                        }
+                    })
+                    button.kf.setImage(with: uri, for: .highlighted, completionHandler:  { response in
+                        if case .failure = response {
+                            button.setImage(UIImage(named: "DefaultImage"), for: .highlighted)
+                        }
+                    })
+                } else {
+                    button.setImage(UIImage(named: "DefaultImage"), for: .normal)
+                    button.setImage(UIImage(named: "DefaultImage"), for: .highlighted)
+                }
+                
+                button.rx.tap
                     .withUnretained(self)
                     .bind { cell, _ in
                         cell.contentsButtonRelay.accept(Void())
                     }
                     .disposed(by: disposeBag)
+                
+                return button
             }
-            for (index, urlString) in data.photosUrl.enumerated() {
-                if index < contentButtons.count {
-                    if let url = URL(string: urlString) {
-                        contentButtons[index].kf.setImage(with: url, for: .normal)
-                        contentButtons[index].kf.setImage(with: url, for: .highlighted)
+            
+            contentsButtons.forEach { storeImageView.addSubview($0) }
+            
+            storeImageView.snp.makeConstraints {
+                $0.width.equalToSuperview().multipliedBy(data.photosUrl.count)
+            }
+            
+            for (index, view) in contentsButtons.enumerated() {
+                view.snp.makeConstraints {
+                    $0.top.bottom.equalToSuperview()
+                    $0.width.equalTo(scrollView.snp.width)
+                    if index == 0 {
+                        $0.leading.equalToSuperview()
                     } else {
-                        contentButtons[index].setImage(UIImage(named: "DefaultImage"), for: .normal)
-                        contentButtons[index].setImage(UIImage(named: "DefaultImage"), for: .highlighted)
+                        $0.leading.equalTo(contentsButtons[index - 1].snp.trailing)
                     }
                 }
             }
@@ -159,4 +166,3 @@ extension Reactive where Base: SectionOneViewCell {
             .asObservable()
     }
 }
-
