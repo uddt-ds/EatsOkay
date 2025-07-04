@@ -1,7 +1,7 @@
 import UIKit
 import SnapKit
 
-class SectionThreeViewCell: UICollectionViewCell {
+final class SectionThreeViewCell: UICollectionViewCell {
     static let identifier = "SectionThreeViewCell"
     
     private let groupFeatureImageView: UIImageView = {

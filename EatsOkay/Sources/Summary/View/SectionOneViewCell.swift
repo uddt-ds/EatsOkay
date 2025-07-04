@@ -11,7 +11,7 @@ import Kingfisher
 import RxSwift
 import RxCocoa
 
-class SectionOneViewCell: UICollectionViewCell {
+final class SectionOneViewCell: UICollectionViewCell {
     static let identifier = "SectionOneViewCell"
     
     fileprivate let contentsButtonRelay = PublishRelay<Void>()
@@ -43,7 +43,7 @@ class SectionOneViewCell: UICollectionViewCell {
         return scrollView
     }()
     
-    let photoPageLabel: UILabel = {
+    private let photoPageLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = UIColor.customColor(hexCode: .neutral950).withAlphaComponent(0.6)
         label.layer.cornerRadius = 13

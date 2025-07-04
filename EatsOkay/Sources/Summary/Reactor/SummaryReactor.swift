@@ -159,7 +159,7 @@ class SummaryReactor: Reactor {
         return newState
     }
     
-    func makeDataSources(with imageUrls: [String]) -> Mutation {
+    private func makeDataSources(with imageUrls: [String]) -> Mutation {
         
         let storeInfo = currentState.storeInfo
         

@@ -13,7 +13,7 @@ import ReactorKit
 import SafariServices
 import RxDataSources
 
-class SummaryViewController: UIViewController {
+final class SummaryViewController: UIViewController {
     
     typealias Reactor = SummaryReactor
     var reactor: SummaryReactor
@@ -273,7 +273,7 @@ extension SummaryViewController {
         bindState(reactor: reactor)
     }
     
-    func bindAction(reactor: SummaryReactor) {
+    private func bindAction(reactor: SummaryReactor) {
         
         // viewDidLoad 시점시
         reactor.action.onNext(.viewDidLoad)
@@ -297,7 +297,7 @@ extension SummaryViewController {
             .disposed(by: disposeBag)
     }
     
-    func bindState(reactor: SummaryReactor) {
+    private func bindState(reactor: SummaryReactor) {
         
         // 컬렉션 뷰 RxDataSource 바인딩
         reactor.state
