@@ -43,7 +43,7 @@ final class SectionOneViewCell: UICollectionViewCell {
         return scrollView
     }()
     
-    private let photoPageLabel: UILabel = {
+    let photoPageLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = UIColor.customColor(hexCode: .neutral950).withAlphaComponent(0.6)
         label.layer.cornerRadius = 13
