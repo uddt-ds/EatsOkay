@@ -14,6 +14,7 @@ import RxCocoa
 class SectionOneViewCell: UICollectionViewCell {
     static let identifier = "SectionOneViewCell"
     
+    fileprivate let contentsButtonRelay = PublishRelay<Void>()
     var disposeBag = DisposeBag()
     
     required init?(coder: NSCoder) {
@@ -51,12 +52,11 @@ class SectionOneViewCell: UICollectionViewCell {
     }()
     
     private let storeImageView = UIView()
-    private let contentViews: [UIImageView] = {
+    private let contentButtons: [UIButton] = {
         ["DefaultImage", "DefaultImage", "DefaultImage"].map { imageName in
-            let imageView = UIImageView()
-            imageView.image = UIImage(named: imageName)
-            imageView.contentMode = .scaleAspectFit
-            return imageView
+            let button = UIButton()
+            button.imageView?.contentMode = .scaleAspectFit
+            return button
         }
     }()
     
@@ -66,7 +66,7 @@ class SectionOneViewCell: UICollectionViewCell {
         scrollView.addSubview(storeImageView)
         
         
-        contentViews.forEach { storeImageView.addSubview($0) }
+        contentButtons.forEach { storeImageView.addSubview($0) }
         
         [
             scrollView, photoPageLabel
@@ -92,21 +92,21 @@ class SectionOneViewCell: UICollectionViewCell {
         storeImageView.snp.makeConstraints {
             $0.edges.equalToSuperview()
             $0.height.equalToSuperview()
-            $0.width.equalToSuperview().multipliedBy(contentViews.count)
+            $0.width.equalToSuperview().multipliedBy(contentButtons.count)
         }
         
         bgView.snp.makeConstraints { make in
             make.height.equalTo(contentView.snp.height)
         }
         
-        for (index, view) in contentViews.enumerated() {
+        for (index, view) in contentButtons.enumerated() {
             view.snp.makeConstraints {
                 $0.top.bottom.equalToSuperview()
                 $0.width.equalTo(scrollView.snp.width)
                 if index == 0 {
                     $0.leading.equalToSuperview()
                 } else {
-                    $0.leading.equalTo(contentViews[index - 1].snp.trailing)
+                    $0.leading.equalTo(contentButtons[index - 1].snp.trailing)
                 }
             }
         }
@@ -123,14 +123,22 @@ class SectionOneViewCell: UICollectionViewCell {
     func update(with: SummarySectionModel.CellModel) {
         switch with {
         case .summaryImageCell(let data):
+            contentButtons.forEach {
+                $0.rx.tap
+                    .withUnretained(self)
+                    .bind { cell, _ in
+                        cell.contentsButtonRelay.accept(Void())
+                    }
+                    .disposed(by: disposeBag)
+            }
             for (index, urlString) in data.photosUrl.enumerated() {
-                if index < contentViews.count {
-                    if urlString == "DefaultImage" {
-                        contentViews[index].image = UIImage(named: "DefaultImage")
-                    } else if let url = URL(string: urlString), urlString.hasPrefix("https") {
-                        contentViews[index].kf.setImage(with: url)
+                if index < contentButtons.count {
+                    if let url = URL(string: urlString) {
+                        contentButtons[index].kf.setImage(with: url, for: .normal)
+                        contentButtons[index].kf.setImage(with: url, for: .highlighted)
                     } else {
-                        contentViews[index].image = UIImage(named: "DefaultImage")
+                        contentButtons[index].setImage(UIImage(named: "DefaultImage"), for: .normal)
+                        contentButtons[index].setImage(UIImage(named: "DefaultImage"), for: .highlighted)
                     }
                 }
             }
@@ -144,6 +152,11 @@ extension Reactive where Base: SectionOneViewCell {
     var imagePage: Observable<CGPoint> {
         return base.scrollView.rx.contentOffset
             .asObservable() 
+    }
+    
+    var buttonsTapped: Observable<Void> {
+        return base.contentsButtonRelay
+            .asObservable()
     }
 }
 

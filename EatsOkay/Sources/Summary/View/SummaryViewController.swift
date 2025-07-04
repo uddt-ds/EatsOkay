@@ -17,7 +17,6 @@ class SummaryViewController: UIViewController {
     
     typealias Reactor = SummaryReactor
     var reactor: SummaryReactor
-    private let tapGesture = UITapGestureRecognizer()
     
     var disposeBag = DisposeBag()
     
@@ -296,11 +295,6 @@ extension SummaryViewController {
             .map { Reactor.Action.callButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
-        
-        tapGesture.rx.tapGestureRecognition
-            .map { _ in Reactor.Action.imageSeleted }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
     }
     
     func bindState(reactor: SummaryReactor) {
@@ -411,6 +405,11 @@ extension SummaryViewController {
             case .summaryImageCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionOneViewCell.identifier, for: indexPath) as? SectionOneViewCell else { return .init()}
                 
+                cell.rx.buttonsTapped
+                    .map { Reactor.Action.imageSeleted }
+                    .bind(to: reactor.action)
+                    .disposed(by: disposeBag)
+                
                 cell.rx.imagePage
                     .map({ value -> Int in
                         let width = Int(UIScreen.main.bounds.width)
@@ -448,7 +447,6 @@ extension SummaryViewController {
                     .bind(to: cell.photoPageLabel.rx.attributedText)
                     .disposed(by: disposeBag)
                 
-                cell.addGestureRecognizer(tapGesture)
                 cell.update(with: item)
                 return cell
             case .summaryInfoCell:
