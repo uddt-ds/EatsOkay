@@ -1,6 +1,6 @@
 <!-- 상단 헤더 -->
 <p align="center">
-  <img src="https://github.com/uddt-ds/EatsOkay/blob/develop/EatsOkay/App/Assets.xcassets/AppIcon.appiconset/AppIcon.png?raw=true" 
+  <img src="https://github.com/user-attachments/assets/9963140e-e04a-434e-90ff-3cb288f5b964" 
        alt="App Icon" width="100" />
 </p>
 
@@ -8,7 +8,7 @@
   EatsOkay
   <p align="center">
   <img src="https://img.shields.io/badge/프로젝트 기간-2025.05.29 ~ -fab2ac?style=flat&logo=&logoColor=white" alt="프로젝트 기간" />
-  <img src="https://img.shields.io/badge/release-v1.1.0-4fc08d?style=flat&logo=google-chrome&logoColor=white" alt="릴리즈 버전" />
+  <img src="https://img.shields.io/badge/release-v1.2.0-4fc08d?style=flat&logo=google-chrome&logoColor=white" alt="릴리즈 버전" />
 </p>
 </h1>
 
@@ -19,7 +19,6 @@
 4. [개발기간](#duration)
 5. [기술스택](#tech-stack)
 6. [샘플이미지](#sample-images)
-7. [실행방법](#how-to-run)
 
 <a id="project-intro"></a>
 ## 🌤 프로젝트 소개
@@ -36,10 +35,10 @@
 | 이름 | 직책 | 주요 담당 내역 |
 | --- | --- | --- |
 | 이다성 | 리더 | • Home 화면 구현 <br>• SituationDataManager 구현 <br>• Codebase DesignSystem 구현 |
-| 이찬호 | 부리더 | • 지역선택 화면 구현 <br>• AddressManager 구현 <br>• LocationManager 구현 <br>• 공통 UIComponent 구현 |
+| 이찬호 | 부리더 | • 지역선택 화면 구현 <br>• AddressManager 구현 <br>• LocationManager 구현 <br>• AttributedStringManager 구현 <br>• 공통 UIComponent(CustomButton) 구현 <br>• 공통 UIComponent(CustsomLocationAlert) 구현  <br>• Tuist 도입 |
 | 김기태 | 팀원 | • 스플래시 화면 구현 <br>• 온보딩 화면 구현 <br>• NetworkManager 구현 <br>• UserDefaultsManager 구현 |
-| 박혜민 | 팀원 | • 상세화면 지도 구현(Google Maps iOS SDK 활용) <br> • 와이어프레임, 유저플로우 작성 |
-| 허성필 | 팀원 | • 상세화면 리스트 구현(NetworkManger 활용) <br> • Google Place API 호출 캐싱 기능 구현 <br>• 외부 웹페이지 표시 기능 구현 |
+| 박혜민 | 팀원 | • 상세화면 지도 구현(Google Maps iOS SDK 활용) <br>• 와이어프레임, 유저플로우 작성 |
+| 허성필 | 팀원 | • 상세화면 리스트 구현(NetworkManger 활용) <br>• Google Place API 호출 캐싱 기능 구현 <br>• 외부 웹페이지 표시 기능 구현 <br>• 공통 UIComponent(CustomSeparator) 구현 |
 
 ### 🧑🏻‍🎨 디자이너
 
@@ -64,8 +63,9 @@
   - 검색결과 지도에 마커 표시
   - 검색결과 리스트에 표시
   - 검색결과 리스트 정렬
-  - 상세정보 확인을 위한 외부 웹페이지 연결
-  - 웹페이지 화면
+  - 리스트 선택시 외부 웹페이지 연결
+- 웹페이지 화면
+  - 상세정보 확인
 
 <a id="duration"></a>
 ## 📅 개발기간
@@ -73,6 +73,9 @@
 | --- | --- | --- |
 | V1.0 | 2025.05.29(목) ~ 06.19(목) | MVP 기능 구현 |
 | V1.1.0 | 2025.06.20(금) ~ 06.25(수) | [버그수정] <br> • DetailView Map 버튼 색상,Throttle, Alert 수정 <br> • NetworkManger LocationRestriction 적용 <br> • LocationView 전처리문을 이용한 Error 분기처리 <br> • HomeView 그림자 수정 <br> • DetailView List LocationRestriction 적용 <br> • HomeView 사진 여백 수정 <br> • LocationManager 캐시문제 |
+| V1.2.0 | 2025.06.25(수) ~ 06.27(금) | [버그수정] <br> • DetailView Duplicate item error 수정 <br><br> [기능개선] <br> • DetailView 지도 panning 동작에 따른 현위치에서 검색 버튼 표시여부 분기처리 <br> • DetailVIew UI 수정(네이게이션 바, 현위치에서 검색 버튼, 지도, 지도 마커) <br> • DetailView에서 현위치 사용시 지도내 현재위치 아이콘 표시 <br> • HomeView내 해시태그 관리 로직 개선 <br> • HomeVIew UI수정(위치 수정 버튼) <br><br> [성능개선] <br> • 성능개선을 위한 화면전환 방법 변경(온보딩, LocationVIew) <br><br> [프로젝트개선] <br> • 프로젝트 관리를 위한 Tuist 도입 |
+
+
 
 <a id="tech-stack"></a>
 ## ⚙️ 기술스택
@@ -84,6 +87,7 @@
 | Swift 5 | iOS 앱 개발을 위한 프로그래밍 언어 |
 | Xcode 16.2 | iOS 앱 개발을 위한 공식 IDE |
 | iOS 16.6 | Target OS 버전 |
+| [Tuist 4.50.2](https://github.com/tuist/tuist) | 타깃, 스킴, 의존성, 모듈 구성 등을 코드로 관리하고 <br>프로젝트 설정을 자동화하는 CLI 기반 프로젝트 생성 도구 |
 
 ### 사용 패턴
 
@@ -146,32 +150,12 @@
 
 <h4 align="left">상세화면</h4>
 <p align="left">
-    <img src="https://github.com/user-attachments/assets/28d05394-5c6b-4155-97e2-ebfd741378b5" width="30%">
+    <img src="https://github.com/user-attachments/assets/b837850f-c7db-47ba-a40b-766c3ea5b258" width="30%">
 </p>
+<hr>
 
 <h4 align="left">웹페이지 화면</h4>
 <p align="left">
   <img src="https://github.com/user-attachments/assets/a1ccd779-2897-44d1-a173-2c35ef82f862" width="30%">
 </p>
-
-<a id="how-to-run"></a>
-## ▶️ 실행방법
-
-1. 레포지토리 클론
-
-```bash
-git clone https://github.com/uddt-ds/EatsOkay.git
-
-```
-
-2.  APP 폴더에 Config.xcconfig 파일 추가
-
-
-```bash
-GoogleAPIKey = GoogleAPIKey 입력
-KakaoAPIKey = KakaoAPIKey 입력
-
-```
-
-3. Config.xcconfig에 API 키 추가
-  - API키 보안을 위해 본 레포지토리에는 API키가 포함되어있지 않습니다.
+<hr>
