@@ -9,6 +9,7 @@ import Foundation
 import Moya
 import RxMoya
 import RxSwift
+import UIKit
 
 final class NetworkManager {
     static let shared = NetworkManager()
@@ -21,7 +22,7 @@ final class NetworkManager {
     func fetchPlacesWithRectangle(textQuery: String, locationRestriction: SearchTextBody.LocationRestriction) -> Single<[GoogleMap.Place]> {
         return provider.rx.request(
             MultiTarget(GoogleAPI.storeInfoDataRectangle(textQuery: textQuery, locationRestriction: locationRestriction))
-            )
+        )
         .filterSuccessfulStatusCodes()
         .map(GoogleMap.self)
         .map { $0.places }
@@ -45,5 +46,26 @@ final class NetworkManager {
             guard let address = response.documents.first?.address else { return nil }
             return (address.region1DepthName, address.region2DepthName)
         }
+    }
+    
+    func fetchStaticURL(center: String) -> String? {
+        guard let apiKey = Bundle.main.infoDictionary?["GoogleAPIKey"] as? String else { return nil }
+        let zoom = "16"
+        let size = "335x172"
+        let url = "https://github.com/user-attachments/assets/95e84eaf-888e-49c2-aabb-bcf869b1fbdb"
+        let marker = "icon:\(url)|\(center)"
+        
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "maps.googleapis.com"
+        components.path = "/maps/api/staticmap"
+        components.queryItems = [
+            .init(name: "center", value: center),
+            .init(name: "zoom", value: zoom),
+            .init(name: "size", value: size),
+            .init(name: "markers", value: marker),
+            .init(name: "key", value: apiKey)
+        ]
+        return components.url?.absoluteString
     }
 }

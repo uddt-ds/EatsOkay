@@ -28,7 +28,12 @@ extension GoogleMap {
         let userRatingCount: Int? // 리뷰 수
         let photos: [Photo]? // 사진요청 쿼리
         let currentOpeningHours: OpeningHours? // 오픈 시간 일->토 순서
-        
+        let goodForGroups: Bool? // 단체모임
+        let takeout: Bool? // 포장
+        let reservable: Bool? // 예약
+        let parkingOptions: ParkingOptions? // 주차옵션
+        let nationalPhoneNumber: String? // 전화번호
+        let id: String? // 식별자
     }
 }
 
@@ -56,7 +61,10 @@ extension GoogleMap.Place {
         let periods: [Periods]
         let weekdayDescriptions: [String]?
     }
-    
+    // 주차 옵션
+    struct ParkingOptions: Decodable {
+        let freeParkingLot, paidParkingLot, freeStreetParking, paidStreetParking, valetParking, freeGarageParking, paidGarageParking: Bool?
+    }
 }
 
 extension GoogleMap.Place.OpeningHours {

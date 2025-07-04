@@ -16,7 +16,10 @@ enum GoogleAPI {
 
 extension GoogleAPI: TargetType {
     var baseURL: URL {
-        return URL(string: "https://places.googleapis.com")!
+        switch self {
+        case .storeInfoDataRectangle, .storeImageData:
+            return URL(string: "https://places.googleapis.com")!
+        }
     }
     
     var path: String {
@@ -37,7 +40,6 @@ extension GoogleAPI: TargetType {
             
         case .storeImageData:
             return .get
-        
         }
     }
     
@@ -64,7 +66,7 @@ extension GoogleAPI: TargetType {
     
     var headers: [String : String]? {
         guard let apiKey = Bundle.main.infoDictionary?["GoogleAPIKey"] as? String else { return nil }
-        let fieldMask = "places.displayName,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.formattedAddress,places.currentOpeningHours,places.postalAddress,places.location,places.photos,places.googleMapsUri"
+        let fieldMask = "places.displayName,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.formattedAddress,places.currentOpeningHours,places.postalAddress,places.location,places.photos,places.googleMapsUri,places.goodForGroups,places.reservable,places.takeout,places.parkingOptions,places.nationalPhoneNumber,places.id"
         
         switch self {
         case .storeInfoDataRectangle:
