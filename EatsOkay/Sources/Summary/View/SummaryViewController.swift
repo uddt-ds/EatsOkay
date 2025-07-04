@@ -111,22 +111,22 @@ class SummaryViewController: UIViewController {
     }
     
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
-        let layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
+        let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             switch sectionIndex {
             case 0:
                 // 첫번째 섹션 레이아웃 만들기
-                return self.createOneSection()
+                return self?.createOneSection()
             case 1:
                 // 두번째 섹션 레이아웃 만들기
-                return self.createTwoSection()
+                return self?.createTwoSection()
             case 2:
                 // 세번째 섹션 레이아웃 만들기
-                return self.createThreeSection()
+                return self?.createThreeSection()
             case 3:
                 // 네번째 섹션 레이아웃 만들기
-                return self.createFourSection()
+                return self?.createFourSection()
             default:
-                return self.createDefaultSectionLayout()
+                return self?.createDefaultSectionLayout()
             }
         }
         return layout
