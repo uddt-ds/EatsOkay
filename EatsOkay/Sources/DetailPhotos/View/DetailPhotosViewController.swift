@@ -145,11 +145,15 @@ final class DetailPhotosViewController: UIViewController, View {
     }
     
     func bindState(reactor: DetailPhotosReactor) {
-        reactor.state.map { $0.scrollIndex }
-            .distinctUntilChanged()
-            .map { index -> NSMutableAttributedString in
+        
+        let scrollIndexInfo: Observable<(Int, Int)> = reactor.state
+            .map { $0.scrollIndex }
+            .distinctUntilChanged { $0 == $1 }
+        
+        scrollIndexInfo
+            .map { (index, total) -> NSMutableAttributedString in
                 AttributedStringManager.configureString(
-                    text: "\(index + 1) / 3",
+                    text: "\(index + 1) / \(total)",
                     font: .customFontForBody(weight: .w500),
                     color: .bgColor
                 )
@@ -229,14 +233,14 @@ final class DetailPhotosViewController: UIViewController, View {
     }
 
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
-        let layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
+        let layout = UICollectionViewCompositionalLayout { [weak self]  sectionIndex, environment in
             switch sectionIndex {
             case 0:
-                return self.createHorizontalMainItemSection()
+                return self?.createHorizontalMainItemSection()
             case 1:
-                return self.createHorizontalSubItemSection()
+                return self?.createHorizontalSubItemSection()
             default:
-                return self.createDefaultSectionLayout()
+                return self?.createDefaultSectionLayout()
             }
         }
         return layout
