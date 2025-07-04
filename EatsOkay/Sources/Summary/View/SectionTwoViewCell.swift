@@ -185,11 +185,22 @@ class SectionTwoViewCell: UICollectionViewCell {
             )
             
             let openInfo = data.openInfo
-            timeLabel.attributedText = AttributedStringManager.configureString(
-                text: data.isOpen ? "영업중" + " • \(openInfo)" : "영업 종료" + " • \(openInfo)",
-                font: .customFontForBody(weight: .w600),
-                color: .neutral800
-            )
+            if data.isOpen {
+                timeLabel.attributedText = AttributedStringManager.configureString(
+                    text: "영업 중" + " • \(openInfo)",
+                    font: .customFontForBody(weight: .w500),
+                    color: .neutral700
+                )
+            } else {
+                timeLabel.attributedText = AttributedStringManager.configureHighlightString(
+                    text: "영업 종료" + " • \(openInfo)",
+                    font: .customFontForBody(weight: .w500),
+                    color: .neutral700,
+                    highlightWords: [
+                        .init(word: "영업 종료", color: .closedColor)
+                    ]
+                )
+            }
         default:
             break
         }
