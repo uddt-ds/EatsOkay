@@ -8,9 +8,13 @@
 import UIKit
 import SnapKit
 import Kingfisher
+import RxSwift
+import RxCocoa
 
 class SectionOneViewCell: UICollectionViewCell {
     static let identifier = "SectionOneViewCell"
+    
+    var disposeBag = DisposeBag()
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
@@ -24,13 +28,13 @@ class SectionOneViewCell: UICollectionViewCell {
         setConstraints()
     }
     
-    private let backgroundImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        return imageView
+    private let bgView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .customColor(hexCode: .bgColor)
+        return view
     }()
     
-    private lazy var scrollView: UIScrollView = {
+    fileprivate lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.isPagingEnabled = true
         scrollView.showsHorizontalScrollIndicator = false
@@ -38,21 +42,15 @@ class SectionOneViewCell: UICollectionViewCell {
         return scrollView
     }()
     
-    private let photoPageLabel: UILabel = {
+    let photoPageLabel: UILabel = {
         let label = UILabel()
-        label.attributedText = AttributedStringManager.configureString(
-            text: "1 / 3",
-            font: UIFont.customFontForBody(weight: .w500),
-            color: .bgColor
-        )
         label.backgroundColor = UIColor.customColor(hexCode: .neutral950).withAlphaComponent(0.6)
         label.layer.cornerRadius = 13
         label.clipsToBounds = true
-        label.textAlignment = .center
         return label
     }()
     
-    private let testView = UIView()
+    private let storeImageView = UIView()
     private let contentViews: [UIImageView] = {
         ["DefaultImage", "DefaultImage", "DefaultImage"].map { imageName in
             let imageView = UIImageView()
@@ -64,16 +62,26 @@ class SectionOneViewCell: UICollectionViewCell {
     
     private func configureUI() {
         contentView.backgroundColor = .white
+        scrollView.addSubview(bgView)
+        scrollView.addSubview(storeImageView)
         
-        scrollView.addSubview(testView)
-        scrollView.addSubview(backgroundImageView)
-        contentViews.forEach { testView.addSubview($0) }
+        
+        contentViews.forEach { storeImageView.addSubview($0) }
         
         [
             scrollView, photoPageLabel
         ]
             .forEach { contentView.addSubview($0) }
         
+        bgView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        disposeBag = DisposeBag()
     }
     
     private func setConstraints() {
@@ -81,13 +89,13 @@ class SectionOneViewCell: UICollectionViewCell {
             $0.edges.equalToSuperview()
         }
         
-        testView.snp.makeConstraints {
+        storeImageView.snp.makeConstraints {
             $0.edges.equalToSuperview()
             $0.height.equalToSuperview()
             $0.width.equalToSuperview().multipliedBy(contentViews.count)
         }
         
-        backgroundImageView.snp.makeConstraints { make in
+        bgView.snp.makeConstraints { make in
             make.height.equalTo(contentView.snp.height)
         }
         
@@ -131,3 +139,11 @@ class SectionOneViewCell: UICollectionViewCell {
         }
     }
 }
+
+extension Reactive where Base: SectionOneViewCell {
+    var imagePage: Observable<CGPoint> {
+        return base.scrollView.rx.contentOffset
+            .asObservable() 
+    }
+}
+

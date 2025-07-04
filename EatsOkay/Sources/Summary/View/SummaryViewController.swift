@@ -17,6 +17,7 @@ class SummaryViewController: UIViewController {
     
     typealias Reactor = SummaryReactor
     var reactor: SummaryReactor
+    private let tapGesture = UITapGestureRecognizer()
     
     var disposeBag = DisposeBag()
     
@@ -28,8 +29,6 @@ class SummaryViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    let data = [1]
     
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: createCompositionalLayout())
@@ -61,6 +60,19 @@ class SummaryViewController: UIViewController {
         button.setImage(UIImage(named: "WebIcon"), for: .normal)
         button.setImage(UIImage(named: "WebIcon"), for: .highlighted)
         button.imageView?.contentMode = .scaleAspectFill
+        return button
+    }()
+    
+    private let callButton: UIButton = {
+        var configuration = UIButton.Configuration.plain()
+        configuration.imagePlacement = .top
+        configuration.imagePadding = 4
+        configuration.contentInsets = .init(top: 6, leading: 6, bottom: 6, trailing: 6)
+        configuration.background.strokeWidth = 1
+        configuration.background.strokeColor = UIColor.customColor(hexCode: .neutral100)
+        configuration.background.cornerRadius = 8
+        
+        let button = UIButton(configuration: configuration)
         return button
     }()
     
@@ -226,15 +238,22 @@ class SummaryViewController: UIViewController {
     private func setupView() {
         view.backgroundColor = .customColor(hexCode: .bgColor)
         
-        [webViewButton, collectionView].forEach{
+        [webViewButton, collectionView, callButton].forEach{
             view.addSubview($0)
+        }
+        
+        callButton.snp.makeConstraints { make in
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).offset(-10)
+            make.leading.equalToSuperview().offset(20)
+            make.height.equalTo(60)
+            make.width.equalTo(60)
         }
         
         // button autoLayout 설정
         webViewButton.snp.makeConstraints { make in
             make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).offset(-10)
-            make.centerX.equalToSuperview()
-            make.horizontalEdges.equalToSuperview().inset(20)
+            make.leading.equalTo(callButton.snp.trailing).offset(10)
+            make.trailing.equalToSuperview().inset(20)
             make.height.equalTo(60)
         }
         
@@ -271,13 +290,24 @@ extension SummaryViewController {
             .map { Reactor.Action.webViewButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
+        
+        // callButton 클릭 시
+        callButton.rx.tap
+            .map { Reactor.Action.callButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        tapGesture.rx.tapGestureRecognition
+            .map { _ in Reactor.Action.imageSeleted }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
     }
     
     func bindState(reactor: SummaryReactor) {
         
         // 컬렉션 뷰 RxDataSource 바인딩
         reactor.state
-            .map { $0.section }
+            .map { $0.setSections }
             .bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
@@ -310,25 +340,115 @@ extension SummaryViewController {
             .withLatestFrom(reactor.state.map { $0.webViewUrl })
             .compactMap { $0 }
             .subscribe(onNext: { [weak self] urlString in
+                guard let self else { return }
                 guard let url = URL(string: urlString) else { return }
                 let safariVC = SFSafariViewController(url: url)
                 safariVC.modalPresentationStyle = .popover
                 safariVC.delegate = self // 모달 닫기 delegate
                 safariVC.presentationController?.delegate = self // 모달 드래그 delegate
-                self?.present(safariVC, animated: true, completion: nil)
+                self.present(safariVC, animated: true, completion: nil)
             })
             .disposed(by: disposeBag)
+        
+        // call Button Image,Text 바인딩
+        reactor.state
+            .map { $0.storeInfo.nationalPhoneNumber }
+            .distinctUntilChanged()
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(with: self) { owner, nationalPhoneNumber in
+                if let _ = nationalPhoneNumber {
+                    owner.callButton.configuration?.image = UIImage(named: "Call1")
+                    owner.callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
+                        text: "전화하기",
+                        font: .customFontForBody(weight: .w500),
+                        color: .neutral700
+                    )
+                } else {
+                    owner.callButton.configuration?.image = UIImage(named: "Call2")
+                    owner.callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
+                        text: "번호없음",
+                        font: .customFontForBody(weight: .w500),
+                        color: .neutral400
+                    )
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        // call Button Action 바인딩
+        reactor.pulse(\.$nationalNumber)
+            .compactMap { $0 }
+            .bind { phoneNumber in
+                let cleanedNumber = phoneNumber
+                    .replacingOccurrences(of: " ", with: "")
+                    .replacingOccurrences(of: "-", with: "")
+                if let phoneURL = URL(string: "tel://\(cleanedNumber)"),
+                   UIApplication.shared.canOpenURL(phoneURL) {
+                    UIApplication.shared.open(phoneURL, options: [:], completionHandler: nil)
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$setDetailPhoto)
+            .compactMap { $0 }
+            .withUnretained(self)
+            .bind { vc, photosData in
+                let reactor = DetailPhotosReactor(with: photosData)
+                let detailPhotoVC = DetailPhotosViewController(reactor: reactor)
+                detailPhotoVC.modalPresentationStyle = .fullScreen
+                detailPhotoVC.modalTransitionStyle = .crossDissolve
+                vc.present(detailPhotoVC, animated: true)
+            }
+            .disposed(by: disposeBag)
+        
     }
-    
 }
 
 extension SummaryViewController {
     private func makeDataSource() -> DataSource {
-        return DataSource(configureCell: { dataSource, collectionView, indexPath, item in
-
+        return DataSource(configureCell: { [weak self] dataSource, collectionView, indexPath, item in
+            guard let self else { return .init() }
             switch item {
             case .summaryImageCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionOneViewCell.identifier, for: indexPath) as? SectionOneViewCell else { return .init()}
+                
+                cell.rx.imagePage
+                    .map({ value -> Int in
+                        let width = Int(UIScreen.main.bounds.width)
+                        let intValue = Int(value.x)
+                        var currentIndex = 0
+                        switch intValue {
+                        case 0..<width:
+                            currentIndex = 0
+                        case width..<width*2:
+                            currentIndex = 1
+                        case width*2..<width*3:
+                            currentIndex = 2
+                        default:
+                            currentIndex = 0
+                        }
+                        return currentIndex
+                    })
+                    .distinctUntilChanged()
+                    .map { Reactor.Action.imagePageChanged($0) }
+                    .bind(to: self.reactor.action)
+                    .disposed(by: cell.disposeBag)
+                
+                // photoPageLabel 바인딩
+                reactor.state
+                    .map { $0.currentImagePage }
+                    .distinctUntilChanged()
+                    .map { index -> NSAttributedString in
+                        AttributedStringManager.configureString(
+                            text: "\(index + 1) / 3",
+                            font: UIFont.customFontForBody(weight: .w500),
+                            color: .bgColor,
+                            alignment: .center
+                        )
+                    }
+                    .bind(to: cell.photoPageLabel.rx.attributedText)
+                    .disposed(by: disposeBag)
+                
+                cell.addGestureRecognizer(tapGesture)
                 cell.update(with: item)
                 return cell
             case .summaryInfoCell:
@@ -345,7 +465,7 @@ extension SummaryViewController {
                 return cell
             }
         },
-        configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
+                          configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
             if kind == UICollectionView.elementKindSectionHeader {
                 let section = dataSource.sectionModels[indexPath.section]
                 
@@ -372,7 +492,7 @@ extension SummaryViewController {
         })
     }
 }
-    
+
 // 모달을 완료 버튼으로 dismiss 했을 때 체크
 extension SummaryViewController: SFSafariViewControllerDelegate {
     func safariViewControllerDidFinish(_ controller: SFSafariViewController) {

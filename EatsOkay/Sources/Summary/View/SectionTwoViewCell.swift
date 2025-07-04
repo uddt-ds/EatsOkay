@@ -7,8 +7,6 @@
 
 import UIKit
 import SnapKit
-import RxSwift
-import RxCocoa
 
 class SectionTwoViewCell: UICollectionViewCell {
     static let identifier = "SectionTwoViewCell"
@@ -97,24 +95,11 @@ class SectionTwoViewCell: UICollectionViewCell {
         return label
     }()
     
-    fileprivate let callButton: UIButton = {
-        var configuration = UIButton.Configuration.plain()
-        configuration.imagePlacement = .leading
-        configuration.imagePadding = 4
-        configuration.contentInsets = .init(top: 8, leading: 16, bottom: 8, trailing: 16)
-        configuration.background.strokeWidth = 1
-        configuration.background.strokeColor = UIColor.customColor(hexCode: .neutral100)
-        configuration.background.cornerRadius = 50
-        
-        let button = UIButton(configuration: configuration)
-        return button
-    }()
-    
     private let secondSeparator = CustomSeparator(color: .neutral50)
     
     private func configureView() {
         [regionLabel, storeLabel, rateImageView, rateLabel, dotLabel, reviewLabel,
-         separator ,timeImageView, timeLabel, callButton, secondSeparator].forEach {
+         separator ,timeImageView, timeLabel, secondSeparator].forEach {
             addSubview($0)
         }
         
@@ -170,17 +155,9 @@ class SectionTwoViewCell: UICollectionViewCell {
             make.top.equalTo(timeLabel.snp.bottom).offset(20)
         }
         
-        callButton.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().inset(20)
-        }
-        
     }
     
     func update(with: SummarySectionModel.CellModel) {
-//        if case.summaryInfoCell(let data) = with {
-//            data.
-//        }
         switch with {
         case .summaryInfoCell(let data):
             regionLabel.attributedText = AttributedStringManager.configureString(
@@ -207,29 +184,23 @@ class SectionTwoViewCell: UICollectionViewCell {
                 color: .neutral950
             )
             
-            // nationalPhoneNumber의 nil 값 유/무로 분기처리
-            if let _ = data.storePhoneNumber {
-                callButton.configuration?.image = UIImage(named: "Call")
-                callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
-                        text: "전화",
-                        font: .customFontForBody(weight: .w600),
-                        color: .neutral700
+            let openInfo = data.openInfo
+            if data.isOpen {
+                timeLabel.attributedText = AttributedStringManager.configureString(
+                    text: "영업 중" + " • \(openInfo)",
+                    font: .customFontForBody(weight: .w500),
+                    color: .neutral700
                 )
             } else {
-                callButton.configuration?.image = UIImage(named: "Call2")
-                callButton.configuration?.attributedTitle = AttributedStringManager.configureString(
-                    text: "번호 없음",
-                    font: .customFontForBody(weight: .w600),
-                    color: .neutral200
+                timeLabel.attributedText = AttributedStringManager.configureHighlightString(
+                    text: "영업 종료" + " • \(openInfo)",
+                    font: .customFontForBody(weight: .w500),
+                    color: .neutral700,
+                    highlightWords: [
+                        .init(word: "영업 종료", color: .closedColor)
+                    ]
                 )
             }
-            
-            let openInfo = data.openInfo
-            timeLabel.attributedText = AttributedStringManager.configureString(
-                text: data.isOpen ? "영업중" + " • \(openInfo)" : "영업 종료" + " • \(openInfo)",
-                font: .customFontForBody(weight: .w600),
-                color: .neutral800
-            )
         default:
             break
         }
@@ -259,12 +230,5 @@ extension SectionTwoViewCell {
         let district = components[2]
         
         return "\(city) \(district)"
-    }
-}
-
-// VC에서 rx.tap을 사용하기 위한 확장
-extension Reactive where Base: SectionTwoViewCell {
-    var callButtonTapped: ControlEvent<Void> {
-        return base.callButton.rx.tap
     }
 }

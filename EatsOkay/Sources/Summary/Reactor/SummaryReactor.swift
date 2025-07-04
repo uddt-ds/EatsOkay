@@ -15,14 +15,17 @@ class SummaryReactor: Reactor {
     var disposeBag = DisposeBag()
     
     init(storeInfo: StoreInfo) {
-        self.initialState = State(storeInfo: storeInfo, section: [])
+        self.initialState = State(storeInfo: storeInfo, setSections: [])
     }
     
     enum Action {
-        case viewDidLoad // viewDidLoad 시
-        case backButtonTapped // 뒤로가기 버튼 클릭 시
+        case viewDidLoad
+        case backButtonTapped 
         case webViewButtonTapped
         case webViewDidDismiss
+        case imagePageChanged(Int)
+        case callButtonTapped
+        case imageSeleted
     }
     
     enum Mutation {
@@ -30,15 +33,20 @@ class SummaryReactor: Reactor {
         case shouldPop(Bool)
         case setWebViewUri(String)
         case dismissWebView
+        case setImagePage(Int)
+        case setNationalNumber(String?)
+        case setDetailPhoto(DetailPhotos)
     }
     
     struct State {
         var storeInfo: StoreInfo
-        var section: [SummarySectionModel]
-        var imagesUri: [String] = []
+        var setSections: [SummarySectionModel]
         var shouldPop: Bool = false
         var webViewUrl: String? = nil
         var shouldPresentWebView: Bool = false
+        var currentImagePage: Int = 1
+        @Pulse var nationalNumber: String?
+        @Pulse var setDetailPhoto: DetailPhotos?
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
@@ -47,7 +55,6 @@ class SummaryReactor: Reactor {
             let storeInfo = currentState.storeInfo
             let firstImageUrl = storeInfo.photosNames
             
-            print(firstImageUrl)
             let photos = storeInfo.photos ?? []
             
             let secondImageName = photos.count > 1 ? photos[1].name : "DefaultImage"
@@ -139,6 +146,32 @@ class SummaryReactor: Reactor {
             return Observable.just(.setWebViewUri(uri))
         case .webViewDidDismiss:
             return Observable.just(.dismissWebView)
+        case .imagePageChanged(let page):
+            return Observable.just(.setImagePage(page)).filter { [weak self] mutation in
+                guard let self else { return false }
+                if case let .setImagePage(page) = mutation {
+                    let prev = self.currentState.currentImagePage
+                    let now = page
+                    return prev == now ? false : true
+                } else {
+                    return true
+                }
+            }
+        case .callButtonTapped:
+            let nationalNumber = currentState.storeInfo.nationalPhoneNumber
+            return Observable.just(.setNationalNumber(nationalNumber))
+        case .imageSeleted:
+            let storeName = currentState.storeInfo.displayName
+            let selectedIndex = currentState.currentImagePage
+            let photoUri = currentState.setSections[0].items[0]
+            switch photoUri {
+            case .summaryImageCell(let photosUri):
+                let detailPhotos = DetailPhotos(storeName: storeName, selectedIndex: selectedIndex, photosUri: photosUri.photosUrl)
+                return .just(.setDetailPhoto(detailPhotos))
+            default :
+                return .empty()
+            }
+            
         }
     }
     
@@ -146,7 +179,7 @@ class SummaryReactor: Reactor {
         var newState = state
         switch mutation {
         case .setSections(let dataSource):
-            newState.section = dataSource
+            newState.setSections = dataSource
         case .shouldPop(let flag):
             newState.shouldPop = flag
         case .setWebViewUri(let uri):
@@ -154,6 +187,12 @@ class SummaryReactor: Reactor {
             newState.shouldPresentWebView = true
         case .dismissWebView:
             newState.shouldPresentWebView = false
+        case .setImagePage(let page):
+            newState.currentImagePage = page
+        case .setNationalNumber(let nationalNumber):
+            newState.nationalNumber = nationalNumber
+        case .setDetailPhoto(let detailPhotos):
+            newState.setDetailPhoto = detailPhotos
         }
         return newState
     }
