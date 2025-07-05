@@ -17,7 +17,7 @@ final class DetailPhotosReactor: Reactor {
         self.initialState = State(
             photosUri: data.photosUri,
             storeName: data.storeName,
-            scrollIndex: data.selectedIndex
+            scrollIndex: (data.selectedIndex , 1)
         )
     }
     
@@ -40,7 +40,7 @@ final class DetailPhotosReactor: Reactor {
         fileprivate var photosUri: [String]
         var collectionViewData = [DetailPhotosSectionOfCellModel]()
         var storeName: String
-        var scrollIndex: Int
+        var scrollIndex: (Int, Int)
         @Pulse var selectedIndex: Int?
         @Pulse var dissmissRequest: Void?
     }
@@ -49,11 +49,11 @@ final class DetailPhotosReactor: Reactor {
         switch action {
         case .initialFetch:
             
-            let dataSource = makeDataSource(with: currentState.scrollIndex)
+            let dataSource = makeDataSource(with: currentState.scrollIndex.0)
             
             return Observable.concat(
                 Observable.just(.setCollectionViewData(dataSource)),
-                Observable.just(.setSelectedIndex(currentState.scrollIndex)),
+                Observable.just(.setSelectedIndex(currentState.scrollIndex.0)),
                 Observable.just(.setStoreName(currentState.storeName))
             )
         case .imagePaged(let pagedIndex):
@@ -91,7 +91,7 @@ final class DetailPhotosReactor: Reactor {
             newState.storeName = storeName
             
         case let .setScrollIndex(selectedIndex):
-            newState.scrollIndex = selectedIndex
+            newState.scrollIndex = (selectedIndex, currentState.photosUri.count)
             
         case let .setSelectedIndex(index):
             newState.selectedIndex = index
