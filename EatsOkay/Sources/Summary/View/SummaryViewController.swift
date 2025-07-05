@@ -13,11 +13,10 @@ import ReactorKit
 import SafariServices
 import RxDataSources
 
-class SummaryViewController: UIViewController {
+final class SummaryViewController: UIViewController {
     
     typealias Reactor = SummaryReactor
     var reactor: SummaryReactor
-    private let tapGesture = UITapGestureRecognizer()
     
     var disposeBag = DisposeBag()
     
@@ -112,22 +111,22 @@ class SummaryViewController: UIViewController {
     }
     
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
-        let layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
+        let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             switch sectionIndex {
             case 0:
                 // 첫번째 섹션 레이아웃 만들기
-                return self.createOneSection()
+                return self?.createOneSection()
             case 1:
                 // 두번째 섹션 레이아웃 만들기
-                return self.createTwoSection()
+                return self?.createTwoSection()
             case 2:
                 // 세번째 섹션 레이아웃 만들기
-                return self.createThreeSection()
+                return self?.createThreeSection()
             case 3:
                 // 네번째 섹션 레이아웃 만들기
-                return self.createFourSection()
+                return self?.createFourSection()
             default:
-                return self.createDefaultSectionLayout()
+                return self?.createDefaultSectionLayout()
             }
         }
         return layout
@@ -274,7 +273,7 @@ extension SummaryViewController {
         bindState(reactor: reactor)
     }
     
-    func bindAction(reactor: SummaryReactor) {
+    private func bindAction(reactor: SummaryReactor) {
         
         // viewDidLoad 시점시
         reactor.action.onNext(.viewDidLoad)
@@ -296,14 +295,9 @@ extension SummaryViewController {
             .map { Reactor.Action.callButtonTapped }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
-        
-        tapGesture.rx.tapGestureRecognition
-            .map { _ in Reactor.Action.imageSeleted }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
     }
     
-    func bindState(reactor: SummaryReactor) {
+    private func bindState(reactor: SummaryReactor) {
         
         // 컬렉션 뷰 RxDataSource 바인딩
         reactor.state
@@ -411,6 +405,11 @@ extension SummaryViewController {
             case .summaryImageCell:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionOneViewCell.identifier, for: indexPath) as? SectionOneViewCell else { return .init()}
                 
+                cell.rx.buttonsTapped
+                    .map { Reactor.Action.imageSeleted }
+                    .bind(to: reactor.action)
+                    .disposed(by: cell.disposeBag)
+                
                 cell.rx.imagePage
                     .map({ value -> Int in
                         let width = Int(UIScreen.main.bounds.width)
@@ -434,12 +433,14 @@ extension SummaryViewController {
                     .disposed(by: cell.disposeBag)
                 
                 // photoPageLabel 바인딩
-                reactor.state
+                let currentImagePageInfo: Observable<(Int, Int)> = reactor.state
                     .map { $0.currentImagePage }
-                    .distinctUntilChanged()
-                    .map { index -> NSAttributedString in
+                    .distinctUntilChanged { $0 == $1 }
+                
+                currentImagePageInfo
+                    .map { (index, total) -> NSAttributedString in
                         AttributedStringManager.configureString(
-                            text: "\(index + 1) / 3",
+                            text: "\(index + 1) / \(total)",
                             font: UIFont.customFontForBody(weight: .w500),
                             color: .bgColor,
                             alignment: .center
@@ -448,7 +449,6 @@ extension SummaryViewController {
                     .bind(to: cell.photoPageLabel.rx.attributedText)
                     .disposed(by: disposeBag)
                 
-                cell.addGestureRecognizer(tapGesture)
                 cell.update(with: item)
                 return cell
             case .summaryInfoCell:

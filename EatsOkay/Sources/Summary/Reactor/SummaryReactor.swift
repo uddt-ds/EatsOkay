@@ -44,7 +44,7 @@ class SummaryReactor: Reactor {
         var shouldPop: Bool = false
         var webViewUrl: String? = nil
         var shouldPresentWebView: Bool = false
-        var currentImagePage: Int = 1
+        var currentImagePage: (Int, Int) = (1, 1)
         @Pulse var nationalNumber: String?
         @Pulse var setDetailPhoto: DetailPhotos?
     }
@@ -57,87 +57,40 @@ class SummaryReactor: Reactor {
             
             let photos = storeInfo.photos ?? []
             
-            let secondImageName = photos.count > 1 ? photos[1].name : "DefaultImage"
-            let thirdImageName  = photos.count > 2 ? photos[2].name : "DefaultImage"
+            switch photos.count {
+                
+            case 0, 1:
+                let imageUrls = [firstImageUrl]
+                let dataSources = makeDataSources(with: imageUrls)
+                return Observable.just(dataSources)
+
+            case 2:
+                let secondName = photos[1].name
+                return NetworkManager.shared.fetchImage(mediaName: secondName)
+                    .asObservable()
+                    .withUnretained(self)
+                    .map { reactor, second in
+                        let imageUrls = [firstImageUrl, second.photoUri]
+                        return reactor.makeDataSources(with: imageUrls)
+                    }
+
+            default:
+                let secondName = photos[1].name
+                let thirdName  = photos[2].name
+
+                let secondImage = NetworkManager.shared.fetchImage(mediaName: secondName).map { $0.photoUri }
+                let thirdImage  = NetworkManager.shared.fetchImage(mediaName: thirdName).map { $0.photoUri }
+
+                return Single.zip(secondImage, thirdImage)
+                    .asObservable()
+                    .withUnretained(self)
+                    .map { reactor, response in
+                        let imageUrls = [firstImageUrl, response.0, response.1]
+                        return reactor.makeDataSources(with: imageUrls)
+                    }
+                    
+            }
             
-            let secondImage: Single<String> = secondImageName == "DefaultImage" ? .just("DefaultImage")
-            : NetworkManager.shared.fetchImage(mediaName: secondImageName).map { $0.photoUri }
-            
-            let thirdImage: Single<String> = thirdImageName == "DefaultImage" ? .just("DefaultImage")
-            : NetworkManager.shared.fetchImage(mediaName: thirdImageName).map { $0.photoUri }
-            
-            return Single.zip(secondImage, thirdImage)
-                .map { secondImageUrl, thirdImageUrl in
-                    // 섹션 1
-                    let photoUri: [SummarySectionModel.CellModel] = [
-                        .summaryImageCell(
-                            .init(photosUrl: [firstImageUrl, secondImageUrl, thirdImageUrl])
-                        )
-                    ]
-                    let imageSection = SummarySectionModel(section: .summaryImage, items: photoUri)
-                    
-                    // 섹션 2
-                    let infoItems: [SummarySectionModel.CellModel] = [
-                        .summaryInfoCell(.init(
-                            storeName: storeInfo.displayName,
-                            storeAddress: storeInfo.formattedAddress,
-                            storeType: storeInfo.primaryTypeDisplayName,
-                            rate: "\(storeInfo.rating)",
-                            reviewCount: "리뷰 \(storeInfo.userRatingCount)개",
-                            isOpen: storeInfo.currentOpeningHours.openNow,
-                            openInfo: OpeningHours.getTodayClosingOrTomorrowOpening(openingHours: storeInfo.currentOpeningHours),
-                            storePhoneNumber: storeInfo.nationalPhoneNumber))
-                    ]
-                    let infoSection = SummarySectionModel(section: .summaryInfo, items: infoItems)
-                    
-                    // 섹션 3
-                    let hasFeatureInfo = (storeInfo.goodForGroups ?? false) ||
-                    (storeInfo.takeout ?? false) ||
-                    (storeInfo.reservable ?? false) ||
-                    (storeInfo.parkingOptions?.freeParkingLot ?? false) ||
-                    (storeInfo.parkingOptions?.paidParkingLot ?? false) ||
-                    (storeInfo.parkingOptions?.freeStreetParking ?? false) ||
-                    (storeInfo.parkingOptions?.paidStreetParking ?? false) ||
-                    (storeInfo.parkingOptions?.valetParking ?? false) ||
-                    (storeInfo.parkingOptions?.freeGarageParking ?? false) ||
-                    (storeInfo.parkingOptions?.paidGarageParking ?? false)
-                    
-                    // 단체모임/포장/예약/주차 정보가 모두 false 또는 nil일 경우 빈 배열 반환
-                    let featuresItems: [SummarySectionModel.CellModel] = hasFeatureInfo ? [
-                        .summaryFeaturesCell(
-                            .init(
-                                goodForGroups: storeInfo.goodForGroups,
-                                takeout: storeInfo.takeout,
-                                reservable: storeInfo.reservable,
-                                parkingOptions: storeInfo.parkingOptions
-                            )
-                        )
-                    ] : []
-                    
-                    let featuresSection = SummarySectionModel(section: .summaryFeatures, items: featuresItems)
-                    
-                    // 섹션 4
-                    let centerLat = storeInfo.latitude
-                    let centerLon = storeInfo.longitude
-                    let mapImageUrl = NetworkManager.shared.fetchStaticURL(center: "\(centerLat),\(centerLon)")
-                    let mapItems: [SummarySectionModel.CellModel] = [
-                        .summaryMapCell(
-                            .init(imageUrl: mapImageUrl ?? "", address: storeInfo.formattedAddress)
-                        )
-                    ]
-                    let mapSection = SummarySectionModel(section: .summaryMap, items: mapItems)
-                    
-                    // 4개의 섹션 데이터들을 하나로 병합
-                    let dataSource: [SummarySectionModel] = [
-                        imageSection,
-                        infoSection,
-                        featuresSection,
-                        mapSection
-                    ]
-                    
-                    return Mutation.setSections(dataSource)
-                }
-                .asObservable()
         case .backButtonTapped:
             return .just(.shouldPop(true))
         case .webViewButtonTapped:
@@ -152,7 +105,7 @@ class SummaryReactor: Reactor {
                 if case let .setImagePage(page) = mutation {
                     let prev = self.currentState.currentImagePage
                     let now = page
-                    return prev == now ? false : true
+                    return prev.0 == now ? false : true
                 } else {
                     return true
                 }
@@ -166,7 +119,10 @@ class SummaryReactor: Reactor {
             let photoUri = currentState.setSections[0].items[0]
             switch photoUri {
             case .summaryImageCell(let photosUri):
-                let detailPhotos = DetailPhotos(storeName: storeName, selectedIndex: selectedIndex, photosUri: photosUri.photosUrl)
+                guard photosUri.photosUrl[0] != "DefaultImage" else {
+                    return .empty()
+                }
+                let detailPhotos = DetailPhotos(storeName: storeName, selectedIndex: selectedIndex.0, photosUri: photosUri.photosUrl)
                 return .just(.setDetailPhoto(detailPhotos))
             default :
                 return .empty()
@@ -188,12 +144,91 @@ class SummaryReactor: Reactor {
         case .dismissWebView:
             newState.shouldPresentWebView = false
         case .setImagePage(let page):
-            newState.currentImagePage = page
+            var photosCount = currentState.storeInfo.photos?.count ?? 1
+            
+            if photosCount > 2 {
+                photosCount = 3
+            }
+            
+            newState.currentImagePage = (page, photosCount)
         case .setNationalNumber(let nationalNumber):
             newState.nationalNumber = nationalNumber
         case .setDetailPhoto(let detailPhotos):
             newState.setDetailPhoto = detailPhotos
         }
         return newState
+    }
+    
+    private func makeDataSources(with imageUrls: [String]) -> Mutation {
+        
+        let storeInfo = currentState.storeInfo
+        
+        let photoUri: [SummarySectionModel.CellModel] = [
+            .summaryImageCell(
+                .init(photosUrl: imageUrls)
+            )
+        ]
+        let imageSection = SummarySectionModel(section: .summaryImage, items: photoUri)
+        
+        // 섹션 2
+        let infoItems: [SummarySectionModel.CellModel] = [
+            .summaryInfoCell(.init(
+                storeName: storeInfo.displayName,
+                storeAddress: storeInfo.formattedAddress,
+                storeType: storeInfo.primaryTypeDisplayName,
+                rate: "\(storeInfo.rating)",
+                reviewCount: "리뷰 \(storeInfo.userRatingCount)개",
+                isOpen: storeInfo.currentOpeningHours.openNow,
+                openInfo: OpeningHours.getTodayClosingOrTomorrowOpening(openingHours: storeInfo.currentOpeningHours),
+                storePhoneNumber: storeInfo.nationalPhoneNumber))
+        ]
+        let infoSection = SummarySectionModel(section: .summaryInfo, items: infoItems)
+        
+        // 섹션 3
+        let hasFeatureInfo = (storeInfo.goodForGroups ?? false) ||
+        (storeInfo.takeout ?? false) ||
+        (storeInfo.reservable ?? false) ||
+        (storeInfo.parkingOptions?.freeParkingLot ?? false) ||
+        (storeInfo.parkingOptions?.paidParkingLot ?? false) ||
+        (storeInfo.parkingOptions?.freeStreetParking ?? false) ||
+        (storeInfo.parkingOptions?.paidStreetParking ?? false) ||
+        (storeInfo.parkingOptions?.valetParking ?? false) ||
+        (storeInfo.parkingOptions?.freeGarageParking ?? false) ||
+        (storeInfo.parkingOptions?.paidGarageParking ?? false)
+        
+        // 단체모임/포장/예약/주차 정보가 모두 false 또는 nil일 경우 빈 배열 반환
+        let featuresItems: [SummarySectionModel.CellModel] = hasFeatureInfo ? [
+            .summaryFeaturesCell(
+                .init(
+                    goodForGroups: storeInfo.goodForGroups,
+                    takeout: storeInfo.takeout,
+                    reservable: storeInfo.reservable,
+                    parkingOptions: storeInfo.parkingOptions
+                )
+            )
+        ] : []
+        
+        let featuresSection = SummarySectionModel(section: .summaryFeatures, items: featuresItems)
+        
+        // 섹션 4
+        let centerLat = storeInfo.latitude
+        let centerLon = storeInfo.longitude
+        let mapImageUrl = NetworkManager.shared.fetchStaticURL(center: "\(centerLat),\(centerLon)")
+        let mapItems: [SummarySectionModel.CellModel] = [
+            .summaryMapCell(
+                .init(imageUrl: mapImageUrl ?? "", address: storeInfo.formattedAddress)
+            )
+        ]
+        let mapSection = SummarySectionModel(section: .summaryMap, items: mapItems)
+        
+        // 4개의 섹션 데이터들을 하나로 병합
+        let dataSource: [SummarySectionModel] = [
+            imageSection,
+            infoSection,
+            featuresSection,
+            mapSection
+        ]
+        
+        return Mutation.setSections(dataSource)
     }
 }

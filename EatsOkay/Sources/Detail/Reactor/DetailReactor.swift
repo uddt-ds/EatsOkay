@@ -357,7 +357,7 @@ extension DetailReactor {
             return .just(cachedUri)
         }
         // photoName이 없으면 빈 문자열 반환
-        guard !photoName.isEmpty else { return .just("") }
+        guard !photoName.isEmpty else { return .just("DefaultImage") }
         // 캐시에 없으면 네트워크 요청
         return NetworkManager.shared.fetchImage(mediaName: photoName)
             .map { [weak self] googleUri in

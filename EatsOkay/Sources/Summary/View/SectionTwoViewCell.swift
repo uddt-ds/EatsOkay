@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class SectionTwoViewCell: UICollectionViewCell {
+final class SectionTwoViewCell: UICollectionViewCell {
     static let identifier = "SectionTwoViewCell"
     
     required init?(coder: NSCoder) {
@@ -209,7 +209,7 @@ class SectionTwoViewCell: UICollectionViewCell {
 
 extension SectionTwoViewCell {
     // ex) 서울특별시 OO구 OO동 OOOOO을 서울시 OO구로 변환하는 함수
-    func formatAddress(_ fullAddress: String) -> String {
+    private func formatAddress(_ fullAddress: String) -> String {
         // 공백을 기준으로 분리
         let components = fullAddress.components(separatedBy: " ")
         

@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import Kingfisher
 
-class SectionFourViewCell: UICollectionViewCell {
+final class SectionFourViewCell: UICollectionViewCell {
     static let identifier = "SectionFourViewCell"
     
     required init?(coder: NSCoder) {

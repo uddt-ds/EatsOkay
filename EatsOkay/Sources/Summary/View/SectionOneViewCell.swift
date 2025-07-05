@@ -11,9 +11,10 @@ import Kingfisher
 import RxSwift
 import RxCocoa
 
-class SectionOneViewCell: UICollectionViewCell {
+final class SectionOneViewCell: UICollectionViewCell {
     static let identifier = "SectionOneViewCell"
     
+    fileprivate let contentsButtonRelay = PublishRelay<Void>()
     var disposeBag = DisposeBag()
     
     required init?(coder: NSCoder) {
@@ -51,22 +52,11 @@ class SectionOneViewCell: UICollectionViewCell {
     }()
     
     private let storeImageView = UIView()
-    private let contentViews: [UIImageView] = {
-        ["DefaultImage", "DefaultImage", "DefaultImage"].map { imageName in
-            let imageView = UIImageView()
-            imageView.image = UIImage(named: imageName)
-            imageView.contentMode = .scaleAspectFit
-            return imageView
-        }
-    }()
     
     private func configureUI() {
         contentView.backgroundColor = .white
         scrollView.addSubview(bgView)
         scrollView.addSubview(storeImageView)
-        
-        
-        contentViews.forEach { storeImageView.addSubview($0) }
         
         [
             scrollView, photoPageLabel
@@ -92,23 +82,10 @@ class SectionOneViewCell: UICollectionViewCell {
         storeImageView.snp.makeConstraints {
             $0.edges.equalToSuperview()
             $0.height.equalToSuperview()
-            $0.width.equalToSuperview().multipliedBy(contentViews.count)
         }
         
         bgView.snp.makeConstraints { make in
             make.height.equalTo(contentView.snp.height)
-        }
-        
-        for (index, view) in contentViews.enumerated() {
-            view.snp.makeConstraints {
-                $0.top.bottom.equalToSuperview()
-                $0.width.equalTo(scrollView.snp.width)
-                if index == 0 {
-                    $0.leading.equalToSuperview()
-                } else {
-                    $0.leading.equalTo(contentViews[index - 1].snp.trailing)
-                }
-            }
         }
         
         photoPageLabel.snp.makeConstraints { make in
@@ -121,16 +98,54 @@ class SectionOneViewCell: UICollectionViewCell {
     }
     
     func update(with: SummarySectionModel.CellModel) {
+        storeImageView.subviews.forEach { $0.removeFromSuperview() }
         switch with {
         case .summaryImageCell(let data):
-            for (index, urlString) in data.photosUrl.enumerated() {
-                if index < contentViews.count {
-                    if urlString == "DefaultImage" {
-                        contentViews[index].image = UIImage(named: "DefaultImage")
-                    } else if let url = URL(string: urlString), urlString.hasPrefix("https") {
-                        contentViews[index].kf.setImage(with: url)
+            
+            let contentsButtons = data.photosUrl.map { uri in
+                let button = UIButton()
+                button.imageView?.contentMode = .scaleAspectFit
+                
+                if let uri = URL(string: uri) {
+                    button.kf.setImage(with: uri, for: .normal, completionHandler:  { response in
+                        if case .failure = response {
+                            button.setImage(UIImage(named: "DefaultImage"), for: .normal)
+                        }
+                    })
+                    button.kf.setImage(with: uri, for: .highlighted, completionHandler:  { response in
+                        if case .failure = response {
+                            button.setImage(UIImage(named: "DefaultImage"), for: .highlighted)
+                        }
+                    })
+                } else {
+                    button.setImage(UIImage(named: "DefaultImage"), for: .normal)
+                    button.setImage(UIImage(named: "DefaultImage"), for: .highlighted)
+                }
+                
+                button.rx.tap
+                    .withUnretained(self)
+                    .bind { cell, _ in
+                        cell.contentsButtonRelay.accept(Void())
+                    }
+                    .disposed(by: disposeBag)
+                
+                return button
+            }
+            
+            contentsButtons.forEach { storeImageView.addSubview($0) }
+            
+            storeImageView.snp.makeConstraints {
+                $0.width.equalToSuperview().multipliedBy(data.photosUrl.count)
+            }
+            
+            for (index, view) in contentsButtons.enumerated() {
+                view.snp.makeConstraints {
+                    $0.top.bottom.equalToSuperview()
+                    $0.width.equalTo(scrollView.snp.width)
+                    if index == 0 {
+                        $0.leading.equalToSuperview()
                     } else {
-                        contentViews[index].image = UIImage(named: "DefaultImage")
+                        $0.leading.equalTo(contentsButtons[index - 1].snp.trailing)
                     }
                 }
             }
@@ -145,5 +160,9 @@ extension Reactive where Base: SectionOneViewCell {
         return base.scrollView.rx.contentOffset
             .asObservable() 
     }
+    
+    var buttonsTapped: Observable<Void> {
+        return base.contentsButtonRelay
+            .asObservable()
+    }
 }
-

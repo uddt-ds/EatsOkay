@@ -212,7 +212,7 @@ class DetailTableViewCell: UITableViewCell {
         }
         
         // photoNames이 빈문자열이면 DefaultImage 표시
-        if storeInfo.photosNames != "" {
+        if storeInfo.photosNames != "DefaultImage" {
             if let url = URL(string: storeInfo.photosNames) {
                 storeImageView.kf.setImage(with: url)
             }
