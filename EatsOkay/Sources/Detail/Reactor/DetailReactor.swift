@@ -28,7 +28,6 @@ class DetailReactor: Reactor {
         case currentLocationButtonTapped // 현재 위치 버튼 클릭했을 때
         case tableViewItemTapped(IndexPath: IndexPath) // 테이블 뷰 셀을 클릭했을 때
         case sortButtonTapped(sortType: SortType) // 정렬 버튼을 클릭했을 때
-        case webViewDidDismiss // 웹뷰가 닫혔을 때
     }
     
     enum SortType: String {
@@ -42,10 +41,10 @@ class DetailReactor: Reactor {
         case shouldPop(Bool)
         case setCurrentLocation(lat: Double, lon: Double)
         case showLocationAlert(Void?)
-        case setWebViewUrl(String)
         case sortStore([StoreSection]) // 데이터 정렬
-        case dismissWebView // 웹뷰가 닫혔을 때
         case setSortType(SortType)
+        case pushSummaryView(data: StoreInfo)
+        case setError(Error?)
     }
     
     struct State {
@@ -58,6 +57,8 @@ class DetailReactor: Reactor {
         var shouldPresentWebView: Bool = false // 초기 웹뷰 여부 false
         var webViewUrl: String? = nil
         var sortType: SortType = .rating // 기본값은 별점순
+        @Pulse var pushSummaryViewWithData: StoreInfo?
+        @Pulse var error: Error?
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
@@ -93,8 +94,8 @@ class DetailReactor: Reactor {
                   indexPath.row < storeInfo[indexPath.section].items.count else {
                 return .empty()
             }
-            let uri = storeInfo[indexPath.section].items[indexPath.row].googleMapsUri
-            return Observable.just(.setWebViewUrl(uri)) // 웹뷰 띄우기
+            let data = storeInfo[indexPath.section].items[indexPath.row]
+            return Observable.just(.pushSummaryView(data: data)) // VC Push
             // 정렬 부분
         case .sortButtonTapped(let sortType):
             let currentStoreInfo = currentState.storeInfo
@@ -114,14 +115,11 @@ class DetailReactor: Reactor {
                 Observable.just(.sortStore(sortedStoreInfo)), // storeInfo 정렬
                 Observable.just(.setSortType(sortType))
             ])
-            // 웹뷰를 닫았을 때
-        case .webViewDidDismiss:
-            return Observable.just(.dismissWebView) // viewDidmiss
         case .backButtonTapped:
             return .just(.shouldPop(true))
         case .currentLocationSearchButtonTapped(sw: let sw, ne: let ne):
             let currentSortType = currentState.sortType
-
+            
             let centerLat = (sw.lat + ne.lat) / 2
             let centerLon = (sw.lon + ne.lon) / 2
             
@@ -133,11 +131,11 @@ class DetailReactor: Reactor {
                     guard let self else { return [] }
                     let merged = Array(Set(first + second))
                     let sorted = self.sortStoreItems(
-                                    merged,
-                                    sortType: currentSortType,
-                                    centerLat: centerLat,
-                                    centerLon: centerLon
-                                )
+                        merged,
+                        sortType: currentSortType,
+                        centerLat: centerLat,
+                        centerLon: centerLon
+                    )
                     return [StoreSection(items: sorted)]
                 }
                 .map { .setStore($0) }
@@ -157,15 +155,14 @@ class DetailReactor: Reactor {
             newState.currentLongitude = lon
         case .showLocationAlert:
             newState.showLocationAlert = Void()
-        case .setWebViewUrl(let uri):
-            newState.webViewUrl = uri
-            newState.shouldPresentWebView = true
         case .sortStore(let storeInfo):
             newState.storeInfo = storeInfo
-        case .dismissWebView:
-            newState.shouldPresentWebView = false
         case .setSortType(let sortType):
             newState.sortType = sortType
+        case .pushSummaryView(let data):
+            newState.pushSummaryViewWithData = data
+        case .setError(let error):
+            newState.error = error
         }
         return newState
     }
@@ -179,8 +176,23 @@ extension DetailReactor {
               let googleMapsUri = place.googleMapsUri,
               let rating = place.rating,
               let userRatingCount = place.userRatingCount,
-              let currentOpeningHours = place.currentOpeningHours
+              let currentOpeningHours = place.currentOpeningHours,
+              let id = place.id
         else { return nil }
+        
+        let photos = place.photos?.map { googlePhoto in
+            Photo(name: googlePhoto.name)
+        }
+        
+        let parkingOptions = place.parkingOptions.map { googleParkingOptions in
+            ParkingOptions(freeParkingLot: googleParkingOptions.freeGarageParking,
+                           paidParkingLot: googleParkingOptions.paidParkingLot,
+                           freeStreetParking: googleParkingOptions.freeStreetParking,
+                           paidStreetParking: googleParkingOptions.paidStreetParking,
+                           valetParking: googleParkingOptions.valetParking,
+                           freeGarageParking: googleParkingOptions.freeGarageParking,
+                           paidGarageParking: googleParkingOptions.paidGarageParking)
+        }
         
         let convertedOpeningHours = convertOpeningHours(currentOpeningHours)
         
@@ -194,7 +206,14 @@ extension DetailReactor {
             googleMapsUri: googleMapsUri,
             userRatingCount: userRatingCount,
             photosNames: photoUri, // photoUri(이미지 URL)를 여기에 저장
-            currentOpeningHours: convertedOpeningHours
+            currentOpeningHours: convertedOpeningHours,
+            goodForGroups: place.goodForGroups,
+            takeout: place.takeout,
+            reservable: place.reservable,
+            parkingOptions: parkingOptions,
+            nationalPhoneNumber: place.nationalPhoneNumber,
+            id: id,
+            photos: photos
         )
         
     }
@@ -338,7 +357,7 @@ extension DetailReactor {
             return .just(cachedUri)
         }
         // photoName이 없으면 빈 문자열 반환
-        guard !photoName.isEmpty else { return .just("") }
+        guard !photoName.isEmpty else { return .just("DefaultImage") }
         // 캐시에 없으면 네트워크 요청
         return NetworkManager.shared.fetchImage(mediaName: photoName)
             .map { [weak self] googleUri in
@@ -418,6 +437,9 @@ extension DetailReactor {
             .map { location in
                 UserDefaultsManager.shared.saveLocation(location: location)
                 return .setCurrentLocation(lat: location.lat, lon: location.lon)
+            }
+            .catch { error in
+                return .just(.setError(error))
             }
     }
     
