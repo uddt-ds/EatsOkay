@@ -80,14 +80,16 @@ class DetailReactor: Reactor {
             let secondRequest = fetchStoreInfosWithImages(textQuery: selectedKeywords[1], lowLat: rect.sw.latitude, lowLon: rect.sw.longitude, highLat: rect.ne.latitude, highLon: rect.ne.longitude)
             
             return Observable.zip(firstRequest, secondRequest)
-                .map { first, second in
-                    let merged = Array(Set((first + second).sorted { $0.rating > $1.rating }))
-                    return [StoreSection(items: merged)]
+                .map { [weak self] first, second in
+                    guard let self else { return [] }
+                    let merged = Array(Set(first + second))
+                    let sorted = self.sortStoreItems(merged, sortType: .rating, centerLat: center.lat, centerLon: center.lon)
+                    return [StoreSection(items: sorted)]
                 }
                 .map { .setStore($0) }
         case .currentLocationButtonTapped:
             return handleLocationAuthorization()
-            // 테이블 뷰 셀 클릭시 웹뷰 띄우기
+            // 테이블 뷰 셀 클릭시 Summary 뷰 띄우기
         case .tableViewItemTapped(let indexPath):
             let storeInfo = currentState.storeInfo
             guard indexPath.section < storeInfo.count,
