@@ -20,6 +20,14 @@ struct StoreInfo: Hashable {
     let nationalPhoneNumber: String? // 전화번호
     let id: String // 가게 id
     let photos: [Photo]? // 리뷰 이미지들
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
 
 struct OpeningHours: Decodable, Hashable {
